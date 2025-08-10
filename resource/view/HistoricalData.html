@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verenigen - Historical Data</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
+    
+    <!-- Date Picker CSS -->
+    <link rel="stylesheet" href="../compounents/utils/calendar/calendar-13/css/classic.css">
+    <link rel="stylesheet" href="../compounents/utils/calendar/calendar-13/css/classic.date.css">
+    
+    <style>
+        .date-picker-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .date-picker-container input {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        
+        .date-picker-container label {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+        
+        .date-range-container {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .table-header, .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        /* Make chart containers taller */
+        .chart-container {
+            height: 400px; /* Adjusted height to accommodate controls below */
+            position: relative;
+            margin-bottom: 20px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        /* Dropdown style for chart data selection */
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .chart-selector {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 250px;
+            position: relative;
+            z-index: 10; /* Ensure dropdown appears above other elements */
+        }
+        
+        .chart-selector:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* Below chart controls container */
+        .below-chart-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background-color: rgba(15, 23, 42, 0.95);
+            border-radius: 0 0 8px 8px;
+            margin-top: -20px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 5; /* Ensure it's above other elements but below the dropdown */
+        }
+        
+        /* Fix for dropdown menus to ensure they're visible */
+        .dropdown-menu {
+            z-index: 1050 !important;
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <aside class="sidebar">
+        <div class="logo mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">
+                    <h2>Verenigen</h2>
+                    <p>Performance Dashboard</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav>
+            <div class="nav-section">
+                <div class="nav-section-title">Main Menu</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="Overview.html" class="nav-link text-light">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="HistoricalData.html" class="nav-link active text-light">
+                            <i class="fas fa-history me-2"></i>
+                            Data Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="FinanceAnalytics.html" class="nav-link text-light">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Finance Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ArticleSection.html" class="nav-link text-light">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Articles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TeamProfile.html" class="nav-link text-light">
+                            <i class="fas fa-users me-2"></i>
+                            Team Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <button class="logout-btn" onclick="window.location.href='login.html'">Logout</button>
+    </aside>
+
+    <main class="main-content">
+        <div class="header p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 id="pageTitle" class="h3 text-light mb-0"><strong>Data Analytics</strong></h1>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="search-container position-relative">
+                        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search..." aria-label="Search" onkeyup="performSearch()">
+                        <div id="searchResults" class="search-results position-absolute w-100 mt-1" style="display: none; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1001; text-align: left;"></div>
+                    </div>
+                    <div id="clockContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content p-4"></div>
+            <!-- Historical Data Section -->
+            <div class="row mb-4"></div>
+                <div class="col-12">
+                    <div class="table-container mx-4">
+                        <div class="table-header">
+                            <h3 class="table-title">Performance History</h3>
+                            <div class="date-picker-container">
+                                <label for="history_from">From:</label>
+                                <input type="text" class="form-control" id="history_from" placeholder="Start Date">
+                                <label for="history_to">To:</label>
+                                <input type="text" class="form-control" id="history_to" placeholder="End Date">
+                            </div>
+                        </div>
+                        <table class="data-table" id="performanceTable">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Browser</th>
+                                    <th>Load Time</th>
+                                    <th>Cache Hit Rate</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row mb-4">
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="chart-container mx-4">
+                        <div class="chart-header">
+                            <h3>Performance Metrics Over Time</h3>
+                            <div class="date-picker-container">
+                                <label for="line_from">From:</label>
+                                <input type="text" class="form-control" id="line_from" placeholder="Start Date">
+                                <label for="line_to">To:</label>
+                                <input type="text" class="form-control" id="line_to" placeholder="End Date">
+                            </div>
+                        </div>
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                    <div class="below-chart-controls mx-4">
+                        <div class="chart-controls">
+                            <select id="lineChartDataSelector" class="chart-selector" onchange="updateLineChartType()">
+                                <option value="performance">Load Time & Cache Rate</option>
+                                <option value="browser">Browser Performance</option>
+                                <option value="errors">Error Rates</option>
+                                <option value="bandwidth">Bandwidth Usage</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="chart-container mx-4">
+                        <div class="chart-header">
+                            <h3>Performance by Category</h3>
+                            <div class="date-picker-container">
+                                <label for="bar_from">From:</label>
+                                <input type="text" class="form-control" id="bar_from" placeholder="Start Date">
+                                <label for="bar_to">To:</label>
+                                <input type="text" class="form-control" id="bar_to" placeholder="End Date">
+                            </div>
+                        </div>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                    <div class="below-chart-controls mx-4">
+                        <div class="chart-controls">
+                            <select id="barChartDataSelector" class="chart-selector" onchange="updateBarChartType()">
+                                <option value="cache">Cache Performance</option>
+                                <option value="resources">Resource Loading</option>
+                                <option value="devices">Device Types</option>
+                                <option value="locations">Geographic Distribution</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Pickadate JS -->
+    <script src="../compounents/utils/calendar/calendar-13/js/picker.js"></script>
+    <script src="../compounents/utils/calendar/calendar-13/js/picker.date.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchResults = document.getElementById('searchResults');
+            
+            if (searchTerm === '') {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            const searchableContent = [
+                { title: 'Performance History', content: 'View performance history logs', url: '#performanceTable' },
+                { title: 'Performance Metrics', content: 'Performance metrics over time', url: '#lineChart' },
+                { title: 'Cache Performance', content: 'Cache performance by category', url: '#barChart' },
+                { title: 'Data Analytics', content: 'Historical data and analytics dashboard', url: 'HistoricalData.html' },
+                { title: 'Overview', content: 'Main dashboard overview', url: 'main.html' },
+                { title: 'Finance Analytics', content: 'Financial reports and analytics', url: 'FinanceAnalytics.html' },
+                { title: 'Articles', content: 'Knowledge base and article section', url: 'ArticleSection.html' },
+                { title: 'Team Profile', content: 'Team member profiles and information', url: 'TeamProfile.html' }
+            ];
+            
+            const filteredResults = searchableContent.filter(item => 
+                item.title.toLowerCase().includes(searchTerm) || 
+                item.content.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredResults.length > 0) {
+                searchResults.innerHTML = filteredResults.map(item => `
+                    <div class="search-result-item p-3 border-bottom" style="cursor: pointer; color: #333;" onclick="navigateToResult('${item.url}')">
+                        <div class="fw-bold">${item.title}</div>
+                        <div class="small text-secondary">${item.content}</div>
+                    </div>
+                `).join('');
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.innerHTML = '<div class="p-3 text-secondary">No results found</div>';
+                searchResults.style.display = 'block';
+            }
+        }
+
+        function navigateToResult(url) {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchInput').value = '';
+            
+            if (url.startsWith('#')) {
+                const element = document.querySelector(url);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                window.location.href = url;
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            const searchContainer = document.querySelector('.search-container');
+            if (!searchContainer.contains(event.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        window.addEventListener('load', () => {
+            initDigitalClock('clockContainer');
+            initLineChart('performance'); // Default chart type
+            initBarChart('cache'); // Default chart type
+
+            // Initialize date pickers
+            initDatePickers();
+
+            // Initialize performance table with default data
+            loadPerformanceData();
+        });
+        
+        function initLineChart(chartType) {
+            const lineCanvas = document.getElementById('lineChart');
+            
+            // Generate data based on the selected chart type
+            let chartData = getLineChartData(chartType);
+            
+            // Create new chart
+            window.lineChartInstance = new Chart(lineCanvas, {
+                type: 'line',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            padding: 20,
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        title: {
+                            display: false,
+                            color: '#FFFFFF'
+                        },
+                        tooltip: {
+                            padding: 12,
+                            bodySpacing: 6,
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            padding: 10,
+                            grid: {
+                                padding: 10,
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            padding: 10,
+                            grid: {
+                                padding: 10,
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10,
+                            top: 0,
+                            bottom: 40
+                        }
+                    }
+                }
+            });
+        }
+        
+        function getLineChartData(chartType) {
+            // Create sample data for the last 14 days
+            const now = new Date();
+            const labels = [];
+            
+            for (let i = 13; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(now.getDate() - i);
+                labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            }
+            
+            // Return different datasets based on chart type
+            switch(chartType) {
+                case 'performance':
+                    return {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Load Time (s)',
+                                data: Array.from({length: 14}, () => (Math.random() * 4 + 1).toFixed(2)),
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            },
+                            {
+                                label: 'Cache Hit Rate (%)',
+                                data: Array.from({length: 14}, () => Math.random() * 30 + 65),
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }
+                        ]
+                    };
+                case 'browser':
+                    return {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Chrome (ms)',
+                                data: Array.from({length: 14}, () => Math.floor(Math.random() * 300 + 700)),
+                                borderColor: 'rgba(66, 133, 244, 1)',
+                                backgroundColor: 'rgba(66, 133, 244, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true
+                            },
+                            {
+                                label: 'Firefox (ms)',
+                                data: Array.from({length: 14}, () => Math.floor(Math.random() * 400 + 800)),
+                                borderColor: 'rgba(255, 153, 0, 1)',
+                                backgroundColor: 'rgba(255, 153, 0, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true
+                            },
+                            {
+                                label: 'Safari (ms)',
+                                data: Array.from({length: 14}, () => Math.floor(Math.random() * 350 + 750)),
+                                borderColor: 'rgba(52, 168, 83, 1)',
+                                backgroundColor: 'rgba(52, 168, 83, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true
+                            }
+                        ]
+                    };
+                case 'errors':
+                    return {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: '404 Errors',
+                                data: Array.from({length: 14}, () => Math.floor(Math.random() * 10)),
+                                borderColor: 'rgba(234, 67, 53, 1)',
+                                backgroundColor: 'rgba(234, 67, 53, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true
+                            },
+                            {
+                                label: '500 Errors',
+                                data: Array.from({length: 14}, () => Math.floor(Math.random() * 5)),
+                                borderColor: 'rgba(251, 188, 5, 1)',
+                                backgroundColor: 'rgba(251, 188, 5, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true
+                            },
+                            {
+                                label: 'JS Errors',
+                                data: Array.from({length: 14}, () => Math.floor(Math.random() * 15 + 2)),
+                                borderColor: 'rgba(52, 168, 83, 1)',
+                                backgroundColor: 'rgba(52, 168, 83, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true
+                            }
+                        ]
+                    };
+                case 'bandwidth':
+                    return {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Bandwidth (MB)',
+                                data: Array.from({length: 14}, () => (Math.random() * 5 + 2).toFixed(2)),
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            },
+                            {
+                                label: 'CDN Usage (MB)',
+                                data: Array.from({length: 14}, () => (Math.random() * 3 + 1).toFixed(2)),
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true,
+                                pointRadius: 4,
+                                pointHoverRadius: 6
+                            }
+                        ]
+                    };
+                default:
+                    return {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Load Time (s)',
+                                data: Array.from({length: 14}, () => (Math.random() * 4 + 1).toFixed(2)),
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.4,
+                                borderWidth: 2,
+                                fill: true
+                            }
+                        ]
+                    };
+            }
+        }
+        
+        function initBarChart(chartType) {
+            const barCanvas = document.getElementById('barChart');
+            
+            // Get data based on chart type
+            let chartData = getBarChartData(chartType);
+            
+            // Create new chart
+            window.barChartInstance = new Chart(barCanvas, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            padding: 20,
+                            labels: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        title: {
+                            display: false,
+                            color: '#FFFFFF'
+                        },
+                        tooltip: {
+                            padding: 12,
+                            bodySpacing: 6,
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#FFFFFF'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            padding: 10,
+                            grid: {
+                                padding: 10,
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            padding: 10,
+                            grid: {
+                                padding: 10,
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#FFFFFF'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Percentage (%)',
+                                padding: 10,
+                                color: '#FFFFFF'
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10,
+                            top: 0,
+                            bottom: 40
+                        }
+                    }
+                }
+            });
+        }
+        
+        function getBarChartData(chartType) {
+            switch(chartType) {
+                case 'cache':
+                    const categories = ['Images', 'Scripts', 'Stylesheets', 'HTML', 'API Responses'];
+                    const hitRates = categories.map(() => Math.floor(Math.random() * 30) + 65);
+                    const missRates = categories.map((_,i) => 100 - hitRates[i]);
+                    
+                    return {
+                        labels: categories,
+                        datasets: [
+                            {
+                                label: 'Cache Hits (%)',
+                                data: hitRates,
+                                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Cache Misses (%)',
+                                data: missRates,
+                                backgroundColor: 'rgba(255, 99, 132, 0.7)',
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    };
+                case 'resources':
+                    return {
+                        labels: ['HTML', 'CSS', 'JavaScript', 'Images', 'Fonts', 'Videos'],
+                        datasets: [
+                            {
+                                label: 'Load Time (ms)',
+                                data: [150, 180, 320, 450, 120, 580],
+                                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Size (KB)',
+                                data: [45, 75, 320, 750, 80, 2200],
+                                backgroundColor: 'rgba(255, 206, 86, 0.7)',
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    };
+                case 'devices':
+                    return {
+                        labels: ['Desktop', 'Mobile', 'Tablet', 'Smart TV', 'Other'],
+                        datasets: [
+                            {
+                                label: 'Visitors (%)',
+                                data: [42, 38, 12, 5, 3],
+                                backgroundColor: [
+                                    'rgba(75, 192, 192, 0.7)',
+                                    'rgba(255, 99, 132, 0.7)',
+                                    'rgba(54, 162, 235, 0.7)',
+                                    'rgba(255, 206, 86, 0.7)',
+                                    'rgba(153, 102, 255, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }
+                        ]
+                    };
+                case 'locations':
+                    return {
+                        labels: ['North America', 'Europe', 'Asia', 'South America', 'Africa', 'Oceania'],
+                        datasets: [
+                            {
+                                label: 'Traffic (%)',
+                                data: [35, 30, 20, 8, 5, 2],
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.7)',
+                                    'rgba(54, 162, 235, 0.7)',
+                                    'rgba(255, 206, 86, 0.7)',
+                                    'rgba(75, 192, 192, 0.7)',
+                                    'rgba(153, 102, 255, 0.7)',
+                                    'rgba(255, 159, 64, 0.7)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)',
+                                    'rgba(255, 159, 64, 1)'
+                                ],
+                                borderWidth: 1
+                            }
+                        ]
+                    };
+                default:
+                    return {
+                        labels: ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5'],
+                        datasets: [
+                            {
+                                label: 'Sample Data',
+                                data: [65, 75, 80, 72, 83],
+                                backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    };
+            }
+        }
+        
+        function loadPerformanceData() {
+            const performanceTable = document.querySelector('#performanceTable tbody');
+            performanceTable.innerHTML = '';
+            
+            // Create default data (last 10 days)
+            const now = new Date('2025-08-10T15:28:00+07:00');
+            const numEntries = 10;
+            
+            for (let i = 0; i < numEntries; i++) {
+                const timestamp = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
+                const browser = ['Chrome', 'Firefox', 'Safari', 'IE'][Math.floor(Math.random() * 4)];
+                const loadTime = (Math.random() * 4 + 1).toFixed(2) + 's';
+                const cacheHitRate = (Math.random() * 30 + 65).toFixed(0) + '%';
+                let status = 'Good';
+                if (cacheHitRate.replace('%', '') >= 90) status = 'Excellent';
+                else if (cacheHitRate.replace('%', '') < 70) status = 'Poor';
+                else if (cacheHitRate.replace('%', '') < 80) status = 'Average';
+
+                performanceTable.innerHTML += `
+                    <tr>
+                        <td>${timestamp.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}</td>
+                        <td>${browser}</td>
+                        <td>${loadTime}</td>
+                        <td>${cacheHitRate}</td>
+                        <td class="status-${status.toLowerCase()}">${status}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        function initDatePickers() {
+            // Initialize history date pickers
+            $('#history_from').pickadate({
+                format: 'yyyy-mm-dd',
+                onSet: function(context) {
+                    // You can add filtering logic here based on date
+                    if (context.select) {
+                        updateHistoryData();
+                    }
+                }
+            });
+            
+            $('#history_to').pickadate({
+                format: 'yyyy-mm-dd',
+                onSet: function(context) {
+                    if (context.select) {
+                        updateHistoryData();
+                    }
+                }
+            });
+            
+            // Initialize line chart date pickers
+            $('#line_from').pickadate({
+                format: 'yyyy-mm-dd',
+                onSet: function(context) {
+                    if (context.select) {
+                        updateLineChartData();
+                    }
+                }
+            });
+            
+            $('#line_to').pickadate({
+                format: 'yyyy-mm-dd',
+                onSet: function(context) {
+                    if (context.select) {
+                        updateLineChartData();
+                    }
+                }
+            });
+            
+            // Initialize bar chart date pickers
+            $('#bar_from').pickadate({
+                format: 'yyyy-mm-dd',
+                onSet: function(context) {
+                    if (context.select) {
+                        updateBarChartData();
+                    }
+                }
+            });
+            
+            $('#bar_to').pickadate({
+                format: 'yyyy-mm-dd',
+                onSet: function(context) {
+                    if (context.select) {
+                        updateBarChartData();
+                    }
+                }
+            });
+        }
+        
+        function updateHistoryData() {
+            const fromDate = $('#history_from').val();
+            const toDate = $('#history_to').val();
+            
+            if (fromDate && toDate) {
+                console.log(`Updating history data from ${fromDate} to ${toDate}`);
+                // Here you would call an API or filter existing data based on date range
+                
+                // For demo purposes, we'll just update the table with some sample data
+                const performanceTable = document.querySelector('#performanceTable tbody');
+                performanceTable.innerHTML = '';
+                
+                // Create dummy data for the selected date range
+                const startDate = new Date(fromDate);
+                const endDate = new Date(toDate);
+                const daysBetween = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                const numEntries = Math.min(20, daysBetween + 1);
+                
+                for (let i = 0; i < numEntries; i++) {
+                    const timestamp = new Date(endDate);
+                    timestamp.setDate(endDate.getDate() - i);
+                    const browser = ['Chrome', 'Firefox', 'Safari', 'IE'][Math.floor(Math.random() * 4)];
+                    const loadTime = (Math.random() * 4 + 1).toFixed(2) + 's';
+                    const cacheHitRate = (Math.random() * 30 + 65).toFixed(0) + '%';
+                    let status = 'Good';
+                    if (cacheHitRate.replace('%', '') >= 90) status = 'Excellent';
+                    else if (cacheHitRate.replace('%', '') < 70) status = 'Poor';
+                    else if (cacheHitRate.replace('%', '') < 80) status = 'Average';
+
+                    performanceTable.innerHTML += `
+                        <tr>
+                            <td>${timestamp.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' })}</td>
+                            <td>${browser}</td>
+                            <td>${loadTime}</td>
+                            <td>${cacheHitRate}</td>
+                            <td class="status-${status.toLowerCase()}">${status}</td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+        
+        function updateLineChartData() {
+            const fromDate = $('#line_from').val();
+            const toDate = $('#line_to').val();
+            const chartType = $('#lineChartDataSelector').val();
+            
+            if (fromDate && toDate) {
+                console.log(`Updating line chart data from ${fromDate} to ${toDate} with type ${chartType}`);
+                
+                // Generate sample data for the selected date range
+                const startDate = new Date(fromDate);
+                const endDate = new Date(toDate);
+                const daysBetween = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+                
+                // Create new dates array based on selected range
+                const labels = [];
+                for (let i = 0; i < Math.min(14, daysBetween + 1); i++) {
+                    const date = new Date(startDate);
+                    date.setDate(startDate.getDate() + i);
+                    labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+                }
+                
+                // Get data based on chart type but with the custom labels
+                let chartData = getLineChartData(chartType);
+                chartData.labels = labels;
+                
+                // If there's an existing chart, destroy it
+                if (window.lineChartInstance) {
+                    window.lineChartInstance.destroy();
+                }
+                
+                // Create new chart
+                const lineCanvas = document.getElementById('lineChart');
+                window.lineChartInstance = new Chart(lineCanvas, {
+                    type: 'line',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                padding: 20,
+                                labels: {
+                                    color: '#FFFFFF'
+                                }
+                            },
+                            title: {
+                                display: false,
+                                color: '#FFFFFF'
+                            },
+                            tooltip: {
+                                padding: 12,
+                                bodySpacing: 6,
+                                titleColor: '#FFFFFF',
+                                bodyColor: '#FFFFFF'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                padding: 10,
+                                grid: {
+                                    padding: 10,
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#FFFFFF'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                padding: 10,
+                                grid: {
+                                    padding: 10,
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#FFFFFF'
+                                }
+                            }
+                        },
+                        layout: {
+                            padding: {
+                                left: 10,
+                                right: 10,
+                                top: 0,
+                                bottom: 40
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function updateBarChartData() {
+            const fromDate = $('#bar_from').val();
+            const toDate = $('#bar_to').val();
+            const chartType = $('#barChartDataSelector').val();
+            
+            if (fromDate && toDate) {
+                console.log(`Updating bar chart data from ${fromDate} to ${toDate} with type ${chartType}`);
+                
+                // Get data based on chart type
+                let chartData = getBarChartData(chartType);
+                
+                // If there's an existing chart, destroy it
+                if (window.barChartInstance) {
+                    window.barChartInstance.destroy();
+                }
+                
+                // Create new chart
+                const barCanvas = document.getElementById('barChart');
+                window.barChartInstance = new Chart(barCanvas, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                padding: 20,
+                                labels: {
+                                    color: '#FFFFFF'
+                                }
+                            },
+                            title: {
+                                display: false,
+                                color: '#FFFFFF'
+                            },
+                            tooltip: {
+                                padding: 12,
+                                bodySpacing: 6,
+                                titleColor: '#FFFFFF',
+                                bodyColor: '#FFFFFF'
+                            }
+                        },
+                        scales: {
+                            x: {
+                                padding: 10,
+                                grid: {
+                                    padding: 10,
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#FFFFFF'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                padding: 10,
+                                grid: {
+                                    padding: 10,
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                },
+                                ticks: {
+                                    color: '#FFFFFF'
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Percentage (%)',
+                                    padding: 10,
+                                    color: '#FFFFFF'
+                                }
+                            }
+                        },
+                        layout: {
+                            padding: {
+                                left: 10,
+                                right: 10,
+                                top: 0,
+                                bottom: 40
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        function updateLineChartType() {
+            const chartType = document.getElementById('lineChartDataSelector').value;
+            
+            // Get the date values in case they've been set
+            const fromDate = $('#line_from').val();
+            const toDate = $('#line_to').val();
+            
+            if (fromDate && toDate) {
+                updateLineChartData();
+            } else {
+                // If there's an existing chart, destroy it
+                if (window.lineChartInstance) {
+                    window.lineChartInstance.destroy();
+                }
+                
+                // Create new chart with the selected type
+                initLineChart(chartType);
+            }
+        }
+        
+        function updateBarChartType() {
+            const chartType = document.getElementById('barChartDataSelector').value;
+            
+            // Get the date values in case they've been set
+            const fromDate = $('#bar_from').val();
+            const toDate = $('#bar_to').val();
+            
+            if (fromDate && toDate) {
+                updateBarChartData();
+            } else {
+                // If there's an existing chart, destroy it
+                if (window.barChartInstance) {
+                    window.barChartInstance.destroy();
+                }
+                
+                // Create new chart with the selected type
+                initBarChart(chartType);
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>

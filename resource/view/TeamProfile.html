@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verenigen - Team Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <aside class="sidebar">
+        <div class="logo mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">
+                    <h2>Verenigen</h2>
+                    <p>Performance Dashboard</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav>
+            <div class="nav-section">
+                <div class="nav-section-title">Main Menu</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="Overview.html" class="nav-link text-light">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="HistoricalData.html" class="nav-link text-light">
+                            <i class="fas fa-history me-2"></i>
+                            Data Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="FinanceAnalytics.html" class="nav-link text-light">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Finance Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ArticleSection.html" class="nav-link text-light">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Articles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TeamProfile.html" class="nav-link active text-light">
+                            <i class="fas fa-users me-2"></i>
+                            Team Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <button class="logout-btn" onclick="window.location.href='login.html'">Logout</button>
+    </aside>
+
+    <main class="main-content">
+        <div class="header p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 id="pageTitle" class="h3 text-light mb-0"><strong>Team Profile</strong></h1>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="search-container position-relative">
+                        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search..." aria-label="Search" onkeyup="performSearch()">
+                        <div id="searchResults" class="search-results position-absolute w-100 mt-1" style="display: none; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1001; text-align: left;"></div>
+                    </div>
+                    <script>
+                    function performSearch() {
+                        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+                        const searchResults = document.getElementById('searchResults');
+                        
+                        if (searchTerm === '') {
+                            searchResults.style.display = 'none';
+                            return;
+                        }
+                        
+                        // Define searchable content
+                        const searchableContent = [
+                            { title: 'Riandy Pratama', content: 'Team Leader at Institut Teknologi Sepuluh Nopember', url: '#' },
+                            { title: 'Yus Putri Arum Segar', content: 'Data Analyst at ITS', url: '#' },
+                            { title: 'Akhmad Maulvin Nazir Zakaria', content: 'Assasin at ITS', url: '#' },
+                            { title: 'Satrio Adji', content: 'Marksman at RSUD', url: '#' },
+                            { title: 'Overview', content: 'Dashboard overview page', url: 'Overview.html' },
+                            { title: 'Data Analytics', content: 'Historical data and analytics dashboard', url: 'HistoricalData.html' },
+                            { title: 'Finance Analytics', content: 'Financial reports and analytics', url: 'FinanceAnalytics.html' },
+                            { title: 'Articles', content: 'Knowledge base and article section', url: 'ArticleSection.html' },
+                            { title: 'Team Profile', content: 'Team member profiles and information', url: 'TeamProfile.html' },
+                            { title: 'Team Members', content: 'The dedicated team behind Verenigen\'s success', url: '#' }
+                        ];
+                        
+                        // Filter results based on search term
+                        const filteredResults = searchableContent.filter(item => 
+                            item.title.toLowerCase().includes(searchTerm) || 
+                            item.content.toLowerCase().includes(searchTerm)
+                        );
+                        
+                        if (filteredResults.length > 0) {
+                            searchResults.innerHTML = filteredResults.map(item => `
+                                <div class="search-result-item p-3 border-bottom" style="cursor: pointer; color: #333;" onclick="navigateToResult('${item.url}')">
+                                    <div class="fw-bold">${item.title}</div>
+                                    <div class="small text-secondary">${item.content}</div>
+                                </div>
+                            `).join('');
+                            searchResults.style.display = 'block';
+                        } else {
+                            searchResults.innerHTML = '<div class="p-3 text-secondary">No results found</div>';
+                            searchResults.style.display = 'block';
+                        }
+                    }
+
+                    function navigateToResult(url) {
+                        document.getElementById('searchResults').style.display = 'none';
+                        document.getElementById('searchInput').value = '';
+                        
+                        if (url.startsWith('#')) {
+                            // Scroll to element on current page
+                            const element = document.querySelector(url);
+                            if (element) {
+                                element.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        } else {
+                            // Navigate to different page
+                            window.location.href = url;
+                        }
+                    }
+
+                    // Hide search results when clicking outside
+                    document.addEventListener('click', function(event) {
+                        const searchContainer = document.querySelector('.search-container');
+                        if (!searchContainer.contains(event.target)) {
+                            document.getElementById('searchResults').style.display = 'none';
+                        }
+                    });
+                    </script>
+                    <!-- <a href="login.html" class="btn btn-outline-light">Login</a> -->
+                    <div id="clockContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content p-4">
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="report-summary">
+                        <h3>Team Members</h3>
+                        <p>Meet the dedicated team behind Verenigen's success. Each member brings unique skills and expertise to drive our performance dashboard forward.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="numeric-display">
+                        <img src="../src/Screenshot from 2025-07-29 15-48-40.png" class="mb-3 rounded-circle" style="width: 250px; height: 250px;">
+                        <div class="stat-value">Riandy Pratama</div>
+                        <div class="stat-label">Email: lorem ipsum<br>University: Institut Teknologi Sepuluh Nopember<br>Role: Team Leader<br>Description: lorem ipsum</div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="numeric-display">
+                        <img src="../src/Screenshot from 2025-07-29 15-48-40.png" class="mb-3 rounded-circle" style="width: 250px; height: 250px;">
+                        <div class="stat-value">Yus Putri Arum Segar</div>
+                        <div class="stat-label">Email: jane.smith@verenigen.com<br>University: ITS<br>Role: Data Analyst<br>Description: lorem ipsum</div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="numeric-display">
+                        <img src="../src/Screenshot from 2025-07-29 15-48-40.png" class="mb-3 rounded-circle" style="width: 250px; height: 250px;">
+                        <div class="stat-value">Akhmad Maulvin Nazir Zakaria</div>
+                        <div class="stat-label">Email: alex.johnson@verenigen.com<br>University: ITS<br>Role: Assasin<br>Description: lorem ipsum</div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="numeric-display">
+                        <img src="../src/Screenshot from 2025-07-29 15-48-40.png" class="mb-3 rounded-circle" style="width: 250px; height: 250px;">
+                        <div class="stat-value">Satrio Adji</div>
+                        <div class="stat-label">Email: emily.brown@verenigen.com<br>University: RSUD<br>Role: Marksman<br>Description: lorem ipsum</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/script.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        // Close sidebar when clicking nav links on mobile
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        window.addEventListener('load', () => {
+            initDigitalClock('clockContainer');
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verenigen - Performance Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <aside class="sidebar">
+        <div class="logo mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">
+                    <h2>Verenigen</h2>
+                    <p>Performance Dashboard</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav>
+            <div class="nav-section">
+                <div class="nav-section-title">Main Menu</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="Overview.html" class="nav-link active text-light">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="HistoricalData.html" class="nav-link text-light">
+                            <i class="fas fa-history me-2"></i>
+                            Data Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="FinanceAnalytics.html" class="nav-link text-light">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Finance Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ArticleSection.html" class="nav-link text-light">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Articles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TeamProfile.html" class="nav-link text-light">
+                            <i class="fas fa-users me-2"></i>
+                            Team Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <button class="logout-btn" onclick="window.location.href='login.html'">Logout</button>
+    </aside>
+
+    <main class="main-content">
+        <div class="header p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 id="pageTitle" class="h3 text-light mb-0"><strong>Overview</strong></h1>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="search-container position-relative">
+                        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search..." aria-label="Search" onkeyup="performSearch()">
+                        <div id="searchResults" class="search-results position-absolute w-100 mt-1" style="display: none; background: #ffffff; border: 1px solid var(--border-color); border-radius: 8px; max-height: 300px; overflow-y: auto; z-index: 1001; text-align: left;"></div>
+                    </div>
+                    <script>
+                    function performSearch() {
+                        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+                        const searchResults = document.getElementById('searchResults');
+                        
+                        if (searchTerm === '') {
+                            searchResults.style.display = 'none';
+                            return;
+                        }
+                        
+                        const searchableContent = [
+                            { title: 'Sales Growth', content: 'Track sales performance and growth metrics', url: '#stat1' },
+                            { title: 'Total Revenue', content: 'Monitor total revenue and financial performance', url: '#stat2' },
+                            { title: 'Customer Satisfaction', content: 'Customer satisfaction scores and feedback', url: '#stat3' },
+                            { title: 'Active Users', content: 'Number of active users on the platform', url: '#stat4' },
+                            { title: 'Data Analytics', content: 'Historical data and analytics dashboard', url: 'HistoricalData.html' },
+                            { title: 'Finance Analytics', content: 'Financial reports and analytics', url: 'FinanceAnalytics.html' },
+                            { title: 'Articles', content: 'Knowledge base and article section', url: 'ArticleSection.html' },
+                            { title: 'Team Profile', content: 'Team member profiles and information', url: 'TeamProfile.html' },
+                            { title: 'Performance Metrics', content: 'System performance charts and metrics', url: '#lineChart' },
+                            { title: 'Cache Performance', content: 'Cache hit and miss rates', url: '#barChart' },
+                            { title: 'Daily Visits', content: 'Daily visitor distribution', url: '#pieChart' },
+                            { title: 'Browser Performance', content: 'Performance across browsers', url: '#pentagonalChart' },
+                            { title: 'System Health', content: 'Overall system health score', url: '#gaugeChart' }
+                        ];
+                        
+                        const filteredResults = searchableContent.filter(item => 
+                            item.title.toLowerCase().includes(searchTerm) || 
+                            item.content.toLowerCase().includes(searchTerm)
+                        );
+                        
+                        if (filteredResults.length > 0) {
+                            searchResults.innerHTML = filteredResults.map(item => `
+                                <div class="search-result-item p-3 border-bottom" style="cursor: pointer; color: #333;" onclick="navigateToResult('${item.url}')">
+                                    <div class="fw-bold">${item.title}</div>
+                                    <div class="small text-secondary">${item.content}</div>
+                                </div>
+                            `).join('');
+                            searchResults.style.display = 'block';
+                        } else {
+                            searchResults.innerHTML = '<div class="p-3 text-secondary">No results found</div>';
+                            searchResults.style.display = 'block';
+                        }
+                    }
+
+                    function navigateToResult(url) {
+                        document.getElementById('searchResults').style.display = 'none';
+                        document.getElementById('searchInput').value = '';
+                        
+                        if (url.startsWith('#')) {
+                            const element = document.querySelector(url);
+                            if (element) {
+                                element.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        } else {
+                            window.location.href = url;
+                        }
+                    }
+
+                    document.addEventListener('click', function(event) {
+                        const searchContainer = document.querySelector('.search-container');
+                        if (!searchContainer.contains(event.target)) {
+                            document.getElementById('searchResults').style.display = 'none';
+                        }
+                    });
+                    </script>
+                    <div id="clockContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content p-4">
+            <!-- First row: Report Summary and System Health Gauge -->
+            <div class="row mb-4">
+                <div class="col-lg-8 col-md-12 mb-4">
+                    <div class="report-summary h-100 position-relative">
+                        <h3>Report Summary</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                        <a href="Report.html" class="btn btn-generate-report mt-3">Generate Report</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-12 mb-4">
+                    <div class="chart-container">
+                        <h3>System Health</h3>
+                        <canvas id="gaugeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second row: Numeric Displays -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                    <div class="numeric-display" id="stat1"></div>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                    <div class="numeric-display" id="stat2"></div>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                    <div class="numeric-display" id="stat3"></div>
+                </div>
+                <div class="col-lg-3 col-md-6 col-sm-12 mb-4">
+                    <div class="numeric-display" id="stat4"></div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row mb-4">
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="chart-container">
+                        <h3>Cache Performance</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="chart-container">
+                        <h3>Performance Metrics</h3>
+                        <canvas id="lineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-4">
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="chart-container">
+                        <h3>Daily Visits</h3>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <div class="chart-container">
+                        <h3>Browser Performance</h3>
+                        <canvas id="pentagonalChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/script.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        window.addEventListener('load', () => {
+            initDigitalClock('clockContainer');
+            updateNumericDisplay('stat1', 85, 'Lorem Ipsum', 'fas fa-chart-line', true);
+            updateNumericDisplay('stat2', 120, 'Dolor Sit', 'fas fa-dollar-sign');
+            updateNumericDisplay('stat3', 95, 'Amet Consectetur', 'fas fa-smile', true);
+            updateNumericDisplay('stat4', 45, 'Adipiscing Elit', 'fas fa-users');
+            initBarChart('barChart');
+            initLineChart('lineChart');
+            initPieChart('pieChart');
+            initPentagonalChart('pentagonalChart');
+            initGaugeChart('gaugeChart');
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>
