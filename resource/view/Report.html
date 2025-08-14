@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verenigen - Generate Reports</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <style>
+        .report-type-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .report-type-card:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: #4285f4;
+            transform: translateY(-2px);
+        }
+        
+        .report-type-card.selected {
+            background: rgba(66, 133, 244, 0.2);
+            border-color: #4285f4;
+        }
+        
+        .form-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .metric-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            background: rgba(255,255,255,0.08);
+        }
+        
+        .generate-btn {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            border: none;
+            padding: 12px 40px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(66, 133, 244, 0.3);
+        }
+        
+        .custom-form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            border-radius: 8px;
+            padding: 10px 15px;
+        }
+        
+        .custom-form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: #4285f4;
+            color: #fff;
+            box-shadow: 0 0 0 0.2rem rgba(66, 133, 244, 0.25);
+        }
+        
+        .custom-form-control::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .progress-container {
+            display: none;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .report-preview {
+            display: none;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Search results styling */
+        .search-result-item {
+            cursor: pointer;
+            color: #fff !important;
+            background: rgba(255,255,255,0.1) !important;
+            transition: all 0.3s ease;
+        }
+
+        .search-result-item:hover {
+            background: rgba(255,255,255,0.2) !important;
+        }
+
+        .search-result-item .fw-bold {
+            color: #fff !important;
+        }
+
+        .search-result-item .text-secondary {
+            color: rgba(255,255,255,0.7) !important;
+        }
+
+        /* Form control options */
+        .custom-form-control option {
+            background: #333;
+            color: #fff;
+        }
+
+        /* Search results no results */
+        .no-results {
+            background: rgba(255,255,255,0.1) !important;
+            color: rgba(255,255,255,0.7) !important;
+        }
+
+        /* Force white text for all elements */
+        .card-title, .card-text, .lead, h1, h2, h3, h4, h5, h6, p, label, .form-label, small, .text-muted {
+            color: #fff !important;
+        }
+
+        /* Specific overrides for dark text */
+        .text-dark {
+            color: #fff !important;
+        }
+
+        /* Bootstrap text utilities override */
+        .text-secondary {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .text-muted {
+            color: rgba(255, 255, 255, 0.6) !important;
+        }
+
+        /* Card text override */
+        .report-type-card .card-title,
+        .report-type-card .card-text {
+            color: #fff !important;
+        }
+
+        /* Progress text */
+        #progressText {
+            color: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        /* Preview details */
+        #previewDetails {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+    </style>
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <aside class="sidebar">
+        <div class="logo mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="logo-text">
+                    <h2>Verenigen</h2>
+                    <p>Performance Dashboard</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav>
+            <div class="nav-section">
+                <div class="nav-section-title">Main Menu</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a href="Overview.html" class="nav-link text-light">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Overview
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="HistoricalData.html" class="nav-link text-light">
+                            <i class="fas fa-history me-2"></i>
+                            Data Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="FinanceAnalytics.html" class="nav-link text-light">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Financial Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ArticleSection.html" class="nav-link text-light">
+                            <i class="fas fa-file-alt me-2"></i>
+                            Articles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="MaintenanceSchedule.html" class="nav-link text-light">
+                            <i class="fas fa-wrench me-2"></i>
+                            Maintenance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TeamProfile.html" class="nav-link text-light">
+                            <i class="fas fa-users me-2"></i>
+                            Team Profile
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <button class="logout-btn" onclick="window.location.href='login.html'">Logout</button>
+    </aside>
+
+    <main class="main-content">
+        <div class="header p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-outline-light btn-sm" onclick="window.location.href='Overview.html'">
+                        <i class="fas fa-arrow-left me-1"></i> Back
+                    </button>
+                    <h1 class="h3 text-light mb-0"><strong>Generate Reports</strong></h1>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="search-container position-relative">
+                        <input type="text" id="searchInput" class="form-control search-input" placeholder="Search..." aria-label="Search" onkeyup="performSearch()">
+                        <div id="searchResults" class="search-results position-absolute w-100 mt-1" style="display: none;"></div>
+                    </div>
+                    <div id="clockContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content p-4">
+            <!-- Main Container -->
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <!-- Header Section -->
+                        <div class="card bg-dark text-light mb-4" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); border: none; border-radius: 15px;">
+                            <div class="card-body p-4">
+                                <div class="text-center mb-4">
+                                    <h2 class="card-title mb-2 text-light">
+                                        <i class="fas fa-file-chart-line me-2"></i>
+                                        Generate Performance Report
+                                    </h2>
+                                    <p class="card-text lead text-light">Create comprehensive reports with advanced analytics and insights</p>
+                                </div>
+
+                                <!-- Report Type Selection -->
+                                <div class="row g-3 mb-5">
+                                    <div class="col-12">
+                                        <h5 class="mb-3 text-light">
+                                            <i class="fas fa-clipboard-list me-2"></i>
+                                            Select Report Type
+                                        </h5>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="card report-type-card h-100" data-type="weekly" onclick="selectReportType('weekly')">
+                                            <div class="card-body p-3 text-center">
+                                                <div class="mb-3">
+                                                    <i class="fas fa-calendar-week fa-2x text-primary"></i>
+                                                </div>
+                                                <h6 class="card-title text-light">Weekly Summary</h6>
+                                                <p class="card-text small text-light">Comprehensive weekly performance overview with trends</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="card report-type-card h-100" data-type="browser" onclick="selectReportType('browser')">
+                                            <div class="card-body p-3 text-center">
+                                                <div class="mb-3">
+                                                    <i class="fab fa-chrome fa-2x text-success"></i>
+                                                </div>
+                                                <h6 class="card-title text-light">Browser Comparison</h6>
+                                                <p class="card-text small text-light">Detailed comparison between different browsers</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="card report-type-card h-100" data-type="cache" onclick="selectReportType('cache')">
+                                            <div class="card-body p-3 text-center">
+                                                <div class="mb-3">
+                                                    <i class="fas fa-database fa-2x text-warning"></i>
+                                                </div>
+                                                <h6 class="card-title text-light">Cache Analysis</h6>
+                                                <p class="card-text small text-light">In-depth cache performance analysis</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-3 col-md-6">
+                                        <div class="card report-type-card h-100 selected" data-type="custom" onclick="selectReportType('custom')">
+                                            <div class="card-body p-3 text-center">
+                                                <div class="mb-3">
+                                                    <i class="fas fa-cogs fa-2x text-info"></i>
+                                                </div>
+                                                <h6 class="card-title text-light">Custom Report</h6>
+                                                <p class="card-text small text-light">Build custom reports with specific metrics</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Configuration Form -->
+                                <div class="form-section p-4">
+                                    <h5 class="mb-4 text-light">
+                                        <i class="fas fa-wrench me-2"></i>
+                                        Report Configuration
+                                    </h5>
+                                    
+                                    <div class="row g-4">
+                                        <!-- Left Column -->
+                                        <div class="col-lg-6">
+                                            <div class="mb-4">
+                                                <label for="reportName" class="form-label fw-bold text-light">
+                                                    <i class="fas fa-tag me-2"></i>Report Name
+                                                </label>
+                                                <input type="text" class="form-control custom-form-control" id="reportName" placeholder="Enter descriptive report name">
+                                            </div>
+                                            
+                                            <div class="mb-4">
+                                                <label for="dateRange" class="form-label fw-bold text-light">
+                                                    <i class="fas fa-calendar-alt me-2"></i>Date Range
+                                                </label>
+                                                <select class="form-select custom-form-control" id="dateRange">
+                                                    <option value="7">Last 7 days</option>
+                                                    <option value="30" selected>Last 30 days</option>
+                                                    <option value="90">Last 90 days</option>
+                                                    <option value="custom">Custom range</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label for="includeBrowsers" class="form-label fw-bold text-light">
+                                                    <i class="fab fa-chrome me-2"></i>Target Browsers
+                                                </label>
+                                                <select class="form-select custom-form-control" id="includeBrowsers">
+                                                    <option value="all" selected>All browsers</option>
+                                                    <option value="chrome">Chrome</option>
+                                                    <option value="firefox">Firefox</option>
+                                                    <option value="safari">Safari</option>
+                                                    <option value="edge">Edge</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Column -->
+                                        <div class="col-lg-6">
+                                            <div class="mb-4">
+                                                <label for="format" class="form-label fw-bold text-light">
+                                                    <i class="fas fa-file-export me-2"></i>Export Format
+                                                </label>
+                                                <select class="form-select custom-form-control" id="format">
+                                                    <option value="pdf" selected>PDF Document</option>
+                                                    <option value="excel">Excel Spreadsheet</option>
+                                                    <option value="csv">CSV File</option>
+                                                    <option value="json">JSON Data</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label for="recipientEmail" class="form-label fw-bold text-light">
+                                                    <i class="fas fa-envelope me-2"></i>Recipient Email
+                                                </label>
+                                                <input type="email" class="form-control custom-form-control" id="recipientEmail" placeholder="Enter email address">
+                                            </div>
+
+                                            <div class="mb-4">
+                                                <label class="form-label fw-bold text-light">
+                                                    <i class="fas fa-bell me-2"></i>Notification Settings
+                                                </label>
+                                                <div class="mt-2">
+                                                    <div class="form-check mb-2">
+                                                        <input class="form-check-input" type="checkbox" id="emailNotification" checked>
+                                                        <label class="form-check-label text-light" for="emailNotification">
+                                                            Send email notification when ready
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="scheduleReport">
+                                                        <label class="form-check-label text-light" for="scheduleReport">
+                                                            Schedule recurring reports
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Metrics Selection -->
+                                    <div class="mt-4">
+                                        <label class="form-label fw-bold mb-3 text-light">
+                                            <i class="fas fa-chart-bar me-2"></i>Include Metrics
+                                        </label>
+                                        <div class="row g-3">
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="metric-card">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="loadTime" checked>
+                                                        <label class="form-check-label text-light fw-bold" for="loadTime">
+                                                            <i class="fas fa-clock text-primary me-2"></i>
+                                                            Load Time
+                                                        </label>
+                                                    </div>
+                                                    <small class="text-light d-block mt-1" style="opacity: 0.7;">Page loading performance</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="metric-card">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="cacheHitRate" checked>
+                                                        <label class="form-check-label text-light fw-bold" for="cacheHitRate">
+                                                            <i class="fas fa-database text-success me-2"></i>
+                                                            Cache Hit Rate
+                                                        </label>
+                                                    </div>
+                                                    <small class="text-light d-block mt-1" style="opacity: 0.7;">Cache efficiency metrics</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="metric-card">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="jsExecutionTime" checked>
+                                                        <label class="form-check-label text-light fw-bold" for="jsExecutionTime">
+                                                            <i class="fab fa-js text-warning me-2"></i>
+                                                            JS Execution
+                                                        </label>
+                                                    </div>
+                                                    <small class="text-light d-block mt-1" style="opacity: 0.7;">JavaScript performance</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 col-lg-3">
+                                                <div class="metric-card">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="errorRate" checked>
+                                                        <label class="form-check-label text-light fw-bold" for="errorRate">
+                                                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                                            Error Rate
+                                                        </label>
+                                                    </div>
+                                                    <small class="text-light d-block mt-1" style="opacity: 0.7;">Error and failure metrics</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Generate Button -->
+                                    <div class="text-center mt-5">
+                                        <button class="btn btn-primary btn-lg generate-btn" onclick="generateReport()">
+                                            <i class="fas fa-magic me-2"></i>
+                                            Generate Report
+                                        </button>
+                                    </div>
+
+                                    <!-- Progress Container -->
+                                    <div class="progress-container" id="progressContainer">
+                                        <div class="text-center">
+                                            <h5 class="mb-3 text-light">
+                                                <i class="fas fa-cog fa-spin me-2"></i>
+                                                Generating Report...
+                                            </h5>
+                                            <div class="progress mb-3" style="height: 10px;">
+                                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                     role="progressbar" style="width: 0%" id="progressBar"></div>
+                                            </div>
+                                            <p class="text-light" id="progressText" style="opacity: 0.8;">Initializing...</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Report Preview -->
+                                    <div class="report-preview" id="reportPreview">
+                                        <h5 class="mb-3 text-light">
+                                            <i class="fas fa-eye me-2"></i>
+                                            Report Preview
+                                        </h5>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 id="previewTitle" class="text-light">Performance Report</h6>
+                                                <small class="text-light" id="previewDetails" style="opacity: 0.7;">Ready for download</small>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-success me-2" onclick="downloadReport()">
+                                                    <i class="fas fa-download me-1"></i>Download
+                                                </button>
+                                                <button class="btn btn-outline-light" onclick="shareReport()">
+                                                    <i class="fas fa-share me-1"></i>Share
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+        let selectedReportType = 'custom';
+
+        function selectReportType(type) {
+            // Remove selected class from all cards
+            document.querySelectorAll('.report-type-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked card
+            document.querySelector(`[data-type="${type}"]`).classList.add('selected');
+            selectedReportType = type;
+        }
+
+        function generateReport() {
+            const reportName = document.getElementById('reportName').value;
+            const browsers = document.getElementById('includeBrowsers').value;
+            const dateRange = document.getElementById('dateRange').value;
+            const format = document.getElementById('format').value;
+            const email = document.getElementById('recipientEmail').value;
+            
+            // Validation
+            if (!reportName.trim()) {
+                alert('Please enter a report name');
+                return;
+            }
+            
+            // Get selected metrics
+            const metrics = [];
+            if (document.getElementById('loadTime').checked) metrics.push('Load Time');
+            if (document.getElementById('cacheHitRate').checked) metrics.push('Cache Hit Rate');
+            if (document.getElementById('jsExecutionTime').checked) metrics.push('JS Execution Time');
+            if (document.getElementById('errorRate').checked) metrics.push('Error Rate');
+            
+            if (metrics.length === 0) {
+                alert('Please select at least one metric');
+                return;
+            }
+            
+            // Show progress
+            showProgress();
+            
+            // Simulate report generation
+            simulateReportGeneration(reportName, format);
+        }
+
+        function showProgress() {
+            document.getElementById('progressContainer').style.display = 'block';
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            
+            const steps = [
+                'Collecting data...',
+                'Processing metrics...',
+                'Generating charts...',
+                'Formatting report...',
+                'Finalizing...'
+            ];
+            
+            let progress = 0;
+            let stepIndex = 0;
+            
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress > 100) progress = 100;
+                
+                progressBar.style.width = progress + '%';
+                progressText.textContent = steps[stepIndex] || 'Completing...';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        document.getElementById('progressContainer').style.display = 'none';
+                        showReportPreview();
+                    }, 500);
+                } else if (progress > (stepIndex + 1) * 20) {
+                    stepIndex++;
+                }
+            }, 300);
+        }
+
+        function showReportPreview() {
+            const reportName = document.getElementById('reportName').value;
+            const format = document.getElementById('format').value;
+            
+            document.getElementById('previewTitle').textContent = reportName;
+            document.getElementById('previewDetails').textContent = `${format.toUpperCase()} format • Generated ${new Date().toLocaleString()}`;
+            document.getElementById('reportPreview').style.display = 'block';
+        }
+
+        function downloadReport() {
+            const reportName = document.getElementById('reportName').value;
+            const format = document.getElementById('format').value;
+            
+            // Simulate file download
+            const link = document.createElement('a');
+            link.href = '#';
+            link.download = `${reportName}.${format}`;
+            link.click();
+            
+            alert(`Report "${reportName}.${format}" downloaded successfully!`);
+        }
+
+        function shareReport() {
+            const reportName = document.getElementById('reportName').value;
+            const email = document.getElementById('recipientEmail').value;
+            
+            if (email) {
+                alert(`Report "${reportName}" shared with ${email}`);
+            } else {
+                prompt('Enter email address to share:', '');
+            }
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const searchResults = document.getElementById('searchResults');
+            
+            if (searchTerm === '') {
+                searchResults.style.display = 'none';
+                return;
+            }
+            
+            const searchableContent = [
+                { title: 'Generate Report', content: 'Create performance reports with custom metrics', url: '#' },
+                { title: 'Weekly Summary', content: 'Comprehensive weekly performance overview', url: '#' },
+                { title: 'Browser Comparison', content: 'Compare performance across different browsers', url: '#' },
+                { title: 'Cache Analysis', content: 'Analyze cache performance and optimization', url: '#' },
+                { title: 'Custom Report', content: 'Build custom reports with specific metrics', url: '#' },
+                { title: 'Overview', content: 'Dashboard overview and main statistics', url: 'Overview.html' },
+                { title: 'Data Analytics', content: 'Historical data and analytics', url: 'HistoricalData.html' },
+                { title: 'Financial Analytics', content: 'Financial reports and analytics', url: 'FinanceAnalytics.html' },
+                { title: 'Articles', content: 'Knowledge base and articles', url: 'ArticleSection.html' },
+                { title: 'Team Profile', content: 'Team member profiles', url: 'TeamProfile.html' }
+            ];
+            
+            const filteredResults = searchableContent.filter(item => 
+                item.title.toLowerCase().includes(searchTerm) || 
+                item.content.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredResults.length > 0) {
+                searchResults.innerHTML = filteredResults.map(item => `
+                    <div class="search-result-item p-3 border-bottom" onclick="navigateToResult('${item.url}')">
+                        <div class="fw-bold">${item.title}</div>
+                        <div class="small">${item.content}</div>
+                    </div>
+                `).join('');
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.innerHTML = '<div class="p-3 no-results">No results found</div>';
+                searchResults.style.display = 'block';
+            }
+        }
+
+        function navigateToResult(url) {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchInput').value = '';
+            
+            if (url !== '#') {
+                window.location.href = url;
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.sidebar-overlay');
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
+        // Event listeners
+        document.addEventListener('click', function(event) {
+            const searchContainer = document.querySelector('.search-container');
+            if (!searchContainer.contains(event.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    closeSidebar();
+                }
+            });
+        });
+
+        window.addEventListener('load', () => {
+            initDigitalClock('clockContainer');
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeSidebar();
+            }
+        });
+    </script>
+</body>
+</html>
