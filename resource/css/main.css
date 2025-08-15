@@ -1,5 +1,5 @@
 :root {
-    --bg-primary: linear-gradient(135deg, #265df3 0%, #265df3 50%, #265df3 100%);
+    --bg-primary: linear-gradient(135deg, #ffffff 0%, #e9dcdc 50%, #ffffff 100%);
     --sidebar-bg: rgba(15, 23, 42, 0.95);
     --text-primary: #f8fafc;
     --text-muted: #94a3b8;
@@ -225,7 +225,7 @@ body {
 }
 
 .chart-container {
-    background: rgba(15, 23, 42, 0.95);
+    background: rgba(30, 41, 59, 0.8);
     border: 2px solid var(--border-color);
     border-radius: 12px;
     padding: 24px;
@@ -239,6 +239,11 @@ body {
     font-weight: 600;
     margin-bottom: 16px;
     color: #f8fafc;
+}
+
+/* Line, Bar and Gauge charts background */
+.line-chart, .bar-chart, .gauge-chart {
+    background: rgba(30, 41, 59, 0.8);
 }
 
 /* Tablet Styles */
@@ -597,3 +602,97 @@ body {
         .status-good { color: #10b981; }
         .status-average { color: #f59e0b; }
         .status-poor { color: #ef4444; }
+
+                .date-picker-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .date-picker-container input {
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+        
+        .date-picker-container label {
+            margin-bottom: 0;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+        
+        .date-range-container {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .table-header, .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        /* Make chart containers taller */
+        .chart-container {
+            height: 400px; /* Adjusted height to accommodate controls below */
+            position: relative;
+            margin-bottom: 20px;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        /* Dropdown style for chart data selection */
+        .chart-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .chart-selector {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 250px;
+            position: relative;
+            z-index: 10; /* Ensure dropdown appears above other elements */
+        }
+        
+        .chart-selector:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        /* Below chart controls container */
+        .below-chart-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            background-color:rgba(30, 41, 59, 0.8);
+            border-radius: 0 0 8px 8px;
+            margin-top: -20px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 5; /* Ensure it's above other elements but below the dropdown */
+        }
+        
+        /* Fix for dropdown menus to ensure they're visible */
+        .dropdown-menu {
+            z-index: 1050 !important;
+        }
+
+        
