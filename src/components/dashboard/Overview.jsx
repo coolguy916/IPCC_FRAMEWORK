@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Sidebar from '../layout/sidebar';
 import Header from '../layout/header';
 import NumericDisplay from '../ui/NumericDisplay';
@@ -137,7 +137,7 @@ const Overview = () => {
 
       <main className="main-content">
         <Header>
-          <h1 id="pageTitle" className="h3 text-light mb-0">
+          <h1 id="pageTitle" className="h3 text-dark mb-0">
             <strong>Overview</strong>
           </h1>
           <div className="d-flex align-items-center gap-3">
@@ -149,7 +149,7 @@ const Overview = () => {
         <div className="content p-4">
           {/* First row: Report Summary and System Health Gauge */}
           <div className="row mb-4">
-            <div className="col-lg-8 col-md-12 mb-4">
+            <div className="col-lg-6 col-md-12 mb-4">
               <div className="report-summary h-100 position-relative">
                 <h3>Report Summary</h3>
                 <p>
@@ -163,8 +163,8 @@ const Overview = () => {
                 </a>
               </div>
             </div>
-            <div className="col-lg-4 col-md-12 mb-4">
-              <div className="chart-container">
+            <div className="col-lg-6 col-md-12 mb-4">
+              <div className="chart-container h-100">
                 <h3>System Health</h3>
                 <GaugeChart 
                   value={75}
@@ -174,7 +174,7 @@ const Overview = () => {
                   colors={{
                     primary: '#3b82f6',
                     secondary: '#6b7280',
-                    text: '#ffffff'
+                    text: '#000000'
                   }}
                 />
               </div>
@@ -231,7 +231,7 @@ const Overview = () => {
                     primary: '#3b82f6',
                     secondary: '#f97316',
                     tertiary: '#6b7280',
-                    text: '#ffffff'
+                    text: '#000000'
                   }}
                 />
               </div>
@@ -245,7 +245,7 @@ const Overview = () => {
                   colors={{
                     primary: '#3b82f6',
                     secondary: '#f97316',
-                    text: '#ffffff'
+                    text: '#000000'
                   }}
                 />
               </div>
@@ -259,7 +259,7 @@ const Overview = () => {
                   data={dailyVisitsData}
                   height={300}
                   colors={{
-                    text: '#ffffff'
+                    text: '#000000'
                   }}
                   showLegend={true}
                 />
@@ -276,7 +276,7 @@ const Overview = () => {
                     secondary: '#f97316',
                     tertiary: '#10b981',
                     quaternary: '#6b7280',
-                    text: '#ffffff'
+                    text: '#000000'
                   }}
                 />
               </div>
