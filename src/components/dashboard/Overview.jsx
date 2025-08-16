@@ -1,28 +1,115 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../layout/sidebar';
 import Header from '../layout/header';
 import NumericDisplay from '../ui/NumericDisplay';
 import DigitalClock from '../ui/DigitalClock';
 import SearchBar from '../ui/SearchBar';
-import { initBarChart, initLineChart, initPieChart, initPentagonalChart, initGaugeChart } from '../charts/chartInitializers';
+import { BarChart, LineChart, PieChart, PentagonalChart, GaugeChart } from '../charts/chartSetup';
 import '../../styles/main.css';
 
 const Overview = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    // Initialize charts when component mounts
-    const initCharts = () => {
-      initBarChart('barChart');
-      initLineChart('lineChart');
-      initPieChart('pieChart');
-      initPentagonalChart('pentagonalChart');
-      initGaugeChart('gaugeChart');
-    };
+  // Sample data for charts (you can replace with your actual data)
+  const cachePerformanceData = {
+    labels: ['HTML', 'CSS', 'JavaScript', 'Images', 'Fonts', 'API'],
+    datasets: [{
+      label: 'Cache Hit',
+      data: [85, 92, 78, 95, 88, 72],
+      backgroundColor: '#3b82f6',
+      borderRadius: 6,
+      borderSkipped: false,
+    }, {
+      label: 'Cache Miss',
+      data: [10, 6, 15, 3, 8, 20],
+      backgroundColor: '#f97316',
+      borderRadius: 6,
+      borderSkipped: false,
+    }, {
+      label: 'No Cache',
+      data: [5, 2, 7, 2, 4, 8],
+      backgroundColor: '#6b7280',
+      borderRadius: 6,
+      borderSkipped: false,
+    }]
+  };
 
-    // Wait for the DOM to be fully rendered
-    setTimeout(initCharts, 100);
-  }, []);
+  const performanceMetricsData = {
+    labels: ['Aug 01', 'Aug 02', 'Aug 03', 'Aug 04', 'Aug 05', 'Aug 06'],
+    datasets: [{
+      label: 'CPU Usage',
+      data: [65, 70, 68, 72, 75, 73],
+      borderColor: '#3b82f6',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 3,
+      pointHoverRadius: 6,
+    }, {
+      label: 'Memory Usage',
+      data: [55, 60, 58, 62, 65, 63],
+      borderColor: '#f97316',
+      backgroundColor: 'rgba(249, 115, 22, 0.1)',
+      borderWidth: 3,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 3,
+      pointHoverRadius: 6,
+    },
+  ]
+  };
+
+  const dailyVisitsData = {
+    labels: ["Monday", "Tuesday", "Wednesday", "Thursday"],
+    datasets: [{
+      data: [1234, 2234, 3234, 4234],
+      backgroundColor: [
+        "rgba(117,169,255,0.6)", 
+        "rgba(148,223,215,0.6)", 
+        "rgba(208,129,222,0.6)", 
+        "rgba(247,127,167,0.6)"
+      ]
+    }]
+  };
+
+  const browserPerformanceData = {
+    labels: ['Load Time', 'First Paint', 'DOM Loaded', 'Cache Efficiency', 'JS Execution'],
+    datasets: [
+      {
+        label: 'Chrome',
+        data: [75, 80, 85, 85, 78],
+        borderColor: '#ffffff',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderWidth: 2,
+        pointBackgroundColor: '#3b82f6'
+      },
+      {
+        label: 'Firefox',
+        data: [68, 75, 80, 78, 72],
+        borderColor: '#ffffff',
+        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+        borderWidth: 2,
+        pointBackgroundColor: '#f97316'
+      },
+      {
+        label: 'Safari',
+        data: [82, 85, 78, 92, 76],
+        borderColor: '#ffffff',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+        borderWidth: 2,
+        pointBackgroundColor: '#10b981'
+      },
+      {
+        label: 'IE',
+        data: [55, 60, 52, 65, 58],
+        borderColor: '#ffffff',
+        backgroundColor: 'rgba(107, 114, 128, 0.2)',
+        borderWidth: 2,
+        pointBackgroundColor: '#6b7280'
+      }
+    ]
+  };
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -79,7 +166,17 @@ const Overview = () => {
             <div className="col-lg-4 col-md-12 mb-4">
               <div className="chart-container">
                 <h3>System Health</h3>
-                <canvas id="gaugeChart"></canvas>
+                <GaugeChart 
+                  value={75}
+                  maxValue={100}
+                  unit="%"
+                  height={250}
+                  colors={{
+                    primary: '#3b82f6',
+                    secondary: '#6b7280',
+                    text: '#ffffff'
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -127,13 +224,30 @@ const Overview = () => {
             <div className="col-lg-6 col-md-12 mb-4">
               <div className="chart-container">
                 <h3>Cache Performance</h3>
-                <canvas id="barChart"></canvas>
+                <BarChart 
+                  data={cachePerformanceData}
+                  height={300}
+                  colors={{
+                    primary: '#3b82f6',
+                    secondary: '#f97316',
+                    tertiary: '#6b7280',
+                    text: '#ffffff'
+                  }}
+                />
               </div>
             </div>
             <div className="col-lg-6 col-md-12 mb-4">
               <div className="chart-container">
                 <h3>Performance Metrics</h3>
-                <canvas id="lineChart"></canvas>
+                <LineChart 
+                  data={performanceMetricsData}
+                  height={300}
+                  colors={{
+                    primary: '#3b82f6',
+                    secondary: '#f97316',
+                    text: '#ffffff'
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -141,13 +255,30 @@ const Overview = () => {
             <div className="col-lg-6 col-md-12 mb-4">
               <div className="chart-container">
                 <h3>Daily Visits</h3>
-                <canvas id="pieChart"></canvas>
+                <PieChart 
+                  data={dailyVisitsData}
+                  height={300}
+                  colors={{
+                    text: '#ffffff'
+                  }}
+                  showLegend={true}
+                />
               </div>
             </div>
             <div className="col-lg-6 col-md-12 mb-4">
               <div className="chart-container">
                 <h3>Browser Performance</h3>
-                <canvas id="pentagonalChart"></canvas>
+                <PentagonalChart 
+                  data={browserPerformanceData}
+                  height={300}
+                  colors={{
+                    primary: '#3b82f6',
+                    secondary: '#f97316',
+                    tertiary: '#10b981',
+                    quaternary: '#6b7280',
+                    text: '#ffffff'
+                  }}
+                />
               </div>
             </div>
           </div>

@@ -2,10 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Overview from './components/dashboard/Overview';
 // Import other components as you create them
-// import HistoricalData from './components/dashboard/HistoricalData';
+import HistoricalData from './components/dashboard/HistoricalData';
 // import FinanceAnalytics from './components/dashboard/FinanceAnalytics';
 // import Articles from './components/Dashboard/Articles';
-// import Maintenance from './components/Dashboard/Maintenance';
+import Maintenance from './components/dashboard/MaintenanceSchedule';
 // import TeamProfile from './components/dashboard/TeamProfile';
 
 function App() {
@@ -16,10 +16,10 @@ function App() {
           <Route path="/" element={<Navigate to="/overview" replace />} />
           <Route path="/overview" element={<Overview />} />
           {/* Add other routes as you create the components */}
-          {/* <Route path="/historical-data" element={<HistoricalData />} /> */}
+          <Route path="/historical-data" element={<HistoricalData />} />
           {/* <Route path="/finance-analytics" element={<FinanceAnalytics />} /> */}
           {/* <Route path="/articles" element={<Articles />} /> */}
-          {/* <Route path="/maintenance" element={<Maintenance />} /> */}
+          <Route path="/maintenance" element={<Maintenance />} />
           {/* <Route path="/team-profile" element={<TeamProfile />} /> */}
         </Routes>
       </div>
