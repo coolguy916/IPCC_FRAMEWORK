@@ -49,6 +49,8 @@ body {
 
 .main-content {
   margin-left: 280px;
+  margin-top: 80px;
+  padding: 24px;
   transition: margin-left 0.3s ease;
   background: transparent;
 }
@@ -99,7 +101,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: rgb(255, 255, 255);
   font-size: 22px;
   font-weight: 700;
   box-shadow: var(--shadow-medium);
@@ -133,29 +135,51 @@ body {
 }
 
 .nav-link {
-  padding: 14px 16px;
-  border-radius: 12px;
-  margin-bottom: 4px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 20px;
   transition: all 0.2s ease;
-  color: var(--text-secondary);
+  color: #0a4985 !important;
   font-weight: 500;
+  font-size: 16px !important;
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   font-family: "Poppins", sans-serif;
 }
 
 .nav-link:hover {
   background: var(--hover-bg);
-  color: var(--text-primary);
+  color: #000000 !important;
   transform: translateX(4px);
 }
 
 .nav-link.active {
-  background: var(--icon-bg);
-  color: white;
+  background: var(--icon-bg) !important;
+  color: rgb(255, 255, 255) !important;
   box-shadow: var(--shadow-medium);
+  padding: 16px 20px;
+  font-size: 16px !important;
+  font-weight: 600;
+  transform: none;
+}
+
+.nav-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  margin-bottom: 0;
+}
+
+.nav-link i {
+  margin-right: 12px;
+  font-size: 16px;
+  width: 18px;
+  text-align: center;
 }
 
 .user-badge {
@@ -211,12 +235,12 @@ body {
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-light);
   padding: 16px 24px;
+  transition: left 0.3s ease;
   font-family: "Poppins", sans-serif;
 }
 
-.main-content {
-  margin-top: 80px;
-  padding: 24px;
+.header.expanded {
+  left: 0;
 }
 
 .search-input {
@@ -298,7 +322,7 @@ body {
   padding: 32px;
   box-shadow: var(--shadow-medium);
   font-family: "Poppins", sans-serif;
-  height: 420px; /* Tambahkan tinggi yang sama dengan chart-container */
+  height: 420px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -584,9 +608,9 @@ body {
   align-items: center;
   margin-top: 16px;
   justify-content: center;
-  background: rgba(248, 250, 252, 0.5);
+  background: rgb(255, 255, 255);
   border: 1px solid var(--border-color);
-  border-radius: 0 0 20px 20px;
+  border-radius: 12px;
   padding: 16px;
   margin-bottom: 20px;
   font-family: "Poppins", sans-serif;
@@ -734,4 +758,97 @@ body {
     padding: 10px 16px;
     font-size: 13px;
   }
+}
+
+/* Hamburger Icon for Toggle Buttons */
+.hamburger-icon {
+  fill: white;
+  transition: transform 0.2s ease, fill 0.2s ease;
+  display: block;
+}
+
+.desktop-toggle,
+.mobile-toggle {
+  background: var(--icon-bg);
+  border: none;
+  outline: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 16px;
+  box-shadow: var(--shadow-light);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-medium);
+}
+
+.desktop-toggle:hover,
+.mobile-toggle:hover {
+  background: #1d4ed8;
+  box-shadow: var(--shadow-medium);
+}
+
+.desktop-toggle:hover .hamburger-icon,
+.mobile-toggle:hover .hamburger-icon {
+  transform: scale(1.1);
+  fill: #ffffff;
+}
+
+.desktop-toggle svg,
+.mobile-toggle svg {
+  margin: 0;
+  padding: 0;
+}
+
+.search-button,
+.clock-button {
+  display: flex;
+  align-items: center;
+  background: var(--card-bg);
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: var(--shadow-light);
+  transition: all 0.2s ease;
+}
+
+.search-button:hover,
+.clock-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+.search-icon,
+.clock-icon {
+  fill: var(--text-primary);
+  margin-right: 8px;
+}
+
+.search-button .search-input,
+.clock-button .digital-clock {
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 16px;
+  font-family: "Poppins", sans-serif;
+}
+
+.search-button .search-input:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
 }
