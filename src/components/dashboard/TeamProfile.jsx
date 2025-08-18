@@ -757,6 +757,80 @@ const TeamProfile = () => {
           <AchievementsSection />
         </div>
       </main>
+    <div>
+      {/* Mobile toggle button */}
+      {isMobile && (
+        <button className="mobile-toggle" onClick={toggleSidebar}>
+          <HamburgerIcon />
+        </button>
+      )}
+
+      {/* Mobile overlay */}
+      {sidebarOpen && isMobile && (
+        <div className="sidebar-overlay show" onClick={closeSidebar}></div>
+      )}
+
+      {/* Sidebar */}
+      <Sidebar isOpen={sidebarOpen} onNavClick={handleNavClick} />
+
+      {/* Main content */}
+      <main className={`main-content ${sidebarOpen ? '' : 'expanded'}`}>
+        <Header onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen}>
+          <h1 id="pageTitle" className="h3 text-dark mb-0">
+            <strong>Team Profile</strong>
+          </h1>
+        </Header>
+
+        <div className="content p-4">
+          {/* Project Overview Section */}
+          <ProjectOverview />
+
+          {/* Supervisor Section */}
+          <div className="row mb-5">
+            <div className="col-12">
+              <h2 className="fw-bold mb-4 d-flex align-items-center" style={{ 
+                fontSize: '2rem', 
+                color: 'var(--text-primary)' 
+              }}>
+                <i className="fas fa-chalkboard-teacher me-3 text-primary"></i>
+                Project Supervisor
+              </h2>
+            </div>
+            <div className="col-12 d-flex justify-content-center">
+              <div className="col-lg-8 col-md-10 col-xl-6">
+                <TeamMemberCard member={supervisor} isLeader={true} />
+              </div>
+            </div>
+          </div>
+
+          {/* Students Section */}
+          <div className="row mb-5">
+            <div className="col-12">
+              <h2 className="fw-bold mb-4 d-flex align-items-center" style={{ 
+                fontSize: '2rem', 
+                color: 'var(--text-primary)' 
+              }}>
+                <i className="fas fa-users me-3 text-primary"></i>
+                Student Team Members
+              </h2>
+            </div>
+            {students.map((student, index) => (
+              <div key={index} className="col-xl-6 col-lg-6 col-md-12 mb-4">
+                <TeamMemberCard member={student} />
+              </div>
+            ))}
+          </div>
+
+          {/* Tools Used Section */}
+          <TechnologiesSection tools={tools} />
+
+          {/* Workflow Section */}
+          <WorkflowSection workflow={workflow} />
+
+          {/* Team Contributions Section */}
+          <AchievementsSection />
+        </div>
+      </main>
     </div>
   );
 };
