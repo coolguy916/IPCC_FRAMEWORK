@@ -13,7 +13,7 @@ class DatabaseManager {
         try {
             if (this.useFirebase) {
                 this.db = new FirebaseDB({
-                    apiKey: process.env.FIREBASE_API_KEY || apiKey,
+                    apiKey: process.env.FIREBASE_API_KEY || 'your-api-key',
                     authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'your-auth-domain',
                     databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://your-database-url.firebaseio.com',
                     projectId: process.env.FIREBASE_PROJECT_ID || 'yocmdur-project-id',

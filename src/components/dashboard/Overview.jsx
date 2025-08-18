@@ -5,6 +5,7 @@ import DigitalClock from '../ui/DigitalClock';
 import SearchBar from '../ui/SearchBar';
 import { BarChart, LineChart, PieChart, PentagonalChart, GaugeChart } from '../charts/chartSetup';
 import '../../styles/main.css';
+// import { useElectronAPI, useRealTimeData } from '../../hook/useElectronApi';
 
 // SVG Icon for Sidebar Toggle (Hamburger Menu) - Enlarged to 32x32
 const HamburgerIcon = () => (
