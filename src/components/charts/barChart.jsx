@@ -78,7 +78,7 @@ export default function BarChart({
             padding: {
                 top: 20,
                 right: 20,
-                bottom: 40,
+                bottom: 10,
                 left: 20
             }
         },
