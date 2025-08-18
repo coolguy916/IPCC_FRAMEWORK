@@ -6,11 +6,25 @@
   "scripts": {
     "start": "electron .",
     "start:web": "react-scripts start",
+    "start:web-server": "APP_MODE=web node web-server.js",
+    "start:web-server-slave": "APP_MODE=web-slave node web-server-slave.js",
+    
+    "start:electron-only": "APP_MODE=electron USE_SERIAL=true USE_WS=true npm run start",
+    "start:web-only": "concurrently \"APP_MODE=web USE_SERIAL=false npm run start:web-server\" \"npm run start:web\"",
+    "start:web-with-electron": "concurrently \"APP_MODE=electron npm run start\" \"APP_MODE=web-slave npm run start:web-server-slave\" \"npm run start:web\"",
+    
+    "dev:electron": "APP_MODE=electron npm run start",
+    "dev:web": "concurrently \"npm run start:web-server\" \"npm run start:web\"",
+    "dev:both": "concurrently --names \"ELECTRON,WEB-API,REACT\" \"npm run start:electron-only\" \"npm run start:web-server-slave\" \"npm run start:web\"",
+    
     "build:electron": "electron-builder",
     "build:web": "react-scripts build",
     "build": "concurrently \"npm run build:electron\" \"npm run build:web\"",
-    "dev": "concurrently \"npm:start:electron\" \"npm:start:web\"",
+    
     "switch-db": "node scripts/switch-db.js",
+    "check-ports": "node scripts/check-ports.js",
+    "clean-locks": "node scripts/clean-locks.js",
+    
     "firebase:emulators": "firebase emulators:start",
     "firebase:login": "firebase login",
     "firebase:init": "firebase init",
@@ -22,7 +36,8 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "^36.2.1",
-    "firebase-tools": "^13.35.1"
+    "firebase-tools": "^13.35.1",
+    "concurrently": "^8.2.0"
   },
   "dependencies": {
     "@serialport/parser-readline": "^13.0.0",

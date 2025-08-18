@@ -1,18 +1,21 @@
-// main.js - Main entry point
 require('dotenv').config();
 const { app } = require('electron');
 
-// Import modular components
+// Import all required modules
 const DatabaseManager = require('./modules/database/databaseManager');
 const WindowManager = require('./modules/window/windowManager');
 const APIServer = require('./modules/api/apiServer');
 const SerialManager = require('./modules/serial/serialManager');
 const IPCManager = require('./modules/ipc/ipcManager');
+const ServiceManager = require('./modules/services/serviceManager');
+const ProcessCoordinator = require('./modules/coordination/processCoordinator');
 const WebsocketManager = require('./modules/websocket/websocketManager');
 
 class Application {
     constructor() {
         this.managers = {};
+        this.serviceManager = new ServiceManager();
+        this.coordinator = new ProcessCoordinator();
         this.isInitialized = false;
     }
 
@@ -20,10 +23,26 @@ class Application {
         if (this.isInitialized) return;
         
         try {
-            // Initialize in dependency order
+            // Check service availability and acquire locks
+            const serviceStatus = await this.serviceManager.initializeServices(this.managers);
+            
+            // Acquire locks for services
+            const locks = {
+                database: await this.coordinator.acquireServiceLock('database'),
+                serial: serviceStatus.serialEnabled ? await this.coordinator.acquireServiceLock('serial') : false,
+                websocket: serviceStatus.wsEnabled ? await this.coordinator.acquireServiceLock('websocket') : false,
+                api: await this.coordinator.acquireServiceLock('api')
+            };
+
+            console.log('🔒 Service locks:', locks);
+
+            // Initialize core components
             await this._initializeDatabase();
             this._initializeWindow();
-            await this._initializeServices();
+
+            // Initialize services based on locks and env variables
+            await this._initializeServices(locks);
+            
             this._setupIPC();
             
             this.isInitialized = true;
@@ -47,23 +66,32 @@ class Application {
         console.log('✅ Window ready');
     }
 
-    async _initializeServices() {
+    async _initializeServices(locks) {
         const db = this.managers.database.getDatabase();
         const mainWindow = this.managers.window.getMainWindow();
 
-        // Initialize services concurrently
-        const servicePromises = [
-            this._initializeAPI(db),
-            process.env.USE_SERIAL === 'true' ? this._initializeSerial(db, mainWindow) : Promise.resolve(),
-            process.env.USE_WS === 'true' ? this._initializeWebSocket(db, mainWindow) : Promise.resolve()
-        ];
+        // Initialize services based on locks
+        if (locks.serial && process.env.USE_SERIAL === 'true') {
+            await this._initializeSerial(db, mainWindow);
+        }
+        
+        if (locks.websocket && process.env.USE_WS === 'true') {
+            await this._initializeWebSocket(db, mainWindow);
+        }
 
-        await Promise.all(servicePromises);
+        if (locks.api) {
+            this._initializeAPI(db);
+        }
+        
         console.log('✅ All services ready');
     }
 
-    async _initializeAPI(db) {
-        this.managers.api = new APIServer(db);
+    _initializeAPI(db) {
+        this.managers.api = new APIServer(
+            db, 
+            this.managers.serial, 
+            this.managers.websocket
+        );
         this.managers.api.start();
     }
 
@@ -81,7 +109,7 @@ class Application {
         this.managers.ipc = new IPCManager(
             this.managers.database.getDatabase(),
             this.managers.serial,
-            this.managers.websocket // Pass websocket manager to IPC
+            this.managers.websocket
         );
         this.managers.ipc.setupHandlers();
         console.log('✅ IPC handlers ready');
@@ -93,7 +121,10 @@ class Application {
         console.log('🔄 Starting cleanup...');
         const cleanupPromises = [];
 
-        // Cleanup in reverse dependency order
+        // Release all service locks
+        this.coordinator.releaseAllLocks();
+
+        // Cleanup services
         if (this.managers.websocket) {
             cleanupPromises.push(this.managers.websocket.cleanup().catch(console.error));
         }
@@ -112,16 +143,15 @@ class Application {
         console.log('✅ Cleanup completed');
     }
 
-    // Public API for accessing managers
     getManager(type) {
         return this.managers[type] || null;
     }
 }
 
-// Application instance
+// Create application instance
 const app_instance = new Application();
 
-// Electron event handlers - clean and compact
+// Setup event handlers
 app.whenReady().then(() => app_instance.initialize());
 
 app.on('window-all-closed', async () => {
@@ -135,7 +165,7 @@ app.on('activate', () => {
     }
 });
 
-// Graceful shutdown on process signals
+// Graceful shutdown handlers
 process.on('SIGINT', async () => {
     console.log('\n🛑 Received SIGINT, shutting down gracefully...');
     await app_instance.cleanup();

@@ -1,7 +1,7 @@
 // modules/database/databaseManager.js
 const FirebaseDB = require('../../lib/db/firebaseDB');
 const Database = require('../../lib/db/mysqlDB');
-const { apiKey } = require('../../firebaseConfig');
+// const { apiKey } = require('../../firebaseConfig');
 
 class DatabaseManager {
     constructor() {
