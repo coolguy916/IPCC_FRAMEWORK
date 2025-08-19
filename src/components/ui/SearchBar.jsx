@@ -96,7 +96,7 @@ const SearchBar = () => {
             searchResults.map((item, index) => (
               <div
                 key={index}
-                className="search-result-item p-3 border-bottom"
+                className="search-result-item p-1 border-bottom"
                 style={{ cursor: 'pointer', color: '#333' }}
                 onClick={() => handleResultClick(item.url)}
               >

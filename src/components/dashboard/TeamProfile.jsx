@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Sidebar from '../layout/Sidebar';
+import Sidebar from '../layout/sidebar';
 import DigitalClock from '../ui/DigitalClock';
 import SearchBar from '../ui/SearchBar';
 import '../../styles/main.css';

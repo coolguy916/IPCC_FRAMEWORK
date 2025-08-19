@@ -20,7 +20,7 @@ const DigitalClock = () => {
 
   return (
     <div id="clockContainer">
-      <div className="digital-clock">{time}</div>
+      <div className="digital-clock p-8">{time}</div>
     </div>
   );
 };

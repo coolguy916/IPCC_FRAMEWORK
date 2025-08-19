@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import Sidebar from '../layout/sidebar';
 import DigitalClock from '../ui/DigitalClock';
 import SearchBar from '../ui/SearchBar';
 import { LineChart, BarChart } from '../charts/chartSetup';
+import NumericDisplay from '../ui/NumericDisplay';
 import '../../styles/main.css';
 
-// SVG Icon for Sidebar Toggle (Hamburger Menu) - Same as Overview 32x32
+// SVG Icon for Sidebar Toggle (Hamburger Menu)
 const HamburgerIcon = () => (
   <svg
     width="32"
@@ -24,12 +25,12 @@ const HamburgerIcon = () => (
   </svg>
 );
 
-// SVG Icon for Search Button - Same as Overview
+// SVG Icon for Search Button
 const SearchIcon = () => (
   <svg
     width="20"
-    height="45"
-    viewBox="0 0 24 24"
+    height= "20"
+    viewBox="0 0 0 0 "
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className="search-icon"
@@ -41,24 +42,7 @@ const SearchIcon = () => (
   </svg>
 );
 
-// SVG Icon for Clock Button - Same as Overview
-const ClockIcon = () => (
-  <svg
-    width="0"
-    height="0"
-    viewBox="0 0 0 0"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="clock-icon"
-  >
-    <path
-      d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM15.07 11.25L14.17 12.17C13.45 12.89 13 13.5 13 15H11V14.5C11 13.39 11.45 12.39 12.17 11.67L13.41 10.41C13.78 10.05 14 9.55 14 9C14 7.89 13.1 7 12 7C10.9 7 10 7.89 10 9H8C8 6.79 9.79 5 12 5C14.21 5 16 6.79 16 9C16 9.88 15.64 10.68 15.07 11.25Z"
-      fill="currentColor"
-    />
-  </svg>
-);
-
-// Header component - UPDATE: Ganti FontAwesome dengan SVG dan tambah wrapper seperti Overview
+// Header Component
 const Header = ({ children, onToggleSidebar, sidebarOpen }) => {
   return (
     <header className={`header d-flex justify-content-between align-items-center ${sidebarOpen ? '' : 'expanded'}`}>
@@ -73,8 +57,7 @@ const Header = ({ children, onToggleSidebar, sidebarOpen }) => {
           <SearchIcon />
           <SearchBar />
         </div>
-        <div className="clock-button">
-          <ClockIcon />
+        <div className="">
           <DigitalClock />
         </div>
       </div>
@@ -82,19 +65,132 @@ const Header = ({ children, onToggleSidebar, sidebarOpen }) => {
   );
 };
 
-const HistoricalData = () => {
+const Data = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  
-  // Chart states
-  const [lineChartType, setLineChartType] = useState('performance');
-  const [barChartType, setBarChartType] = useState('cache');
+  const [lineChartType, setLineChartType] = useState('soil');
+  const [barChartType, setBarChartType] = useState('costs');
   const [lineChartDates, setLineChartDates] = useState({ from: '', to: '' });
   const [barChartDates, setBarChartDates] = useState({ from: '', to: '' });
   const [historyDates, setHistoryDates] = useState({ from: '', to: '' });
-  
-  // Performance data state
-  const [performanceData, setPerformanceData] = useState([]);
+  const [agriculturalData, setAgriculturalData] = useState([]);
+
+  // Generate dummy agricultural data
+  const loadAgriculturalData = (fromDate = null, toDate = null) => {
+    const start = fromDate ? new Date(fromDate) : new Date('2024-01-01');
+    const end = toDate ? new Date(toDate) : new Date('2025-12-01');
+    const data = [];
+    let currentDate = new Date(start);
+
+    while (currentDate <= end) {
+      const monthIndex = (currentDate.getFullYear() - 2024) * 12 + currentDate.getMonth();
+      const organicMatter = parseFloat((4.8 + monthIndex * 0.05).toFixed(2)); // 4.8–6.0%
+      const totalCarbon = parseFloat((4.0 + monthIndex * 0.05).toFixed(2)); // 4.0–5.2%
+      const nitrogen = parseFloat((0.07 + monthIndex * 0.005).toFixed(3)); // 0.07–0.20%
+      const pH = parseFloat((5.8 + monthIndex * 0.03).toFixed(1)); // 5.8–7.2
+      const yieldKgHa = parseInt((2500 + monthIndex * 83).toFixed(0)); // 2500–4500 kg/ha
+      const gradeA = parseInt((50 + monthIndex * 0.83).toFixed(0)); // 50–70%
+      const gradeB = parseInt((40 - monthIndex * 0.83).toFixed(0)); // 40–20%
+      const gradeC = parseInt((100 - gradeA - gradeB).toFixed(0)); // 15–5%
+      
+      // Improved status classification
+      let status = 'Average';
+      if (nitrogen < 0.10 || organicMatter < 5.0 || pH < 6.0) {
+        status = 'Bad';
+      } else if (nitrogen > 0.15 && organicMatter > 5.5 && pH > 6.5) {
+        status = 'Good';
+      }
+
+      data.push({
+        timestamp: currentDate.toISOString().split('T')[0],
+        soil_metrics: {
+          organic_matter: organicMatter,
+          total_carbon: totalCarbon,
+          nitrogen: nitrogen,
+          pH: pH,
+        },
+        yield: {
+          crop_type: 'Maize',
+          monthly_yield_kg_ha: yieldKgHa,
+          grade_distribution: { A: gradeA, B: gradeB, C: gradeC },
+          harvest_date: currentDate.toISOString().split('T')[0],
+        },
+        costs: {
+          conventional: {
+            fertilizers: 120 + Math.random() * 60,
+            pesticides: 60 + Math.random() * 40,
+            labor: 150 + Math.random() * 100,
+          },
+          regenerative: {
+            microalgae: 90 + Math.random() * 50,
+            fertilizers: 20 + Math.random() * 30,
+            labor: 120 + Math.random() * 80,
+          },
+        },
+        eutrophication: {
+          nitrogen_runoff_kg_ha: {
+            conventional: 15 + Math.random() * 25, // 15–40 kg/ha
+            regenerative: 5 + Math.random() * 15, // 5–20 kg/ha
+          },
+          phosphorus_runoff_kg_ha: {
+            conventional: 3 + Math.random() * 5, // 3–8 kg/ha
+            regenerative: 1 + Math.random() * 3, // 1–4 kg/ha
+          },
+        },
+        status: status,
+      });
+
+      // Move to next month
+      currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+
+    // Calculate totals and derived metrics
+    data.forEach((item) => {
+      item.costs.conventional.total = (
+        item.costs.conventional.fertilizers +
+        item.costs.conventional.pesticides +
+        item.costs.conventional.labor
+      ).toFixed(2);
+      item.costs.regenerative.total = (
+        item.costs.regenerative.microalgae +
+        item.costs.regenerative.fertilizers +
+        item.costs.regenerative.labor
+      ).toFixed(2);
+      item.costs.savings_percent = (
+        ((item.costs.conventional.total - item.costs.regenerative.total) / item.costs.conventional.total) * 100
+      ).toFixed(2);
+      item.eutrophication.potential_kg_PO4_eq_ha = {
+        conventional: (
+          item.eutrophication.nitrogen_runoff_kg_ha.conventional * 0.42 +
+          item.eutrophication.phosphorus_runoff_kg_ha.conventional * 3.06
+        ).toFixed(2),
+        regenerative: (
+          item.eutrophication.nitrogen_runoff_kg_ha.regenerative * 0.42 +
+          item.eutrophication.phosphorus_runoff_kg_ha.regenerative * 3.06
+        ).toFixed(2),
+      };
+      item.eutrophication.reduction_percent = (
+        ((item.eutrophication.potential_kg_PO4_eq_ha.conventional - item.eutrophication.potential_kg_PO4_eq_ha.regenerative) /
+          item.eutrophication.potential_kg_PO4_eq_ha.conventional) * 100
+              ).toFixed(2);
+      item.status = status;
+    });
+
+    setAgriculturalData(data);
+  };
+
+  // Filter data based on date range
+  const getFilteredData = (data, fromDate, toDate) => {
+    if (!fromDate && !toDate) return data;
+    
+    return data.filter(item => {
+      const itemDate = new Date(item.timestamp);
+      const start = fromDate ? new Date(fromDate) : new Date('2024-01-01');
+      const end = toDate ? new Date(toDate) : new Date('2025-12-31');
+      
+      return itemDate >= start && itemDate <= end;
+    });
+  };
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -105,15 +201,13 @@ const HistoricalData = () => {
 
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    
-    // Load initial performance data
-    loadPerformanceData();
+    loadAgriculturalData();
 
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   const toggleSidebar = () => {
-    setSidebarOpen(prev => !prev);
+    setSidebarOpen((prev) => !prev);
   };
 
   const closeSidebar = () => {
@@ -126,296 +220,170 @@ const HistoricalData = () => {
     }
   };
 
-  // Generate sample performance data
-  const loadPerformanceData = (fromDate = null, toDate = null) => {
-    const now = new Date();
-    const numEntries = 10;
-    const data = [];
-    
-    for (let i = 0; i < numEntries; i++) {
-      const timestamp = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000));
-      const browser = ['Chrome', 'Firefox', 'Safari', 'IE'][Math.floor(Math.random() * 4)];
-      const loadTime = (Math.random() * 4 + 1).toFixed(2) + 's';
-      const cacheHitRate = (Math.random() * 30 + 65).toFixed(0) + '%';
-      let status = 'Good';
-      
-      const hitRate = parseInt(cacheHitRate);
-      if (hitRate >= 90) status = 'Excellent';
-      else if (hitRate < 70) status = 'Poor';
-      else if (hitRate < 80) status = 'Average';
-
-      data.push({
-        date: timestamp.toLocaleString('en-US', { timeZone: 'Asia/Jakarta' }),
-        browser,
-        loadTime,
-        cacheHitRate,
-        status
-      });
-    }
-    
-    setPerformanceData(data);
-  };
-
-  // Generate line chart data based on type
-  const getLineChartData = (chartType) => {
-    const now = new Date();
-    const labels = [];
-    
-    for (let i = 13; i >= 0; i--) {
-      const date = new Date(now);
-      date.setDate(now.getDate() - i);
-      labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-    }
-    
-    switch(chartType) {
-      case 'performance':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Load Time (s)',
-              data: Array.from({length: 14}, () => (Math.random() * 4 + 1).toFixed(2)),
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointRadius: 3,
-              pointHoverRadius: 6,
-            },
-            {
-              label: 'Cache Hit Rate (%)',
-              data: Array.from({length: 14}, () => Math.random() * 30 + 65),
-              borderColor: '#f97316',
-              backgroundColor: 'rgba(249, 115, 22, 0.1)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointRadius: 3,
-              pointHoverRadius: 6,
-            }
-          ]
-        };
-      case 'browser':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Chrome (ms)',
-              data: Array.from({length: 14}, () => Math.floor(Math.random() * 300 + 700)),
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            },
-            {
-              label: 'Firefox (ms)',
-              data: Array.from({length: 14}, () => Math.floor(Math.random() * 400 + 800)),
-              borderColor: '#f97316',
-              backgroundColor: 'rgba(249, 115, 22, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            },
-            {
-              label: 'Safari (ms)',
-              data: Array.from({length: 14}, () => Math.floor(Math.random() * 350 + 750)),
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            }
-          ]
-        };
-      case 'errors':
-        return {
-          labels,
-          datasets: [
-            {
-              label: '404 Errors',
-              data: Array.from({length: 14}, () => Math.floor(Math.random() * 10)),
-              borderColor: '#ef4444',
-              backgroundColor: 'rgba(239, 68, 68, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            },
-            {
-              label: '500 Errors',
-              data: Array.from({length: 14}, () => Math.floor(Math.random() * 5)),
-              borderColor: '#f59e0b',
-              backgroundColor: 'rgba(245, 158, 11, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            }
-          ]
-        };
-      case 'bandwidth':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Bandwidth (MB)',
-              data: Array.from({length: 14}, () => (Math.random() * 5 + 2).toFixed(2)),
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            },
-            {
-              label: 'CDN Usage (MB)',
-              data: Array.from({length: 14}, () => (Math.random() * 3 + 1).toFixed(2)),
-              borderColor: '#8b5cf6',
-              backgroundColor: 'rgba(139, 92, 246, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            }
-          ]
-        };
-      default:
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Load Time (s)',
-              data: Array.from({length: 14}, () => (Math.random() * 4 + 1).toFixed(2)),
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true
-            }
-          ]
-        };
-    }
-  };
-
-  // Generate bar chart data based on type
-  const getBarChartData = (chartType) => {
-    switch(chartType) {
-      case 'cache':
-        const categories = ['Images', 'Scripts', 'Stylesheets', 'HTML', 'API Responses'];
-        const hitRates = categories.map(() => Math.floor(Math.random() * 30) + 65);
-        const missRates = categories.map((_,i) => 100 - hitRates[i]);
-        
-        return {
-          labels: categories,
-          datasets: [
-            {
-              label: 'Cache Hits (%)',
-              data: hitRates,
-              backgroundColor: '#3b82f6',
-              borderRadius: 6,
-              borderSkipped: false,
-            },
-            {
-              label: 'Cache Misses (%)',
-              data: missRates,
-              backgroundColor: '#f97316',
-              borderRadius: 6,
-              borderSkipped: false,
-            }
-          ]
-        };
-      case 'resources':
-        return {
-          labels: ['HTML', 'CSS', 'JavaScript', 'Images', 'Fonts', 'Videos'],
-          datasets: [
-            {
-              label: 'Load Time (ms)',
-              data: [150, 180, 320, 450, 120, 580],
-              backgroundColor: '#3b82f6',
-              borderRadius: 6,
-              borderSkipped: false,
-            },
-            {
-              label: 'Size (KB)',
-              data: [45, 75, 320, 750, 80, 2200],
-              backgroundColor: '#f59e0b',
-              borderRadius: 6,
-              borderSkipped: false,
-            }
-          ]
-        };
-      case 'devices':
-        return {
-          labels: ['Desktop', 'Mobile', 'Tablet', 'Smart TV', 'Other'],
-          datasets: [
-            {
-              label: 'Visitors (%)',
-              data: [42, 38, 12, 5, 3],
-              backgroundColor: [
-                '#3b82f6',
-                '#f97316',
-                '#10b981',
-                '#f59e0b',
-                '#8b5cf6'
-              ],
-              borderRadius: 6,
-              borderSkipped: false,
-            }
-          ]
-        };
-      case 'locations':
-        return {
-          labels: ['North America', 'Europe', 'Asia', 'South America', 'Africa', 'Oceania'],
-          datasets: [
-            {
-              label: 'Traffic (%)',
-              data: [35, 30, 20, 8, 5, 2],
-              backgroundColor: [
-                '#ef4444',
-                '#3b82f6',
-                '#f59e0b',
-                '#10b981',
-                '#8b5cf6',
-                '#f97316'
-              ],
-              borderRadius: 6,
-              borderSkipped: false,
-            }
-          ]
-        };
-      default:
-        return {
-          labels: ['Category 1', 'Category 2', 'Category 3', 'Category 4', 'Category 5'],
-          datasets: [
-            {
-              label: 'Sample Data',
-              data: [65, 75, 80, 72, 83],
-              backgroundColor: '#3b82f6',
-              borderRadius: 6,
-              borderSkipped: false,
-            }
-          ]
-        };
-    }
-  };
-
-  // Handle date changes
   const handleHistoryDateChange = (field, value) => {
-    setHistoryDates(prev => ({ ...prev, [field]: value }));
-    if (historyDates.from && historyDates.to) {
-      loadPerformanceData(historyDates.from, historyDates.to);
-    }
+    setHistoryDates((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleLineChartDateChange = (field, value) => {
-    setLineChartDates(prev => ({ ...prev, [field]: value }));
+    setLineChartDates((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleBarChartDateChange = (field, value) => {
-    setBarChartDates(prev => ({ ...prev, [field]: value }));
+    setBarChartDates((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Generate line chart data
+  const getLineChartData = (chartType) => {
+    const filteredData = getFilteredData(agriculturalData, lineChartDates.from, lineChartDates.to);
+    const labels = filteredData.map((item) =>
+      new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    );
+
+    switch (chartType) {
+      case 'soil':
+        return {
+          labels,
+          datasets: [
+            {
+              label: 'Organic Matter (%)',
+              data: filteredData.map((item) => item.soil_metrics.organic_matter),
+              borderColor: '#2ecc71',
+              backgroundColor: 'rgba(46, 204, 113, 0.1)',
+              tension: 0.4,
+              borderWidth: 2,
+              fill: true,
+            },
+            {
+              label: 'Soil Nitrogen (%)',
+              data: filteredData.map((item) => item.soil_metrics.nitrogen),
+              borderColor: '#3498db',
+              backgroundColor: 'rgba(52, 152, 219, 0.1)',
+              tension: 0.4,
+              borderWidth: 2,
+              fill: true,
+            },
+            {
+              label: 'Total Carbon (%)',
+              data: filteredData.map((item) => item.soil_metrics.total_carbon),
+              borderColor: '#f1c40f',
+              backgroundColor: 'rgba(241, 196, 15, 0.1)',
+              tension: 0.4,
+              borderWidth: 2,
+              fill: true,
+            },
+          ],
+        };
+      case 'yield':
+        return {
+          labels,
+          datasets: [
+            {
+              label: 'Maize Yield (kg/ha)',
+              data: filteredData.map((item) => item.yield.monthly_yield_kg_ha),
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              tension: 0.4,
+              borderWidth: 2,
+              fill: true,
+            },
+          ],
+        };
+      case 'costs':
+        return {
+          labels,
+          datasets: [
+            {
+              label: 'Cost Savings (%)',
+              data: filteredData.map((item) => item.costs.savings_percent),
+              borderColor: '#f97316',
+              backgroundColor: 'rgba(249, 115, 22, 0.1)',
+              tension: 0.4,
+              borderWidth: 2,
+              fill: true,
+            },
+          ],
+        };
+      default:
+        return { labels, datasets: [] };
+    }
+  };
+
+  // Generate bar chart data
+  const getBarChartData = (chartType) => {
+    const filteredData = getFilteredData(agriculturalData, barChartDates.from, barChartDates.to);
+    const labels = filteredData.map((item) =>
+      new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    );
+
+    switch (chartType) {
+      case 'costs':
+        return {
+          labels,
+          datasets: [
+            {
+              label: 'Conventional Costs (USD/ha)',
+              data: filteredData.map((item) => item.costs.conventional.total),
+              backgroundColor: '#3b82f6',
+              borderRadius: 6,
+            },
+            {
+              label: 'Regenerative Costs (USD/ha)',
+              data: filteredData.map((item) => item.costs.regenerative.total),
+              backgroundColor: '#f97316',
+              borderRadius: 6,
+            },
+          ],
+        };
+      case 'eutrophication':
+        return {
+          labels,
+          datasets: [
+            {
+              label: 'Conventional Eutrophication (kg PO₄-eq/ha)',
+              data: filteredData.map((item) => item.eutrophication.potential_kg_PO4_eq_ha.conventional),
+              backgroundColor: '#3b82f6',
+              borderRadius: 6,
+            },
+            {
+              label: 'Regenerative Eutrophication (kg PO₄-eq/ha)',
+              data: filteredData.map((item) => item.eutrophication.potential_kg_PO4_eq_ha.regenerative),
+              backgroundColor: '#f97316',
+              borderRadius: 6,
+            },
+          ],
+        };
+      case 'yield_grades':
+        return {
+          labels,
+          datasets: [
+            {
+              label: 'Grade A (%)',
+              data: filteredData.map((item) => item.yield.grade_distribution.A),
+              backgroundColor: '#3b82f6',
+              borderRadius: 6,
+            },
+            {
+              label: 'Grade B (%)',
+              data: filteredData.map((item) => item.yield.grade_distribution.B),
+              backgroundColor: '#f97316',
+              borderRadius: 6,
+            },
+            {
+              label: 'Grade C (%)',
+              data: filteredData.map((item) => item.yield.grade_distribution.C),
+              backgroundColor: '#10b981',
+              borderRadius: 6,
+            },
+          ],
+        };
+      default:
+        return { labels, datasets: [] };
+    }
   };
 
   return (
     <div>
-      {/* Mobile toggle button - UPDATE: Ganti dengan SVG */}
+      {/* Mobile toggle button */}
       {isMobile && (
         <button className="mobile-toggle" onClick={toggleSidebar}>
           <HamburgerIcon />
@@ -434,57 +402,101 @@ const HistoricalData = () => {
       <main className={`main-content ${sidebarOpen ? '' : 'expanded'}`}>
         <Header onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen}>
           <h1 id="pageTitle" className="h3 text-dark mb-0">
-            <strong>Data Analytics</strong>
+            <strong>Regenerative Farming Dashboard</strong>
           </h1>
         </Header>
 
         <div className="content p-4">
+          {/* Numeric Displays - Fixed Layout */}
+          <div className="d-grid mb-4" style={{
+            gridTemplateColumns: 'repeat(5, 1fr)',
+            gap: '0.75rem'
+          }}>
+            <NumericDisplay
+              id="organic-matter"
+              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].soil_metrics.organic_matter : 4.8}
+              label="Organic Matter"
+              iconClass="fas fa-leaf"
+              isPercentage={true}
+            />
+            <NumericDisplay
+              id="nitrogen"
+              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].soil_metrics.nitrogen : 0.07}
+              label="Soil Nitrogen"
+              iconClass="fas fa-seedling"
+              isPercentage={true}
+            />
+            <NumericDisplay
+              id="carbon-content"
+              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].soil_metrics.total_carbon : 4.0}
+              label="Total Carbon"
+              iconClass="fas fa-cloud"
+              isPercentage={true}
+            />
+            <NumericDisplay
+              id="yield"
+              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].yield.monthly_yield_kg_ha : 2500}
+              label="Monthly Yield (kg/ha)"
+              iconClass="fas fa-tractor"
+              isPercentage={false}
+            />
+            <NumericDisplay
+              id="eutrophication-reduction"
+              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].eutrophication.reduction_percent : 20}
+              label="Eutrophication Reduction"
+              iconClass="fas fa-water"
+              isPercentage={true}
+            />
+          </div>
+
           {/* Historical Data Table */}
           <div className="row mb-4">
             <div className="col-12">
               <div className="table-container">
                 <div className="table-header">
-                  <h3 className="table-title">Performance History</h3>
-                  
-                  {/* Date picker filters */}
+                  <h3 className="table-title">Agricultural Data History</h3>
                   <div className="date-picker-container">
                     <label htmlFor="history_from">From:</label>
-                    <input 
-                      type="date" 
-                      id="history_from" 
+                    <input
+                      type="date"
+                      id="history_from"
                       className="form-control"
                       value={historyDates.from}
                       onChange={(e) => handleHistoryDateChange('from', e.target.value)}
                     />
                     <label htmlFor="history_to">To:</label>
-                    <input 
-                      type="date" 
-                      id="history_to" 
+                    <input
+                      type="date"
+                      id="history_to"
                       className="form-control"
                       value={historyDates.to}
                       onChange={(e) => handleHistoryDateChange('to', e.target.value)}
                     />
                   </div>
                 </div>
-
-                {/* Data table */}
                 <table className="data-table">
                   <thead>
                     <tr>
                       <th>Date</th>
-                      <th>Browser</th>
-                      <th>Load Time</th>
-                      <th>Cache Hit Rate</th>
+                      <th>Crop Type</th>
+                      <th>Organic Matter (%)</th>
+                      <th>Nitrogen (%)</th>
+                      <th>Carbon Content (%)</th>
+                      <th>Monthly Yield (kg/ha)</th>
+                      <th>Eutrophication (kg PO₄-eq/ha)</th>
                       <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {performanceData.map((item, index) => (
+                    {getFilteredData(agriculturalData, historyDates.from, historyDates.to).map((item, index) => (
                       <tr key={index}>
-                        <td>{item.date}</td>
-                        <td>{item.browser}</td>
-                        <td>{item.loadTime}</td>
-                        <td>{item.cacheHitRate}</td>
+                        <td>{new Date(item.timestamp).toLocaleDateString('en-US')}</td>
+                        <td>{item.yield.crop_type}</td>
+                        <td>{item.soil_metrics.organic_matter}</td>
+                        <td>{item.soil_metrics.nitrogen}</td>
+                        <td>{item.soil_metrics.total_carbon}</td>
+                        <td>{item.yield.monthly_yield_kg_ha}</td>
+                        <td>{item.eutrophication.potential_kg_PO4_eq_ha.regenerative}</td>
                         <td>
                           <span className={`status-${item.status.toLowerCase()}`}>
                             {item.status}
@@ -505,48 +517,47 @@ const HistoricalData = () => {
               <div className="chart-container">
                 <div className="chart-header">
                   <h3>Performance Metrics Over Time</h3>
-                  <div className="date-picker-container">
-                    <label htmlFor="line_from">From:</label>
-                    <input 
-                      type="date" 
-                      id="line_from" 
-                      className="form-control"
-                      value={lineChartDates.from}
-                      onChange={(e) => handleLineChartDateChange('from', e.target.value)}
-                    />
-                    <label htmlFor="line_to">To:</label>
-                    <input 
-                      type="date" 
-                      id="line_to" 
-                      className="form-control"
-                      value={lineChartDates.to}
-                      onChange={(e) => handleLineChartDateChange('to', e.target.value)}
-                    />
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="date-picker-container">
+                      <label htmlFor="line_from">From:</label>
+                      <input
+                        type="date"
+                        id="line_from"
+                        className="form-control"
+                        value={lineChartDates.from}
+                        onChange={(e) => handleLineChartDateChange('from', e.target.value)}
+                      />
+                      <label htmlFor="line_to">To:</label>
+                      <input
+                        type="date"
+                        id="line_to"
+                        className="form-control"
+                        value={lineChartDates.to}
+                        onChange={(e) => handleLineChartDateChange('to', e.target.value)}
+                      />
+                    </div>
+                    <select
+                      className="form-select"
+                      style={{ minWidth: '150px', maxWidth: '200px', marginBottom: '20px' }}
+                      value={lineChartType}
+                      onChange={(e) => setLineChartType(e.target.value)}
+                    >
+                      <option value="soil">Soil Health</option>
+                      <option value="yield">Crop Yield</option>
+                      <option value="costs">Cost Savings</option>
+                    </select>
                   </div>
                 </div>
-                <LineChart 
+                <LineChart
                   data={getLineChartData(lineChartType)}
                   height={300}
                   colors={{
                     primary: '#3b82f6',
                     secondary: '#f97316',
-                    text: '#000000'
+                    tertiary: '#10b981',
+                    text: '#000000',
                   }}
                 />
-              </div>
-              <div className="below-chart-controls">
-                <div className="chart-controls">
-                  <select 
-                    className="chart-selector form-select"
-                    value={lineChartType}
-                    onChange={(e) => setLineChartType(e.target.value)}
-                  >
-                    <option value="performance">Load Time & Cache Rate</option>
-                    <option value="browser">Browser Performance</option>
-                    <option value="errors">Error Rates</option>
-                    <option value="bandwidth">Bandwidth Usage</option>
-                  </select>
-                </div>
               </div>
             </div>
 
@@ -555,49 +566,47 @@ const HistoricalData = () => {
               <div className="chart-container">
                 <div className="chart-header">
                   <h3>Performance by Category</h3>
-                  <div className="date-picker-container">
-                    <label htmlFor="bar_from">From:</label>
-                    <input 
-                      type="date" 
-                      id="bar_from" 
-                      className="form-control"
-                      value={barChartDates.from}
-                      onChange={(e) => handleBarChartDateChange('from', e.target.value)}
-                    />
-                    <label htmlFor="bar_to">To:</label>
-                    <input 
-                      type="date" 
-                      id="bar_to" 
-                      className="form-control"
-                      value={barChartDates.to}
-                      onChange={(e) => handleBarChartDateChange('to', e.target.value)}
-                    />
+                  <div className="d-flex align-items-center gap-3">
+                    <div className="date-picker-container">
+                      <label htmlFor="bar_from">From:</label>
+                      <input
+                        type="date"
+                        id="bar_from"
+                        className="form-control"
+                        value={barChartDates.from}
+                        onChange={(e) => handleBarChartDateChange('from', e.target.value)}
+                      />
+                      <label htmlFor="bar_to">To:</label>
+                      <input
+                        type="date"
+                        id="bar_to"
+                        className="form-control"
+                        value={barChartDates.to}
+                        onChange={(e) => handleBarChartDateChange('to', e.target.value)}
+                      />
+                    </div>
+                    <select
+                      className="form-select"
+                      style={{ minWidth: '150px', maxWidth: '200px', marginBottom: '20px'}}
+                      value={barChartType}
+                      onChange={(e) => setBarChartType(e.target.value)}
+                    >
+                      <option value="costs">Cost Comparison</option>
+                      <option value="eutrophication">Eutrophication Potential</option>
+                      <option value="yield_grades">Yield Grades</option>
+                    </select>
                   </div>
                 </div>
-                <BarChart 
+                <BarChart
                   data={getBarChartData(barChartType)}
                   height={300}
                   colors={{
                     primary: '#3b82f6',
                     secondary: '#f97316',
-                    tertiary: '#6b7280',
-                    text: '#000000'
+                    tertiary: '#10b981',
+                    text: '#000000',
                   }}
                 />
-              </div>
-              <div className="below-chart-controls">
-                <div className="chart-controls">
-                  <select 
-                    className="chart-selector form-select"
-                    value={barChartType}
-                    onChange={(e) => setBarChartType(e.target.value)}
-                  >
-                    <option value="cache">Cache Performance</option>
-                    <option value="resources">Resource Loading</option>
-                    <option value="devices">Device Types</option>
-                    <option value="locations">Geographic Distribution</option>
-                  </select>
-                </div>
               </div>
             </div>
           </div>
@@ -607,4 +616,4 @@ const HistoricalData = () => {
   );
 };
 
-export default HistoricalData;
+export default Data;

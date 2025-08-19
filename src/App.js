@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Overview from './components/dashboard/overview';
+import Overview from './components/dashboard/Overview';
 // Import other components as you create them
 import HistoricalData from './components/dashboard/Data';
 import FinanceAnalytics from './components/dashboard/Finance';
