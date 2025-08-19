@@ -105,13 +105,12 @@ const AgricultureDashboard = () => {
     };
 
     const sidebarItems = [
-        { icon: Home, label: 'Dashboard', active: true },
-        { icon: Leaf, label: 'Soil & Water', active: false },
-        { icon: Thermometer, label: 'Weather', active: false },
-        { icon: Calendar, label: 'Task Management', active: false },
-        { icon: BarChart3, label: 'Reports & Analytics', active: false },
-        { icon: Settings, label: 'Settings', active: false },
-        { icon: Users, label: 'My Account', active: false },
+        { icon: Home, label: 'Overview', active: true },
+        { icon: Calendar, label: 'Data Analytics', active: false },
+        { icon: Thermometer, label: 'Economic Revenue', active: false },
+        { icon: Calendar, label: 'Forecasting', active: false },
+        { icon: Settings, label: 'Maintenance Schedule', active: false },
+        { icon: Users, label: 'Team Profile', active: false },
         { icon: HelpCircle, label: 'Help & Support', active: false },
     ];
 
