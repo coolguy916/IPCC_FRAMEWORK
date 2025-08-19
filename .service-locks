@@ -3,10 +3,5 @@
     "pid": 16768,
     "mode": "electron",
     "timestamp": 1755509837359
-  },
-  "websocket": {
-    "pid": 16768,
-    "mode": "electron",
-    "timestamp": 1755509837376
   }
 }
