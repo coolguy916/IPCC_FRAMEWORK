@@ -1,5 +1,7 @@
 // components/layout/sidebar.jsx
 import React from 'react';
+// 1. Impor NavLink dari react-router-dom
+import { NavLink, Link } from 'react-router-dom'; 
 import { 
   Leaf, X, Home, Calendar, Thermometer, 
   Settings, Users, HelpCircle, BarChart2, History, FileText, Wrench 

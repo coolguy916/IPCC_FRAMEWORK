@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import {
     Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, AlertTriangle, Wifi, WifiOff
 } from 'lucide-react';
-
 // Import your existing components
 import Header from '../layout/header';
 import Sidebar from '../layout/sidebar';
