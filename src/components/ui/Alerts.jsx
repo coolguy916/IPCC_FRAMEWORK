@@ -95,7 +95,7 @@ const Alerts = ({
           return (
             <div 
               key={alert.id} 
-              className={`flex items-center justify-between p-3 rounded-lg border-l-4 bg-gray-100 ${styles.border}`}
+              className={`flex items-center justify-between p-3 rounded-lg border-l-4 bg-green-50 ${styles.border}`}
             >
               <div>
                 <p className="font-semibold text-gray-800 text-sm">{alert.title}</p>
