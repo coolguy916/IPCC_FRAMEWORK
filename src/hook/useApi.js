@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
 class APIClient {
-    constructor(baseURL = process.env.REACT_APP_API_URL || 'http://localhost:3001') {
+    constructor(baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api') {
         this.baseURL = baseURL;
         this.wsConnection = null;
         this.wsReconnectTimer = null;
@@ -45,12 +45,12 @@ class APIClient {
             options: JSON.stringify(options)
         });
         
-        const response = await this._request(`/api/data/${table}?${queryParams}`);
+        const response = await this._request(`/data/${table}?${queryParams}`);
         return response.data;
     }
 
     async insertData(table, data) {
-        const response = await this._request(`/api/data/${table}`, {
+        const response = await this._request(`/data/${table}`, {
             method: 'POST',
             body: { data }
         });
@@ -58,7 +58,7 @@ class APIClient {
     }
 
     async updateData(table, data, whereClause, whereParams) {
-        const response = await this._request(`/api/data/${table}`, {
+        const response = await this._request(`/data/${table}`, {
             method: 'PUT',
             body: { data, whereClause, whereParams }
         });
@@ -66,7 +66,7 @@ class APIClient {
     }
 
     async deleteData(table, whereClause, whereParams) {
-        const response = await this._request(`/api/data/${table}`, {
+        const response = await this._request(`/data/${table}`, {
             method: 'DELETE',
             body: { whereClause, whereParams }
         });
@@ -75,31 +75,31 @@ class APIClient {
 
     // Serial methods (matching your existing API)
     async getSerialStatus() {
-        const response = await this._request('/api/serial/status');
+        const response = await this._request('/serial/status');
         return response.data;
     }
 
     async forceReconnect() {
-        return this._request('/api/serial/reconnect', { method: 'POST' });
+        return this._request('/serial/reconnect', { method: 'POST' });
     }
 
     async disconnect() {
-        return this._request('/api/serial/disconnect', { method: 'POST' });
+        return this._request('/serial/disconnect', { method: 'POST' });
     }
 
     async scanPorts() {
-        return this._request('/api/serial/scan', { method: 'POST' });
+        return this._request('/serial/scan', { method: 'POST' });
     }
 
     async setDynamicSwitching(enabled) {
-        return this._request('/api/serial/dynamic-switching', {
+        return this._request('/serial/dynamic-switching', {
             method: 'POST',
             body: { enabled }
         });
     }
 
     async sendSerialData(data) {
-        return this._request('/api/serial/send', {
+        return this._request('/serial/send', {
             method: 'POST',
             body: { data }
         });
@@ -107,7 +107,7 @@ class APIClient {
 
     // WebSocket methods
     async getWebSocketStatus() {
-        const response = await this._request('/api/websocket/status');
+        const response = await this._request('/websocket/status');
         return response.data;
     }
 
@@ -120,7 +120,7 @@ class APIClient {
     }
 
     async insertSensorData(sensorData) {
-        return this._request('/api/sensor-data', {
+        return this._request('/sensor-data', {
             method: 'POST',
             body: sensorData
         });
@@ -128,7 +128,7 @@ class APIClient {
 
     // Health check
     async healthCheck() {
-        return this._request('/api/health');
+        return this._request('/health');
     }
 
     // WebSocket Connection
@@ -137,7 +137,7 @@ class APIClient {
             this.disconnectWebSocket();
         }
 
-        const wsUrl = this.baseURL.replace('http:', 'ws:').replace('https:', 'wss:') + '/ws';
+        const wsUrl = this.baseURL.replace('http:', 'ws:').replace('https:', 'wss:').replace('/api', '') + '/ws';
         
         try {
             this.wsConnection = new WebSocket(wsUrl);

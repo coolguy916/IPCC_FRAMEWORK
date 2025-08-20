@@ -1,5 +1,6 @@
 // modules/api/apiServer.js - Enhanced version with web support
 const express = require('express');
+const enableWs = require('express-ws');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
@@ -12,11 +13,14 @@ const mauiController = require('../../App/Http/Controllers/mauiController');
 class APIServer {
     constructor(database, serialManager = null, websocketManager = null) {
         this.app = express();
+        // Enable WebSocket support
+        enableWs(this.app);
+        
         this.database = database;
         this.serialManager = serialManager;
         this.websocketManager = websocketManager;
         this.server = null;
-        this.port = process.env.API_PORT || 3001;
+        this.port = process.env.API_PORT || 5001;
         this.mode = process.env.APP_MODE || 'electron';
         
         this.setupMiddleware();
@@ -41,6 +45,11 @@ class APIServer {
         this.app.use(cors(corsOptions));
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
+        
+        // Add health check endpoint
+        this.app.get('/api/health', (req, res) => {
+            res.json({ status: 'ok', message: 'Service is healthy' });
+        });
 
         // Serve static files if configured
         if (process.env.SERVE_STATIC === 'true') {
@@ -101,6 +110,47 @@ class APIServer {
 
     setupWebRoutes() {
         console.log('🌐 Setting up web-specific routes...');
+
+        // Serial routes
+        this.app.get('/api/serial/status', (req, res) => {
+            if (!this.serialManager) {
+                return res.status(503).json({ success: false, error: 'Serial service not available' });
+            }
+            const status = this.serialManager.getStatus();
+            res.json({ success: true, data: status });
+        });
+
+        this.app.post('/api/serial/reconnect', (req, res) => {
+            if (!this.serialManager) {
+                return res.status(503).json({ success: false, error: 'Serial service not available' });
+            }
+            this.serialManager.forceReconnect();
+            res.json({ success: true, message: 'Reconnection initiated' });
+        });
+
+        this.app.post('/api/serial/disconnect', (req, res) => {
+            if (!this.serialManager) {
+                return res.status(503).json({ success: false, error: 'Serial service not available' });
+            }
+            this.serialManager.disconnect();
+            res.json({ success: true, message: 'Disconnected' });
+        });
+
+        this.app.post('/api/serial/scan', async (req, res) => {
+            if (!this.serialManager) {
+                return res.status(503).json({ success: false, error: 'Serial service not available' });
+            }
+            const ports = await this.serialManager.scanPorts();
+            res.json({ success: true, data: ports });
+        });
+
+        // WebSocket endpoint
+        if (this.websocketManager) {
+            this.app.ws('/ws', (ws, req) => {
+                console.log('WebSocket client connected');
+                this.websocketManager.handleConnection(ws, req);
+            });
+        }
 
         // Generic database routes - mirroring IPC functionality
         this.app.get('/api/data/:table', async (req, res) => {

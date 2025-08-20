@@ -2,8 +2,9 @@
 import React from 'react';
 import { 
   Leaf, X, Home, Calendar, Thermometer, 
-  Settings, Users, HelpCircle 
+  Settings, Users, HelpCircle, BarChart2, History, FileText, Wrench 
 } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = ({ 
   isOpen, 
@@ -13,16 +14,28 @@ const Sidebar = ({
   menuItems = []
 }) => {
   const defaultMenuItems = [
-    { icon: Home, label: 'Overview', key: 'overview' },
-    { icon: Calendar, label: 'Data Analytics', key: 'analytics' },
-    { icon: Thermometer, label: 'Economic Revenue', key: 'revenue' },
-    { icon: Calendar, label: 'Forecasting', key: 'forecasting' },
-    { icon: Settings, label: 'Maintenance Schedule', key: 'maintenance' },
-    { icon: Users, label: 'Team Profile', key: 'team' },
-    { icon: HelpCircle, label: 'Help & Support', key: 'help' },
+    { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
+    { path: '/analytics', icon: BarChart2, label: 'Data Analytics', key: 'analytics' },
+    { path: '/revenue', icon: Thermometer, label: 'Economic Revenue', key: 'revenue' },
+    { path: '/forecasting', icon: Calendar, label: 'Forecasting', key: 'forecasting' },
+    { path: '/maintenance', icon: Settings, label: 'Maintenance Schedule', key: 'maintenance' },
+    { path: '/team', icon: Users, label: 'Team Profile', key: 'team' },
+    { path: '/help', icon: HelpCircle, label: 'Help & Support', key: 'help' },
   ];
 
-  const items = menuItems.length > 0 ? menuItems : defaultMenuItems;
+  const customMenuItems = [
+    { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
+    { path: '/historical-data', icon: History, label: 'Data Logging', key: 'historical-data' },
+    { path: '/finance-analytics', icon: BarChart2, label: 'Economic Revenue', key: 'finance-analytics' },
+    { path: '/articles', icon: FileText, label: 'Forecasting Test', key: 'articles' },
+    { path: '/maintenance', icon: Wrench, label: 'Maintenance', key: 'maintenance' },
+    { path: '/team-profile', icon: Users, label: 'Team Profile', key: 'team-profile' },
+  ];
+
+  const location = useLocation();
+
+  // Use provided menuItems if any, else merge or choose custom/default. Here, prioritizing custom for specificity.
+  const items = menuItems.length > 0 ? menuItems : customMenuItems;
 
   const handleItemClick = (item) => {
     if (onItemClick) {
@@ -68,18 +81,19 @@ const Sidebar = ({
         {/* Navigation */}
         <nav className="mt-8">
           {items.map((item, index) => (
-            <button
+            <Link
               key={index}
+              to={item.path}
               onClick={() => handleItemClick(item)}
               className={`w-full flex items-center px-6 py-3 text-sm font-medium transition-colors ${
-                activeItem === item.label 
+                location.pathname === item.path || activeItem === item.label 
                   ? 'bg-green-50 text-green-700 border-r-2 border-green-500' 
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               <item.icon className="w-5 h-5 mr-3" />
               {item.label}
-            </button>
+            </Link>
           ))}
         </nav>
         
