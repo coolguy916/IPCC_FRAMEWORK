@@ -14,7 +14,7 @@ import Alerts from '../ui/Alerts';
 import Tasks from '../ui/Tasks';
 import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
-import image_url from '../images/image.png';
+// import image_url from '../images/image.png';
 
 // Import our enhanced API hook
 import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
@@ -419,7 +419,7 @@ const AgricultureDashboard = () => {
                             <PlantInfo
                                 plantName={plantData?.name || "Kangkung"}
                                 description={plantData?.description || "Your plants are thriving and showing excellent growth. The current conditions are optimal for cultivation."}
-                                backgroundImage={plantData?.image_url || image_url}
+                                backgroundImage={plantData?.image_url}
                                 detailsLink={`/plant-details/${plantData?.id || 'kangkung'}`}
                             />
 
