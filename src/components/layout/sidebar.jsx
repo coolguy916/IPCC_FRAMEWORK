@@ -1,8 +1,10 @@
 // components/layout/sidebar.jsx
 import React from 'react';
+// 1. Impor NavLink dari react-router-dom
+import { NavLink, Link } from 'react-router-dom'; 
 import { 
   Leaf, X, Home, Calendar, Thermometer, 
-  Settings, Users, HelpCircle, BarChart2, History, FileText, Wrench 
+  Settings, Users, HelpCircle 
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -14,45 +16,35 @@ const Sidebar = ({
   menuItems = []
 }) => {
   const defaultMenuItems = [
-    { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
-    { path: '/analytics', icon: BarChart2, label: 'Data Analytics', key: 'analytics' },
-    { path: '/revenue', icon: Thermometer, label: 'Economic Revenue', key: 'revenue' },
-    { path: '/forecasting', icon: Calendar, label: 'Forecasting', key: 'forecasting' },
-    { path: '/maintenance', icon: Settings, label: 'Maintenance Schedule', key: 'maintenance' },
-    { path: '/team', icon: Users, label: 'Team Profile', key: 'team' },
-    { path: '/help', icon: HelpCircle, label: 'Help & Support', key: 'help' },
+    { icon: Home, label: 'Overview', key: 'overview' },
+    { icon: Calendar, label: 'Data Analytics', key: 'analytics' },
+    { icon: Thermometer, label: 'Economic Revenue', key: 'revenue' },
+    { icon: Calendar, label: 'Forecasting', key: 'forecasting' },
+    { icon: Settings, label: 'Maintenance Schedule', key: 'maintenance' },
+    { icon: Users, label: 'Team Profile', key: 'team' },
+    { icon: HelpCircle, label: 'Help & Support', key: 'help' },
   ];
 
-  const customMenuItems = [
-    { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
-    { path: '/historical-data', icon: History, label: 'Data Logging', key: 'historical-data' },
-    { path: '/finance-analytics', icon: BarChart2, label: 'Economic Revenue', key: 'finance-analytics' },
-    { path: '/articles', icon: FileText, label: 'Forecasting Test', key: 'articles' },
-    { path: '/maintenance', icon: Wrench, label: 'Maintenance', key: 'maintenance' },
-    { path: '/team-profile', icon: Users, label: 'Team Profile', key: 'team-profile' },
-  ];
+  const items = menuItems.length > 0 ? menuItems : defaultMenuItems;
 
-  const location = useLocation();
-
-  // Use provided menuItems if any, else merge or choose custom/default. Here, prioritizing custom for specificity.
-  const items = menuItems.length > 0 ? menuItems : customMenuItems;
-
-  const handleItemClick = (item) => {
-    if (onItemClick) {
-      onItemClick(item.key, item.label);
-    }
-    // Close sidebar on mobile after selection
+  const handleLinkClick = () => {
+    // Fungsi ini untuk menutup sidebar di tampilan mobile setelah menu diklik
     if (window.innerWidth < 1024) {
       onClose();
     }
   };
+
+  // 3. Siapkan class untuk style link aktif dan tidak aktif
+  const baseLinkClass = "w-full flex items-center px-6 py-3 text-sm font-medium transition-colors";
+  const activeLinkClass = "bg-green-50 text-green-700 border-r-4 border-green-500 font-semibold";
+  const inactiveLinkClass = "text-gray-600 hover:bg-gray-50 hover:text-gray-900";
 
   return (
     <>
       {/* Overlay for mobile */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg-hidden" 
           onClick={onClose} 
         />
       )}
@@ -64,12 +56,13 @@ const Sidebar = ({
         
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center space-x-2">
+          {/* Logo juga bisa menjadi link ke halaman utama */}
+          <Link to="/overview" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
               <Leaf className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-bold text-gray-900">Farming</span>
-          </div>
+          </Link>
           <button 
             onClick={onClose} 
             className="lg:hidden"
@@ -81,19 +74,18 @@ const Sidebar = ({
         {/* Navigation */}
         <nav className="mt-8">
           {items.map((item, index) => (
-            <Link
+            <button
               key={index}
-              to={item.path}
               onClick={() => handleItemClick(item)}
               className={`w-full flex items-center px-6 py-3 text-sm font-medium transition-colors ${
-                location.pathname === item.path || activeItem === item.label 
+                activeItem === item.label 
                   ? 'bg-green-50 text-green-700 border-r-2 border-green-500' 
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               <item.icon className="w-5 h-5 mr-3" />
               {item.label}
-            </Link>
+            </button>
           ))}
         </nav>
         
