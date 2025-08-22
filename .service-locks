@@ -3,5 +3,20 @@
     "pid": 16768,
     "mode": "electron",
     "timestamp": 1755509837359
+  },
+  "database": {
+    "pid": 11528,
+    "mode": "web",
+    "timestamp": 1755847350007
+  },
+  "websocket": {
+    "pid": 11528,
+    "mode": "web",
+    "timestamp": 1755847350008
+  },
+  "api": {
+    "pid": 11528,
+    "mode": "web",
+    "timestamp": 1755847350008
   }
 }
