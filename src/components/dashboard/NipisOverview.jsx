@@ -13,14 +13,14 @@ import Alerts from '../ui/Alerts';
 import Tasks from '../ui/Tasks';
 import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
-// import image_url from '../images/image.png';
+import image_url from '../images/image.png';
 
 // Import our enhanced API hook
 import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
 
 const AgricultureDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [selectedGarden, setSelectedGarden] = useState("Spinach Garden 08");
+    const [selectedGarden, setSelectedGarden] = useState("Nipis Cytrus");
     const [activeMenuItem, setActiveMenuItem] = useState("Overview");
 
     // API connection
@@ -223,7 +223,7 @@ const AgricultureDashboard = () => {
         return [
             {
                 icon: Leaf,
-                title: "Soil Health",
+                title: "Total Carbon",
                 value: latest?.soil_health ? `${latest.soil_health}%` : "96%",
                 description: "Excellent growth and vitality observed",
                 gradient: true,
@@ -232,49 +232,49 @@ const AgricultureDashboard = () => {
             },
             {
                 icon: Thermometer,
-                title: "Temperature",
-                value: latest?.temperature ? `${latest.temperature}°C` : "19°C",
+                title: "Soil Organic Carbon",
+                value: latest?.temperature ? `${latest.temperature}°C` : "19%",
                 description: "Maintain consistent between 16°C and 28°C",
                 iconColor: "text-orange-500"
             },
             {
                 icon: Droplet,
-                title: "Soil Moisture",
+                title: "Cation Exchange Capacity",
                 value: latest?.soil_moisture ? `${latest.soil_moisture}%` : "82%",
                 description: "Ensure good ventilation to prevent mold",
                 iconColor: "text-blue-400"
             },
             {
                 icon: Droplet,
-                title: "pH level",
-                value: latest?.ph_level || "6.8",
+                title: "Organic Matter",
+                value: latest?.ph_level || "6.8%",
                 description: "Ideal level for nutrient uptake",
                 iconColor: "text-teal-500"
             },
             {
                 icon: Activity,
-                title: "Phosphorus",
-                value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "12ppm",
+                title: "Temperature",
+                value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "12°C",
                 description: "Sufficient for root development",
                 iconColor: "text-purple-500"
             },
             {
                 icon: Wind,
-                title: "Potassium",
-                value: latest?.potassium ? `${latest.potassium}ppm` : "25ppm",
+                title: "Soil Moisture",
+                value: latest?.potassium ? `${latest.potassium}ppm` : "25%",
                 description: "Promotes overall plant vigor",
                 iconColor: "text-sky-500"
             },
             {
                 icon: Sun,
-                title: "Soil Nitrogen",
-                value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "18ppm",
+                title: "Soil pH",
+                value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "7",
                 description: "Key for leaf and stem growth",
                 iconColor: "text-yellow-500"
             },
             {
                 icon: BarChart3,
-                title: "Organic Matter",
+                title: "NPK",
                 value: latest?.organic_matter ? `${latest.organic_matter}%` : "3.2%",
                 description: "NPK values are within the ideal range",
                 iconColor: "text-indigo-500"
@@ -418,7 +418,7 @@ const AgricultureDashboard = () => {
                             <PlantInfo
                                 plantName={plantData?.name || "Kangkung"}
                                 description={plantData?.description || "Your plants are thriving and showing excellent growth. The current conditions are optimal for cultivation."}
-                                backgroundImage={plantData?.image_url}
+                                backgroundImage={plantData?.image_url || image_url}
                                 detailsLink={`/plant-details/${plantData?.id || 'kangkung'}`}
                             />
 

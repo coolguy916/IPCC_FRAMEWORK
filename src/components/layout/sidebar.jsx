@@ -1,7 +1,5 @@
 // components/layout/sidebar.jsx
 import React from 'react';
-// 1. Impor NavLink dari react-router-dom
-import { NavLink, Link } from 'react-router-dom'; 
 import { 
   Leaf, X, Home, Calendar, Thermometer, 
   Settings, Users, HelpCircle, BarChart2, History, FileText, Wrench 
@@ -18,8 +16,8 @@ const Sidebar = ({
   const defaultMenuItems = [
     { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
     { path: '/analytics', icon: BarChart2, label: 'Data Analytics', key: 'analytics' },
-    { path: '/revenue', icon: Thermometer, label: 'Economic Revenue', key: 'revenue' },
-    { path: '/forecasting', icon: Calendar, label: 'Forecasting', key: 'forecasting' },
+    { path: '/revenue', icon: Thermometer, label: 'ESG Impact', key: 'revenue' },
+    { path: '/forecasting', icon: Calendar, label: 'Simulation & Forecasting', key: 'forecasting' },
     { path: '/maintenance', icon: Settings, label: 'Maintenance Schedule', key: 'maintenance' },
     { path: '/team', icon: Users, label: 'Team Profile', key: 'team' },
     { path: '/help', icon: HelpCircle, label: 'Help & Support', key: 'help' },
@@ -27,10 +25,10 @@ const Sidebar = ({
 
   const customMenuItems = [
     { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
-    { path: '/historical-data', icon: History, label: 'Data Logging', key: 'historical-data' },
-    { path: '/finance-analytics', icon: BarChart2, label: 'Economic Revenue', key: 'finance-analytics' },
-    { path: '/articles', icon: FileText, label: 'Forecasting Test', key: 'articles' },
-    { path: '/maintenance', icon: Wrench, label: 'Maintenance', key: 'maintenance' },
+    { path: '/data', icon: History, label: 'Data Analytics', key: 'historical-data' },
+    { path: '/finance-analytics', icon: BarChart2, label: 'ESG Impact', key: 'finance-analytics' },
+    { path: '/articles', icon: FileText, label: 'Simulation & Forecasting', key: 'articles' },
+    { path: '/maintenance', icon: Wrench, label: 'Task Schedule', key: 'maintenance' },
     { path: '/team-profile', icon: Users, label: 'Team Profile', key: 'team-profile' },
   ];
 
@@ -89,7 +87,7 @@ const Sidebar = ({
               onClick={() => handleItemClick(item)}
               className={`w-full flex items-center px-6 py-3 text-sm font-medium transition-colors ${
                 location.pathname === item.path || activeItem === item.label 
-                  ? 'bg-green-50 text-green-700 border-r-2 border-green-500' 
+                  ? 'bg-green-300 text-green-700 border-r-2 border-green-500' 
                   : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >

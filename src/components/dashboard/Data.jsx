@@ -1,619 +1,301 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+    Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, AlertTriangle, Wifi, WifiOff
+} from 'lucide-react';
+import Header from '../layout/header';
 import Sidebar from '../layout/sidebar';
-import DigitalClock from '../ui/DigitalClock';
-import SearchBar from '../ui/SearchBar';
-import { LineChart, BarChart } from '../charts/chartSetup';
-import NumericDisplay from '../ui/NumericDisplay';
-import '../../styles/main.css';
+import LineChart from '../charts/lineChart';
 
-// SVG Icon for Sidebar Toggle (Hamburger Menu)
-const HamburgerIcon = () => (
-  <svg
-    width="32"
-    height="32"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="hamburger-icon"
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M3.46447 20.5355C4.92893 22 7.28595 22 12 22C16.714 22 19.0711 22 20.5355 20.5355C22 19.0711 22 16.714 22 12C22 7.28595 22 4.92893 20.5355 3.46447C19.0711 2 16.714 2 12 2C7.28595 2 4.92893 2 3.46447 3.46447C2 4.92893 2 7.28595 2 12C2 16.714 2 19.0711 3.46447 20.5355ZM18.75 16C18.75 16.4142 18.4142 16.75 18 16.75H6C5.58579 16.75 5.25 16.4142 5.25 16C5.25 15.5858 5.58579 15.25 6 15.25H18C18.4142 15.25 18.75 15.5858 18.75 16ZM18 12.75C18.4142 12.75 18.75 12.4142 18.75 12C18.75 11.5858 18.4142 11.25 18 11.25H6C5.58579 11.25 5.25 11.5858 5.25 12C5.25 12.4142 5.58579 12.75 6 12.75H18ZM18.75 8C18.75 8.41421 18.4142 8.75 18 8.75H6C5.58579 8.75 5.25 8.41421 5.25 8C5.25 7.58579 5.58579 7.25 6 7.25H18C18.4142 7.25 18.75 7.58579 18.75 8Z"
-      fill="currentColor"
-    />
-  </svg>
-);
-
-// SVG Icon for Search Button
-const SearchIcon = () => (
-  <svg
-    width="20"
-    height= "20"
-    viewBox="0 0 0 0 "
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="search-icon"
-  >
-    <path
-      d="M15.5 14H14.71L14.43 13.73C15.63 12.33 16.25 10.42 15.91 8.39C15.44 5.61 13.12 3.39 10.32 3.05C6.09 2.53 2.53 6.09 3.05 10.32C3.39 13.12 5.61 15.44 8.39 15.91C10.42 16.25 12.33 15.63 13.73 14.43L14 14.71V15.5L18.25 19.75C18.66 20.16 19.33 20.16 19.74 19.75C20.15 19.34 20.15 18.67 19.74 18.26L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z"
-      fill="currentColor"
-    />
-  </svg>
-);
-
-// Header Component
-const Header = ({ children, onToggleSidebar, sidebarOpen }) => {
-  return (
-    <header className={`header d-flex justify-content-between align-items-center ${sidebarOpen ? '' : 'expanded'}`}>
-      <div className="d-flex align-items-center gap-3">
-        <button className="desktop-toggle" onClick={onToggleSidebar}>
-          <HamburgerIcon />
-        </button>
-        {children}
-      </div>
-      <div className="d-flex align-items-center gap-3">
-        <div className="search-button">
-          <SearchIcon />
-          <SearchBar />
-        </div>
-        <div className="">
-          <DigitalClock />
-        </div>
-      </div>
-    </header>
-  );
+// Data dummy untuk simulasi data sensor (per hari, maks 20 entri)
+const generateDummyData = (count = 20) => {
+    const data = [];
+    const baseTime = new Date();
+    const maxEntries = Math.min(count, 20); // Batasi maksimum 20 entri
+    for (let i = 0; i < maxEntries; i++) {
+        data.push({
+            timestamp: new Date(baseTime.getTime() - i * 24 * 3600000).toISOString(), // 1 hari mundur per data
+            temperature: (20 + Math.random() * 10).toFixed(1), // 20-30°C
+            soil_moisture: (40 + Math.random() * 40).toFixed(1), // 40-80%
+            ph_level: (6 + Math.random() * 1.5).toFixed(1), // 6-7.5
+            nitrogen: (15 + Math.random() * 10).toFixed(1), // 15-25 ppm
+            phosphorus: (10 + Math.random() * 10).toFixed(1), // 10-20 ppm
+            potassium: (20 + Math.random() * 10).toFixed(1), // 20-30 ppm
+            soil_health: (90 + Math.random() * 10).toFixed(1), // 90-100
+            organic_matter: (2.5 + Math.random() * 2).toFixed(1), // 2.5-4.5%
+        });
+    }
+    return data.reverse(); // Urutan waktu ascending
 };
 
-const Data = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
-  const [lineChartType, setLineChartType] = useState('soil');
-  const [barChartType, setBarChartType] = useState('costs');
-  const [lineChartDates, setLineChartDates] = useState({ from: '', to: '' });
-  const [barChartDates, setBarChartDates] = useState({ from: '', to: '' });
-  const [historyDates, setHistoryDates] = useState({ from: '', to: '' });
-  const [agriculturalData, setAgriculturalData] = useState([]);
+// Helper component for individual metric charts
+const MetricLineChart = ({ title, data, loading, error, onRefresh, icon: Icon, iconColor, color }) => (
+    <div className="bg-white rounded-lg p-4 shadow-sm border col-span-1 md:col-span-2">
+        <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+                {Icon && <Icon className={`w-6 h-6 ${iconColor || 'text-gray-700'}`} />}
+                <h3 className="font-semibold text-gray-900">{title}</h3>
+            </div>
+            <button
+                onClick={onRefresh}
+                disabled={loading}
+                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded disabled:opacity-50"
+            >
+                {loading ? 'Refreshing...' : 'Refresh'}
+            </button>
+        </div>
+        <div style={{ height: '300px' }}>
+            <LineChart
+                data={{
+                    labels: data.labels,
+                    datasets: [{
+                        label: title,
+                        data: data.datasets?.metric?.data || [],
+                        borderColor: color,
+                        backgroundColor: `${color}20`,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 3,
+                        pointHoverRadius: 6,
+                    }],
+                }}
+                options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: { color: '#6b7280' },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#6b7280', font: { size: 12, weight: '500' } },
+                        },
+                        y: {
+                            grid: { color: 'rgba(229, 231, 235, 1)', lineWidth: 1 },
+                            ticks: { color: '#6b7280', font: { size: 12, weight: '500' } },
+                        },
+                    },
+                    interaction: { intersect: false, mode: 'index' },
+                }}
+                height={300}
+            />
+        </div>
+    </div>
+);
 
-  // Generate dummy agricultural data
-  const loadAgriculturalData = (fromDate = null, toDate = null) => {
-    const start = fromDate ? new Date(fromDate) : new Date('2024-01-01');
-    const end = toDate ? new Date(toDate) : new Date('2025-12-01');
-    const data = [];
-    let currentDate = new Date(start);
+// DataLogTable component for displaying historical data
+const DataLogTable = ({ data, loading }) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
-    while (currentDate <= end) {
-      const monthIndex = (currentDate.getFullYear() - 2024) * 12 + currentDate.getMonth();
-      const organicMatter = parseFloat((4.8 + monthIndex * 0.05).toFixed(2)); // 4.8–6.0%
-      const totalCarbon = parseFloat((4.0 + monthIndex * 0.05).toFixed(2)); // 4.0–5.2%
-      const nitrogen = parseFloat((0.07 + monthIndex * 0.005).toFixed(3)); // 0.07–0.20%
-      const pH = parseFloat((5.8 + monthIndex * 0.03).toFixed(1)); // 5.8–7.2
-      const yieldKgHa = parseInt((2500 + monthIndex * 83).toFixed(0)); // 2500–4500 kg/ha
-      const gradeA = parseInt((50 + monthIndex * 0.83).toFixed(0)); // 50–70%
-      const gradeB = parseInt((40 - monthIndex * 0.83).toFixed(0)); // 40–20%
-      const gradeC = parseInt((100 - gradeA - gradeB).toFixed(0)); // 15–5%
-      
-      // Improved status classification
-      let status = 'Average';
-      if (nitrogen < 0.10 || organicMatter < 5.0 || pH < 6.0) {
-        status = 'Bad';
-      } else if (nitrogen > 0.15 && organicMatter > 5.5 && pH > 6.5) {
-        status = 'Good';
-      }
+    const paginatedData = useMemo(() => {
+        if (!data) return [];
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        return data.slice(startIndex, startIndex + itemsPerPage);
+    }, [data, currentPage]);
 
-      data.push({
-        timestamp: currentDate.toISOString().split('T')[0],
-        soil_metrics: {
-          organic_matter: organicMatter,
-          total_carbon: totalCarbon,
-          nitrogen: nitrogen,
-          pH: pH,
-        },
-        yield: {
-          crop_type: 'Maize',
-          monthly_yield_kg_ha: yieldKgHa,
-          grade_distribution: { A: gradeA, B: gradeB, C: gradeC },
-          harvest_date: currentDate.toISOString().split('T')[0],
-        },
-        costs: {
-          conventional: {
-            fertilizers: 120 + Math.random() * 60,
-            pesticides: 60 + Math.random() * 40,
-            labor: 150 + Math.random() * 100,
-          },
-          regenerative: {
-            microalgae: 90 + Math.random() * 50,
-            fertilizers: 20 + Math.random() * 30,
-            labor: 120 + Math.random() * 80,
-          },
-        },
-        eutrophication: {
-          nitrogen_runoff_kg_ha: {
-            conventional: 15 + Math.random() * 25, // 15–40 kg/ha
-            regenerative: 5 + Math.random() * 15, // 5–20 kg/ha
-          },
-          phosphorus_runoff_kg_ha: {
-            conventional: 3 + Math.random() * 5, // 3–8 kg/ha
-            regenerative: 1 + Math.random() * 3, // 1–4 kg/ha
-          },
-        },
-        status: status,
-      });
+    const totalPages = data ? Math.ceil(data.length / itemsPerPage) : 1;
 
-      // Move to next month
-      currentDate.setMonth(currentDate.getMonth() + 1);
-    }
+    return (
+        <div className="bg-white rounded-lg p-4 shadow-sm border">
+            <h3 className="font-semibold text-gray-900 mb-4">Data Log</h3>
+            <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature (°C)</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Soil Moisture (%)</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">pH Level</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nitrogen (ppm)</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phosphorus (ppm)</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Potassium (ppm)</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {loading && !paginatedData.length ? (
+                            <tr><td colSpan="7" className="text-center py-4">Loading data...</td></tr>
+                        ) : paginatedData.map((log, index) => (
+                            <tr key={index}>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(log.timestamp).toLocaleDateString()}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.temperature ?? 'N/A'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.soil_moisture ?? 'N/A'}</td>
+                                <td className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">pH Level</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.ph_level ?? 'N/A'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.nitrogen ?? 'N/A'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.phosphorus ?? 'N/A'}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.potassium ?? 'N/A'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div className="flex justify-between items-center mt-4">
+                <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
+                >
+                    Previous
+                </button>
+                <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
+                <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
+                >
+                    Next
+                </button>
+            </div>
+        </div>
+    );
+};
 
-    // Calculate totals and derived metrics
-    data.forEach((item) => {
-      item.costs.conventional.total = (
-        item.costs.conventional.fertilizers +
-        item.costs.conventional.pesticides +
-        item.costs.conventional.labor
-      ).toFixed(2);
-      item.costs.regenerative.total = (
-        item.costs.regenerative.microalgae +
-        item.costs.regenerative.fertilizers +
-        item.costs.regenerative.labor
-      ).toFixed(2);
-      item.costs.savings_percent = (
-        ((item.costs.conventional.total - item.costs.regenerative.total) / item.costs.conventional.total) * 100
-      ).toFixed(2);
-      item.eutrophication.potential_kg_PO4_eq_ha = {
-        conventional: (
-          item.eutrophication.nitrogen_runoff_kg_ha.conventional * 0.42 +
-          item.eutrophication.phosphorus_runoff_kg_ha.conventional * 3.06
-        ).toFixed(2),
-        regenerative: (
-          item.eutrophication.nitrogen_runoff_kg_ha.regenerative * 0.42 +
-          item.eutrophication.phosphorus_runoff_kg_ha.regenerative * 3.06
-        ).toFixed(2),
-      };
-      item.eutrophication.reduction_percent = (
-        ((item.eutrophication.potential_kg_PO4_eq_ha.conventional - item.eutrophication.potential_kg_PO4_eq_ha.regenerative) /
-          item.eutrophication.potential_kg_PO4_eq_ha.conventional) * 100
-              ).toFixed(2);
-      item.status = status;
-    });
+const DataPage = () => {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [selectedGarden, setSelectedGarden] = useState("Spinach Garden 08");
+    const [activeMenuItem, setActiveMenuItem] = useState("Data");
 
-    setAgriculturalData(data);
-  };
+    // State untuk data dummy
+    const [sensorData, setSensorData] = useState(generateDummyData(20));
+    const [sensorLoading, setSensorLoading] = useState(false);
+    const [sensorError, setSensorError] = useState(null);
+    const [lastUpdated, setLastUpdated] = useState(new Date());
 
-  // Filter data based on date range
-  const getFilteredData = (data, fromDate, toDate) => {
-    if (!fromDate && !toDate) return data;
-    
-    return data.filter(item => {
-      const itemDate = new Date(item.timestamp);
-      const start = fromDate ? new Date(fromDate) : new Date('2024-01-01');
-      const end = toDate ? new Date(toDate) : new Date('2025-12-31');
-      
-      return itemDate >= start && itemDate <= end;
-    });
-  };
+    // Simulasi status koneksi
+    const isConnected = true;
 
-  useEffect(() => {
-    const checkScreenSize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      setSidebarOpen(!mobile);
+    // Fungsi untuk simulasi refresh data
+    const refetchSensorData = ({ garden_id, limit = 20 }) => {
+        setSensorLoading(true);
+        setTimeout(() => {
+            setSensorData(generateDummyData(limit));
+            setLastUpdated(new Date());
+            setSensorLoading(false);
+        }, 1000);
     };
 
-    checkScreenSize();
-    window.addEventListener('resize', checkScreenSize);
-    loadAgriculturalData();
+    // Memoized processing for chart data
+    const processChartData = (data, metricKey, color, defaultValue = 0) => {
+        return useMemo(() => {
+            if (!data || data.length === 0) {
+                return { labels: [], datasets: { metric: {} } };
+            }
+            const labels = data.map(r => new Date(r.timestamp).toLocaleDateString()).reverse();
+            const dataset = {
+                label: metricKey,
+                data: data.map(r => r[metricKey] || defaultValue).reverse(),
+                borderColor: color,
+                backgroundColor: `${color}20`,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+            };
+            return { labels, datasets: { metric: dataset } };
+        }, [data, metricKey, color]);
+    };
 
-    return () => window.removeEventListener('resize', checkScreenSize);
-  }, []);
+    const metrics = [
+        { key: 'temperature', label: 'Temperature', icon: Thermometer, color: '#f97316', iconColor: 'text-orange-500' },
+        { key: 'soil_moisture', label: 'Soil Moisture', icon: Droplet, color: '#3b82f6', iconColor: 'text-blue-400' },
+        { key: 'ph_level', label: 'pH Level', icon: Droplet, color: '#10b981', iconColor: 'text-teal-500', defaultValue: 6.8 },
+        { key: 'nitrogen', label: 'Soil Nitrogen', icon: Sun, color: '#8b5cf6', iconColor: 'text-yellow-500', defaultValue: 18 },
+        { key: 'phosphorus', label: 'Phosphorus', icon: Activity, color: '#d946ef', iconColor: 'text-purple-500', defaultValue: 12 },
+        { key: 'potassium', label: 'Potassium', icon: Wind, color: '#0ea5e9', iconColor: 'text-sky-500', defaultValue: 25 },
+        { key: 'soil_health', label: 'Soil Health', icon: Leaf, color: '#22c55e', iconColor: 'text-green-500', defaultValue: 96 },
+        { key: 'organic_matter', label: 'Organic Matter', icon: BarChart3, color: '#6366f1', iconColor: 'text-indigo-500', defaultValue: 3.2 },
+    ];
 
-  const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
-  };
-
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
-
-  const handleNavClick = () => {
-    if (isMobile) {
-      closeSidebar();
-    }
-  };
-
-  const handleHistoryDateChange = (field, value) => {
-    setHistoryDates((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleLineChartDateChange = (field, value) => {
-    setLineChartDates((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleBarChartDateChange = (field, value) => {
-    setBarChartDates((prev) => ({ ...prev, [field]: value }));
-  };
-
-  // Generate line chart data
-  const getLineChartData = (chartType) => {
-    const filteredData = getFilteredData(agriculturalData, lineChartDates.from, lineChartDates.to);
-    const labels = filteredData.map((item) =>
-      new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    const chartDataHooks = metrics.map(metric => 
+        processChartData(sensorData, metric.key, metric.color, metric.defaultValue)
     );
 
-    switch (chartType) {
-      case 'soil':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Organic Matter (%)',
-              data: filteredData.map((item) => item.soil_metrics.organic_matter),
-              borderColor: '#2ecc71',
-              backgroundColor: 'rgba(46, 204, 113, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true,
-            },
-            {
-              label: 'Soil Nitrogen (%)',
-              data: filteredData.map((item) => item.soil_metrics.nitrogen),
-              borderColor: '#3498db',
-              backgroundColor: 'rgba(52, 152, 219, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true,
-            },
-            {
-              label: 'Total Carbon (%)',
-              data: filteredData.map((item) => item.soil_metrics.total_carbon),
-              borderColor: '#f1c40f',
-              backgroundColor: 'rgba(241, 196, 15, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true,
-            },
-          ],
-        };
-      case 'yield':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Maize Yield (kg/ha)',
-              data: filteredData.map((item) => item.yield.monthly_yield_kg_ha),
-              borderColor: '#3b82f6',
-              backgroundColor: 'rgba(59, 130, 246, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true,
-            },
-          ],
-        };
-      case 'costs':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Cost Savings (%)',
-              data: filteredData.map((item) => item.costs.savings_percent),
-              borderColor: '#f97316',
-              backgroundColor: 'rgba(249, 115, 22, 0.1)',
-              tension: 0.4,
-              borderWidth: 2,
-              fill: true,
-            },
-          ],
-        };
-      default:
-        return { labels, datasets: [] };
-    }
-  };
+    const handleMenuItemClick = (key, label) => {
+        setActiveMenuItem(label);
+    };
 
-  // Generate bar chart data
-  const getBarChartData = (chartType) => {
-    const filteredData = getFilteredData(agriculturalData, barChartDates.from, barChartDates.to);
-    const labels = filteredData.map((item) =>
-      new Date(item.timestamp).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    );
+    const handleGardenChange = (garden) => {
+        setSelectedGarden(garden);
+        refetchSensorData({ garden_id: garden, limit: 20 });
+    };
 
-    switch (chartType) {
-      case 'costs':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Conventional Costs (USD/ha)',
-              data: filteredData.map((item) => item.costs.conventional.total),
-              backgroundColor: '#3b82f6',
-              borderRadius: 6,
-            },
-            {
-              label: 'Regenerative Costs (USD/ha)',
-              data: filteredData.map((item) => item.costs.regenerative.total),
-              backgroundColor: '#f97316',
-              borderRadius: 6,
-            },
-          ],
-        };
-      case 'eutrophication':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Conventional Eutrophication (kg PO₄-eq/ha)',
-              data: filteredData.map((item) => item.eutrophication.potential_kg_PO4_eq_ha.conventional),
-              backgroundColor: '#3b82f6',
-              borderRadius: 6,
-            },
-            {
-              label: 'Regenerative Eutrophication (kg PO₄-eq/ha)',
-              data: filteredData.map((item) => item.eutrophication.potential_kg_PO4_eq_ha.regenerative),
-              backgroundColor: '#f97316',
-              borderRadius: 6,
-            },
-          ],
-        };
-      case 'yield_grades':
-        return {
-          labels,
-          datasets: [
-            {
-              label: 'Grade A (%)',
-              data: filteredData.map((item) => item.yield.grade_distribution.A),
-              backgroundColor: '#3b82f6',
-              borderRadius: 6,
-            },
-            {
-              label: 'Grade B (%)',
-              data: filteredData.map((item) => item.yield.grade_distribution.B),
-              backgroundColor: '#f97316',
-              borderRadius: 6,
-            },
-            {
-              label: 'Grade C (%)',
-              data: filteredData.map((item) => item.yield.grade_distribution.C),
-              backgroundColor: '#10b981',
-              borderRadius: 6,
-            },
-          ],
-        };
-      default:
-        return { labels, datasets: [] };
-    }
-  };
-
-  return (
-    <div>
-      {/* Mobile toggle button */}
-      {isMobile && (
-        <button className="mobile-toggle" onClick={toggleSidebar}>
-          <HamburgerIcon />
-        </button>
-      )}
-
-      {/* Mobile overlay */}
-      {sidebarOpen && isMobile && (
-        <div className="sidebar-overlay show" onClick={closeSidebar}></div>
-      )}
-
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onNavClick={handleNavClick} />
-
-      {/* Main content */}
-      <main className={`main-content ${sidebarOpen ? '' : 'expanded'}`}>
-        <Header onToggleSidebar={toggleSidebar} sidebarOpen={sidebarOpen}>
-          <h1 id="pageTitle" className="h3 text-dark mb-0">
-            <strong>Regenerative Farming Dashboard</strong>
-          </h1>
-        </Header>
-
-        <div className="content p-4">
-          {/* Numeric Displays - Fixed Layout */}
-          <div className="d-grid mb-4" style={{
-            gridTemplateColumns: 'repeat(5, 1fr)',
-            gap: '0.75rem'
-          }}>
-            <NumericDisplay
-              id="organic-matter"
-              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].soil_metrics.organic_matter : 4.8}
-              label="Organic Matter"
-              iconClass="fas fa-leaf"
-              isPercentage={true}
+    return (
+        <div className="min-h-screen bg-gray-50 flex">
+            <Sidebar
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
+                activeItem={activeMenuItem}
+                onItemClick={handleMenuItemClick}
             />
-            <NumericDisplay
-              id="nitrogen"
-              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].soil_metrics.nitrogen : 0.07}
-              label="Soil Nitrogen"
-              iconClass="fas fa-seedling"
-              isPercentage={true}
-            />
-            <NumericDisplay
-              id="carbon-content"
-              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].soil_metrics.total_carbon : 4.0}
-              label="Total Carbon"
-              iconClass="fas fa-cloud"
-              isPercentage={true}
-            />
-            <NumericDisplay
-              id="yield"
-              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].yield.monthly_yield_kg_ha : 2500}
-              label="Monthly Yield (kg/ha)"
-              iconClass="fas fa-tractor"
-              isPercentage={false}
-            />
-            <NumericDisplay
-              id="eutrophication-reduction"
-              value={agriculturalData.length > 0 ? agriculturalData[agriculturalData.length - 1].eutrophication.reduction_percent : 20}
-              label="Eutrophication Reduction"
-              iconClass="fas fa-water"
-              isPercentage={true}
-            />
-          </div>
-
-          {/* Historical Data Table */}
-          <div className="row mb-4">
-            <div className="col-12">
-              <div className="table-container">
-                <div className="table-header">
-                  <h3 className="table-title">Agricultural Data History</h3>
-                  <div className="date-picker-container">
-                    <label htmlFor="history_from">From:</label>
-                    <input
-                      type="date"
-                      id="history_from"
-                      className="form-control"
-                      value={historyDates.from}
-                      onChange={(e) => handleHistoryDateChange('from', e.target.value)}
-                    />
-                    <label htmlFor="history_to">To:</label>
-                    <input
-                      type="date"
-                      id="history_to"
-                      className="form-control"
-                      value={historyDates.to}
-                      onChange={(e) => handleHistoryDateChange('to', e.target.value)}
-                    />
-                  </div>
-                </div>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Crop Type</th>
-                      <th>Organic Matter (%)</th>
-                      <th>Nitrogen (%)</th>
-                      <th>Carbon Content (%)</th>
-                      <th>Monthly Yield (kg/ha)</th>
-                      <th>Eutrophication (kg PO₄-eq/ha)</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {getFilteredData(agriculturalData, historyDates.from, historyDates.to).map((item, index) => (
-                      <tr key={index}>
-                        <td>{new Date(item.timestamp).toLocaleDateString('en-US')}</td>
-                        <td>{item.yield.crop_type}</td>
-                        <td>{item.soil_metrics.organic_matter}</td>
-                        <td>{item.soil_metrics.nitrogen}</td>
-                        <td>{item.soil_metrics.total_carbon}</td>
-                        <td>{item.yield.monthly_yield_kg_ha}</td>
-                        <td>{item.eutrophication.potential_kg_PO4_eq_ha.regenerative}</td>
-                        <td>
-                          <span className={`status-${item.status.toLowerCase()}`}>
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Charts */}
-          <div className="row mb-4">
-            {/* Line Chart */}
-            <div className="col-lg-6 col-md-12 mb-4">
-              <div className="chart-container">
-                <div className="chart-header">
-                  <h3>Performance Metrics Over Time</h3>
-                  <div className="d-flex align-items-center gap-3">
-                    <div className="date-picker-container">
-                      <label htmlFor="line_from">From:</label>
-                      <input
-                        type="date"
-                        id="line_from"
-                        className="form-control"
-                        value={lineChartDates.from}
-                        onChange={(e) => handleLineChartDateChange('from', e.target.value)}
-                      />
-                      <label htmlFor="line_to">To:</label>
-                      <input
-                        type="date"
-                        id="line_to"
-                        className="form-control"
-                        value={lineChartDates.to}
-                        onChange={(e) => handleLineChartDateChange('to', e.target.value)}
-                      />
-                    </div>
-                    <select
-                      className="form-select"
-                      style={{ minWidth: '150px', maxWidth: '200px', marginBottom: '20px' }}
-                      value={lineChartType}
-                      onChange={(e) => setLineChartType(e.target.value)}
-                    >
-                      <option value="soil">Soil Health</option>
-                      <option value="yield">Crop Yield</option>
-                      <option value="costs">Cost Savings</option>
-                    </select>
-                  </div>
-                </div>
-                <LineChart
-                  data={getLineChartData(lineChartType)}
-                  height={300}
-                  colors={{
-                    primary: '#3b82f6',
-                    secondary: '#f97316',
-                    tertiary: '#10b981',
-                    text: '#000000',
-                  }}
+            <div className="flex-1 flex flex-col min-w-0">
+                <Header
+                    onMenuClick={() => setSidebarOpen(true)}
+                    selectedGarden={selectedGarden}
+                    onGardenChange={handleGardenChange}
                 />
-              </div>
-            </div>
-
-            {/* Bar Chart */}
-            <div className="col-lg-6 col-md-12 mb-4">
-              <div className="chart-container">
-                <div className="chart-header">
-                  <h3>Performance by Category</h3>
-                  <div className="d-flex align-items-center gap-3">
-                    <div className="date-picker-container">
-                      <label htmlFor="bar_from">From:</label>
-                      <input
-                        type="date"
-                        id="bar_from"
-                        className="form-control"
-                        value={barChartDates.from}
-                        onChange={(e) => handleBarChartDateChange('from', e.target.value)}
-                      />
-                      <label htmlFor="bar_to">To:</label>
-                      <input
-                        type="date"
-                        id="bar_to"
-                        className="form-control"
-                        value={barChartDates.to}
-                        onChange={(e) => handleBarChartDateChange('to', e.target.value)}
-                      />
+                <div className="bg-white border-b px-4 py-2 flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-sm">
+                        {isConnected ? (
+                            <>
+                                <Wifi className="w-4 h-4 text-green-500" />
+                                <span className="text-green-600">Connected</span>
+                            </>
+                        ) : (
+                            <>
+                                <WifiOff className="w-4 h-4 text-red-500" />
+                                <span className="text-red-600">Disconnected</span>
+                            </>
+                        )}
                     </div>
-                    <select
-                      className="form-select"
-                      style={{ minWidth: '150px', maxWidth: '200px', marginBottom: '20px'}}
-                      value={barChartType}
-                      onChange={(e) => setBarChartType(e.target.value)}
-                    >
-                      <option value="costs">Cost Comparison</option>
-                      <option value="eutrophication">Eutrophication Potential</option>
-                      <option value="yield_grades">Yield Grades</option>
-                    </select>
-                  </div>
+                    {lastUpdated && (
+                        <span className="text-xs text-gray-500">
+                            Last updated: {lastUpdated.toLocaleTimeString()}
+                        </span>
+                    )}
+                    {sensorError && (
+                        <div className="flex items-center gap-2 text-red-600">
+                            <AlertTriangle className="w-4 h-4" />
+                            <span className="text-sm">Connection issues detected</span>
+                        </div>
+                    )}
                 </div>
-                <BarChart
-                  data={getBarChartData(barChartType)}
-                  height={300}
-                  colors={{
-                    primary: '#3b82f6',
-                    secondary: '#f97316',
-                    tertiary: '#10b981',
-                    text: '#000000',
-                  }}
-                />
-              </div>
+                <main className="flex-1 px-4 py-6 overflow-auto">
+                    <div className="flex justify-between items-center mb-6">
+                        <h1 className="text-2xl font-bold text-gray-800">Data Analytics</h1>
+                        <button 
+                            onClick={() => refetchSensorData({ garden_id: selectedGarden, limit: 20 })}
+                            disabled={sensorLoading}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 flex items-center gap-2"
+                        >
+                            {sensorLoading ? 'Refreshing...' : 'Refresh All Data'}
+                        </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                        {metrics.map((metric, index) => (
+                            <MetricLineChart
+                                key={metric.key}
+                                title={metric.label}
+                                icon={metric.icon}
+                                iconColor={metric.iconColor}
+                                color={metric.color}
+                                data={chartDataHooks[index]}
+                                loading={sensorLoading}
+                                error={sensorError}
+                                onRefresh={() => refetchSensorData({ garden_id: selectedGarden, limit: 20 })}
+                            />
+                        ))}
+                    </div>
+                    <DataLogTable data={sensorData} loading={sensorLoading} />
+                </main>
             </div>
-          </div>
         </div>
-      </main>
-    </div>
-  );
+    );
 };
 
-export default Data;
+export default DataPage;
