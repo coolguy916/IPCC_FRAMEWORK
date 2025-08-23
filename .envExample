@@ -1,0 +1,131 @@
+# =================================================================
+# IPCC FRAMEWORK ENVIRONMENT CONFIGURATION (EXAMPLE)
+# =================================================================
+# Copy this file to .env and customize for your setup.
+# The environment is now DYNAMICALLY MANAGED and won't reset!
+#
+# Use: npm run env:setup <mode> to auto-configure
+# Use: npm run env:status to check current configuration
+# =================================================================
+
+# =================================================================
+# APPLICATION MODE CONFIGURATION
+# =================================================================
+# Controls how the application runs (auto-set by npm scripts)
+APP_MODE=both
+NODE_ENV=development
+
+# =================================================================
+# DATABASE CONFIGURATION (DYNAMIC WITH BACKEND)
+# =================================================================
+# Firebase is the primary database for real-time features
+USE_FIREBASE=true
+
+# Firebase Configuration (Real-time Database)
+FIREBASE_API_KEY=AIzaSyD8xIhB_DYAl9e1FeS7ILql2YfxSdnbqHU
+FIREBASE_AUTH_DOMAIN=pcc-5fa54.firebaseapp.com
+FIREBASE_DATABASE_URL=https://ipcc-5fa54-default-rtdb.firebaseio.com
+FIREBASE_PROJECT_ID=ipcc-5fa54
+FIREBASE_STORAGE_BUCKET=ipcc-5fa54.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=481875426357
+FIREBASE_APP_ID=1:481875426357:web:0ac421ed7e70b95614057c
+FIREBASE_MEASUREMENT_ID=G-70NL19SKHL
+
+# MySQL Fallback Configuration
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=
+MYSQL_DATABASE=ipcc_framework
+MYSQL_PORT=3306
+
+# =================================================================
+# API SERVER CONFIGURATION (DYNAMIC PORTS)
+# =================================================================
+# Backend API Server (auto-configured)
+API_PORT=5001
+API_HOST=localhost
+API_BASE_URL=http://localhost:5001/api
+
+# Frontend Development Server
+REACT_APP_API_URL=http://localhost:5001/api
+FRONTEND_URL=http://localhost:3000
+PORT=3000
+
+# =================================================================
+# WEBSOCKET CONFIGURATION (REAL-TIME EFFICIENCY)
+# =================================================================
+# WebSocket for real-time data streaming (uses same port as API)
+WS_PORT=5001
+WS_HOST=localhost
+WS_URL=ws://localhost:5001/ws
+REACT_APP_WS_URL=ws://localhost:5001/ws
+
+# WebSocket Features
+WS_AUTH_ENABLED=false
+WS_HEARTBEAT_ENABLED=true
+WS_HEARTBEAT_INTERVAL=30000
+WS_MAX_CONNECTIONS=100
+WS_AUTO_RECONNECT=true
+WS_RECONNECT_INTERVAL=5000
+
+# =================================================================
+# SERIAL COMMUNICATION (IOT SENSORS)
+# =================================================================
+USE_SERIAL=true
+SERIAL_PORT=COM3
+SERIAL_BAUDRATE=9600
+SERIAL_LINE_DELIMITER=\r\n
+SERIAL_AUTO_SCAN=true
+SERIAL_DYNAMIC_SWITCHING=true
+SERIAL_DB_TABLE=sensor_data
+
+# =================================================================
+# SECURITY CONFIGURATION
+# =================================================================
+# Data Encryption (IMPORTANT: Change these in production!)
+DB_ENCRYPTION_KEY=ipcc-secure-key-2024-agricultural-monitoring-system
+JWT_SECRET=ipcc-jwt-secret-key-for-authentication-2024
+SESSION_SECRET=ipcc-session-secret-for-web-sessions-2024
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
+CORS_CREDENTIALS=true
+
+# =================================================================
+# DEVELOPMENT & DEBUGGING
+# =================================================================
+# Static File Serving
+SERVE_STATIC=false
+BUILD_PATH=./build
+
+# Logging
+LOG_LEVEL=info
+DEBUG_MODE=true
+VERBOSE_LOGGING=false
+
+# =================================================================
+# REAL-TIME DATA INTERVALS (CUSTOMIZE FOR YOUR NEEDS)
+# =================================================================
+# Sensor Data Collection (10 seconds for live updates)
+SENSOR_DATA_INTERVAL=10000
+SENSOR_DATA_RETENTION_DAYS=30
+
+# Task Management (1 minute for task updates)
+TASK_UPDATE_INTERVAL=60000
+TASK_NOTIFICATION_ENABLED=true
+
+# Financial Data (5 minutes for calculations)
+FINANCIAL_DATA_INTERVAL=300000
+FINANCIAL_CALCULATIONS_ENABLED=true
+
+# System Metrics (30 seconds for performance)
+SYSTEM_METRICS_INTERVAL=30000
+PERFORMANCE_MONITORING=true
+
+# =================================================================
+# PRODUCTION OVERRIDES (UNCOMMENT FOR PRODUCTION)
+# =================================================================
+# FIREBASE_DATABASE_URL_PROD=https://your-prod-firebase.firebaseio.com
+# API_BASE_URL_PROD=https://your-api.domain.com/api
+# REACT_APP_API_URL_PROD=https://your-api.domain.com/api
+# NODE_ENV=production

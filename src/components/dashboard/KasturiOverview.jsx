@@ -12,7 +12,7 @@ import Tasks from '../ui/Tasks';
 import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
 import image_url from '../images/image.png';
-import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
+import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
 
 const AgricultureDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);

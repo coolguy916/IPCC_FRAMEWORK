@@ -10,6 +10,9 @@ const dbController = require('../../App/Http/Controllers/databaseController');
 const authController = require('../../App/Http/Controllers/authController');
 const mauiController = require('../../App/Http/Controllers/mauiController');
 
+// Real-time services
+const RealtimeDataService = require('../websocket/realtimeDataService');
+
 class APIServer {
     constructor(database, serialManager = null, websocketManager = null) {
         this.app = express();
@@ -68,16 +71,74 @@ class APIServer {
     }
 
     initializeControllers() {
-        dbController.initializeController(this.database);
+        // Initialize real-time service if websocket manager is available
+        this.realtimeService = null;
+        if (this.websocketManager) {
+            this.realtimeService = new RealtimeDataService(this.websocketManager, this.database);
+        }
+        
+        dbController.initializeController(this.database, this.realtimeService);
         authController.initializeController(this.database);
     }
 
     setupRoutes() {
-        // Your existing routes
+        // Auth routes
         this.app.post('/api/auth/register', authController.register);
         this.app.post('/api/auth/login', authController.login);
-        this.app.post('/api/sensor-data', dbController.insertSensorData);
+        
+        // Legacy routes
         this.app.post('/api/maui-data', mauiController.genericDataHandler);
+
+        // ================================================================================= 
+        // SENSOR DATA ROUTES
+        // ================================================================================= 
+        this.app.post('/api/sensor-data', dbController.insertSensorData);
+        this.app.get('/api/sensor-data', dbController.getSensorData);
+
+        // ================================================================================= 
+        // SITES ROUTES
+        // ================================================================================= 
+        this.app.get('/api/sites', dbController.getSites);
+        this.app.post('/api/sites', dbController.createSite);
+        this.app.put('/api/sites/:site_id', dbController.updateSite);
+
+        // ================================================================================= 
+        // TASKS ROUTES
+        // ================================================================================= 
+        this.app.get('/api/tasks', dbController.getTasks);
+        this.app.post('/api/tasks', dbController.createTask);
+        this.app.put('/api/tasks/:task_id', dbController.updateTask);
+        this.app.delete('/api/tasks/:task_id', dbController.deleteTask);
+
+        // ================================================================================= 
+        // FINANCIAL DATA ROUTES
+        // ================================================================================= 
+        this.app.get('/api/financial-data', dbController.getFinancialData);
+        this.app.post('/api/financial-data', dbController.insertFinancialData);
+
+        // ================================================================================= 
+        // TEAM MEMBERS ROUTES
+        // ================================================================================= 
+        this.app.get('/api/team-members', dbController.getTeamMembers);
+        this.app.post('/api/team-members', dbController.createTeamMember);
+
+        // ================================================================================= 
+        // PROGRAM GOALS ROUTES
+        // ================================================================================= 
+        this.app.get('/api/program-goals', dbController.getProgramGoals);
+        this.app.put('/api/program-goals/:goal_type', dbController.updateProgramGoal);
+
+        // ================================================================================= 
+        // SYSTEM METRICS ROUTES
+        // ================================================================================= 
+        this.app.get('/api/system-metrics', dbController.getSystemMetrics);
+        this.app.post('/api/system-metrics', dbController.insertSystemMetrics);
+
+        // ================================================================================= 
+        // DOSM STATS ROUTES
+        // ================================================================================= 
+        this.app.get('/api/dosm-stats', dbController.getDOSMStats);
+        this.app.put('/api/dosm-stats', dbController.updateDOSMStats);
 
         // Enhanced health check with system info
         this.app.get('/api/health', (req, res) => {

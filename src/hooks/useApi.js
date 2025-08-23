@@ -143,7 +143,7 @@ class APIClient {
             this.wsConnection = new WebSocket(wsUrl);
 
             this.wsConnection.onopen = () => {
-                console.log('WebSocket connected');
+                console.log('📡 WebSocket connected for real-time data');
                 if (this.wsReconnectTimer) {
                     clearInterval(this.wsReconnectTimer);
                     this.wsReconnectTimer = null;
@@ -155,6 +155,11 @@ class APIClient {
             this.wsConnection.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
+                    console.log('📊 Real-time data received:', data.type);
+                    
+                    // Handle different message types
+                    this._handleRealtimeMessage(data);
+                    
                     if (callbacks.onMessage) callbacks.onMessage(data);
                     this._triggerListeners('message', data);
                 } catch (error) {
@@ -163,7 +168,7 @@ class APIClient {
             };
 
             this.wsConnection.onclose = () => {
-                console.log('WebSocket disconnected');
+                console.log('📡 WebSocket disconnected');
                 if (callbacks.onClose) callbacks.onClose();
                 this._triggerListeners('connected', false);
                 this._attemptReconnect(callbacks);
@@ -181,6 +186,68 @@ class APIClient {
         }
 
         return this.wsConnection;
+    }
+
+    // Handle real-time messages
+    _handleRealtimeMessage(data) {
+        switch (data.type) {
+            case 'initial_data':
+                this._triggerListeners('initial_data', data.data);
+                break;
+            case 'realtime_data':
+                this._triggerListeners(`${data.dataType}_update`, data.data);
+                break;
+            case 'sensor_data_update':
+                this._triggerListeners('sensor_data_update', data.data);
+                break;
+            case 'task_update':
+                this._triggerListeners('task_update', data.data);
+                break;
+            case 'system_metrics_update':
+                this._triggerListeners('system_metrics_update', data.data);
+                break;
+            case 'data_response':
+                this._triggerListeners(`${data.dataType}_response`, data.data);
+                break;
+            case 'error':
+                console.error('WebSocket error message:', data.message);
+                this._triggerListeners('websocket_error', data);
+                break;
+            default:
+                console.log('Unknown WebSocket message type:', data.type);
+        }
+    }
+
+    // Subscribe to real-time data updates
+    subscribe(dataType, siteId = 'site_a_3_acres', interval = 30000) {
+        if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
+            this.wsConnection.send(JSON.stringify({
+                type: 'subscribe',
+                payload: { dataType, siteId, interval }
+            }));
+            console.log(`📡 Subscribed to ${dataType} updates`);
+        }
+    }
+
+    // Unsubscribe from real-time data updates
+    unsubscribe(dataType, siteId = 'site_a_3_acres') {
+        if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
+            this.wsConnection.send(JSON.stringify({
+                type: 'unsubscribe',
+                payload: { dataType, siteId }
+            }));
+            console.log(`📡 Unsubscribed from ${dataType} updates`);
+        }
+    }
+
+    // Request specific data
+    requestData(dataType, siteId = 'site_a_3_acres', filters = {}) {
+        if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
+            this.wsConnection.send(JSON.stringify({
+                type: 'request_data',
+                payload: { dataType, siteId, filters }
+            }));
+        }
     }
 
     _attemptReconnect(callbacks) {
@@ -368,6 +435,11 @@ export const useApi = () => {
         // Event listeners
         on: apiClient.on.bind(apiClient),
         off: apiClient.off.bind(apiClient),
+        
+        // Real-time WebSocket methods
+        subscribe: apiClient.subscribe.bind(apiClient),
+        unsubscribe: apiClient.unsubscribe.bind(apiClient),
+        requestData: apiClient.requestData.bind(apiClient),
         
         // Direct API access
         api: apiClient

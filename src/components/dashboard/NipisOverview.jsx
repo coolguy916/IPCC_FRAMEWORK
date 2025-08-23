@@ -18,7 +18,7 @@ import image_url from '../images/limaunipis.png';
 import LandPlotsMap from '../ui/LandPlotMaps'; 
 
 // Import hook API kustom Anda
-import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
+import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
 
 // =================================================================================
 // Komponen UI yang Diperbarui dan Disempurnakan
