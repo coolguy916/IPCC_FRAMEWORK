@@ -274,7 +274,7 @@ const DataPage = () => {
         const { conventional, regenerative } = appConfig.baseValues;
         const { palette } = appConfig;
         return {
-            yieldChartData: { labels: ['Conventional Ref.', 'Regenerative'], datasets: [{ label: 'Yield Potential (kg/ha)', data: [conventional.yield, regenerative.yield], backgroundColor: [palette.secondary_light, palette.primary_light], borderColor: [palette.secondary, palette.primary], borderWidth: 1, borderRadius: 4 }] },
+            yieldChartData: { labels: ['Total Conventional'], datasets: [{ label: 'Yield Potential (kg/ha)', data: [conventional.yield, regenerative.yield], backgroundColor: [palette.secondary_light, palette.primary_light], borderColor: [palette.secondary, palette.primary], borderWidth: 1, borderRadius: 4 }] },
             costBenefitChartData: { labels: ['Conventional Ref.', 'Regenerative'], datasets: [{ label: 'Cost-Benefit Ratio', data: [conventional.costBenefit, regenerative.costBenefit], backgroundColor: [palette.secondary_light, palette.primary_light], borderColor: [palette.secondary, palette.primary], borderWidth: 1, borderRadius: 4 }] }
         };
     }, [appConfig]);

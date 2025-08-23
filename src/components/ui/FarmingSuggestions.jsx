@@ -26,11 +26,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'watering',
                 type: 'critical',
                 icon: Droplet,
-                title: 'Irigasi Segera Diperlukan',
-                description: `Kelembaban tanah rendah (${soil_moisture}%)`,
-                action: `Siram dengan 15-20 liter air per pohon jeruk. Fokus pada area root zone dengan radius 1.5m dari batang.`,
+                title: 'Immediate Irrigation Needed',
+                description: `Low soil moisture (${soil_moisture}%)`,
+                action: `Water with 15-20 liters per citrus tree. Focus on the root zone area with a radius of 1.5m from the trunk.`,
                 priority: 'high',
-                timeframe: 'Segera (dalam 2 jam)',
+                timeframe: 'Immediately (within 2 hours)',
                 color: 'text-rose-700',
                 bgColor: 'bg-gradient-to-r from-rose-50 to-pink-50',
                 borderColor: 'border-rose-300',
@@ -41,11 +41,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'drainage',
                 type: 'warning',
                 icon: AlertTriangle,
-                title: 'Drainase Diperlukan',
-                description: `Kelembaban tanah terlalu tinggi (${soil_moisture}%)`,
-                action: 'Buat saluran drainase sedalam 30cm di sekitar pohon. Hindari penyiraman selama 2-3 hari.',
+                title: 'Drainage Required',
+                description: `Soil moisture too high (${soil_moisture}%)`,
+                action: 'Create drainage channels 30cm deep around the tree. Avoid watering for 2-3 days.',
                 priority: 'medium',
-                timeframe: '6-12 jam',
+                timeframe: '6-12 hours',
                 color: 'text-amber-700',
                 bgColor: 'bg-gradient-to-r from-amber-50 to-yellow-50',
                 borderColor: 'border-amber-300',
@@ -59,11 +59,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'cooling',
                 type: 'warning',
                 icon: Sun,
-                title: 'Perlindungan dari Panas',
-                description: `Suhu tinggi (${temperature}°C) dapat stres pada tanaman`,
-                action: 'Pasang shade net 40% atau mulching organik setebal 5-8cm. Tingkatkan frekuensi penyiraman ringan.',
+                title: 'Heat Protection',
+                description: `High temperature (${temperature}°C) may stress plants`,
+                action: 'Install 40% shade net or 5-8cm thick organic mulch. Increase frequency of light watering.',
                 priority: 'medium',
-                timeframe: 'Hari ini',
+                timeframe: 'Today',
                 color: 'text-orange-700',
                 bgColor: 'bg-gradient-to-r from-orange-50 to-amber-50',
                 borderColor: 'border-orange-300',
@@ -77,11 +77,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'ph_adjustment',
                 type: 'action',
                 icon: Beaker,
-                title: 'Koreksi pH Tanah',
-                description: `pH tanah terlalu asam (${ph_level})`,
-                action: 'Aplikasikan kapur dolomit 200-300g per pohon. Campurkan dengan kompost matang 2-3 kg per pohon.',
+                title: 'Soil pH Correction',
+                description: `Soil pH too acidic (${ph_level})`,
+                action: 'Apply 200-300g dolomite lime per tree. Mix with 2-3kg mature compost per tree.',
                 priority: 'medium',
-                timeframe: 'Minggu ini',
+                timeframe: 'This week',
                 color: 'text-blue-700',
                 bgColor: 'bg-gradient-to-r from-blue-50 to-cyan-50',
                 borderColor: 'border-blue-300',
@@ -92,11 +92,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'ph_lower',
                 type: 'action',
                 icon: Beaker,
-                title: 'Turunkan pH Tanah',
-                description: `pH tanah terlalu basa (${ph_level})`,
-                action: 'Aplikasikan sulfur elemental 50-80g per pohon atau kompos organik asam 3-4 kg per pohon.',
+                title: 'Lower Soil pH',
+                description: `Soil pH too alkaline (${ph_level})`,
+                action: 'Apply 50-80g elemental sulfur per tree or 3-4kg acidic organic compost per tree.',
                 priority: 'medium',
-                timeframe: 'Minggu ini',
+                timeframe: 'This week',
                 color: 'text-indigo-700',
                 bgColor: 'bg-gradient-to-r from-indigo-50 to-purple-50',
                 borderColor: 'border-indigo-300',
@@ -110,11 +110,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'nitrogen',
                 type: 'action',
                 icon: Leaf,
-                title: 'Pemupukan Nitrogen',
-                description: `Kadar nitrogen rendah (${nitrogen} ppm)`,
-                action: 'Aplikasikan pupuk organik cair NPK dengan dosis 100ml per 10 liter air. Siram ke area root zone 2x seminggu.',
+                title: 'Nitrogen Fertilization',
+                description: `Low nitrogen level (${nitrogen} ppm)`,
+                action: 'Apply liquid organic NPK fertilizer at 100ml per 10 liters of water. Water the root zone twice a week.',
                 priority: 'high',
-                timeframe: '2-3 hari',
+                timeframe: '2-3 days',
                 color: 'text-emerald-700',
                 bgColor: 'bg-gradient-to-r from-emerald-50 to-teal-50',
                 borderColor: 'border-emerald-300',
@@ -128,11 +128,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'microorganisms',
                 type: 'enhancement',
                 icon: Activity,
-                title: 'Injeksi Mikroorganisme',
-                description: `Bahan organik rendah (${organic_matter}%)`,
-                action: 'Injeksi mikrolaga EM4 250ml dalam 20 liter air. Aplikasikan 2 liter per pohon setiap 2 minggu.',
+                title: 'Microorganism Injection',
+                description: `Low organic matter (${organic_matter}%)`,
+                action: 'Inject EM4 250ml in 20 liters of water. Apply 2 liters per tree every 2 weeks.',
                 priority: 'medium',
-                timeframe: 'Minggu ini',
+                timeframe: 'This week',
                 color: 'text-violet-700',
                 bgColor: 'bg-gradient-to-r from-violet-50 to-purple-50',
                 borderColor: 'border-violet-300',
@@ -147,11 +147,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                 id: 'pruning',
                 type: 'maintenance',
                 icon: Scissors,
-                title: 'Pemangkasan Musiman',
-                description: 'Waktu optimal untuk pemangkasan',
-                action: 'Pangkas cabang yang mati, sakit, dan tumbuh ke dalam. Potong water sprouts dan sucker shoots.',
+                title: 'Seasonal Pruning',
+                description: 'Optimal time for pruning',
+                action: 'Prune dead, diseased, and inward-growing branches. Cut water sprouts and sucker shoots.',
                 priority: 'low',
-                timeframe: 'Bulan ini',
+                timeframe: 'This month',
                 color: 'text-slate-700',
                 bgColor: 'bg-gradient-to-r from-slate-50 to-gray-50',
                 borderColor: 'border-slate-300',
@@ -164,11 +164,11 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
             id: 'soil_health',
             type: 'enhancement',
             icon: Lightbulb,
-            title: 'Peningkatan Kesehatan Tanah',
-            description: 'Rekomendasi rutin untuk tanah sehat',
-            action: 'Aplikasikan kompos matang 5-8 kg per pohon setiap 3 bulan. Tambahkan biochar 500g per pohon untuk retensi air.',
+            title: 'Soil Health Improvement',
+            description: 'Routine recommendation for healthy soil',
+            action: 'Apply 5-8kg mature compost per tree every 3 months. Add 500g biochar per tree for water retention.',
             priority: 'low',
-            timeframe: 'Rutin bulanan',
+            timeframe: 'Monthly routine',
             color: 'text-teal-700',
             bgColor: 'bg-gradient-to-r from-teal-50 to-cyan-50',
             borderColor: 'border-teal-300',
@@ -193,7 +193,7 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
     if (loading) {
         return (
             <div className="bg-white rounded-lg p-6 shadow-sm border h-full">
-                <h3 className="font-semibold text-gray-900 mb-4">Rekomendasi Tindakan</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">Condition and Suggestion</h3>
                 <div className="animate-pulse space-y-4">
                     {[1, 2, 3].map(i => (
                         <div key={i} className="h-20 bg-gray-200 rounded"></div>
@@ -206,10 +206,10 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
     return (
         <div className="bg-white rounded-lg p-6 shadow-sm border h-full">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900">Rekomendasi Tindakan</h3>
+                <h3 className="font-semibold text-gray-900">Condition & Suggestion</h3>
                 <div className="flex items-center text-sm text-gray-500">
                     <Activity className="w-4 h-4 mr-1" />
-                    {suggestions.length} saran
+                    {suggestions.length} suggestions
                 </div>
             </div>
             
@@ -247,7 +247,7 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                                 <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-white/50 mb-3 shadow-sm">
                                     <p className="text-xs font-semibold text-gray-700 mb-2 flex items-center gap-1">
                                         <Lightbulb className="w-3 h-3" />
-                                        Tindakan yang Disarankan:
+                                        Recommended Action:
                                     </p>
                                     <p className="text-sm text-gray-700 leading-relaxed">
                                         {suggestion.action}
@@ -260,8 +260,8 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
                                         suggestion.priority === 'medium' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 
                                         'bg-gradient-to-r from-emerald-500 to-teal-500'
                                     }`}>
-                                        {suggestion.priority === 'high' ? 'Prioritas Tinggi' :
-                                         suggestion.priority === 'medium' ? 'Prioritas Sedang' : 'Prioritas Rendah'}
+                                        {suggestion.priority === 'high' ? 'High Priority' :
+                                         suggestion.priority === 'medium' ? 'Medium Priority' : 'Low Priority'}
                                     </span>
                                     <div className="flex items-center gap-1 text-gray-600 bg-white/50 px-2 py-1 rounded-full">
                                         <Clock className="w-3 h-3" />
@@ -277,7 +277,7 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
             {suggestions.length === 0 && (
                 <div className="text-center py-8 text-gray-500">
                     <CheckCircle className="w-12 h-12 mx-auto mb-2 text-green-400" />
-                    <p>Semua parameter dalam kondisi optimal</p>
+                    <p>All parameters are in optimal condition</p>
                 </div>
             )}
         </div>

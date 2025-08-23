@@ -23,10 +23,6 @@ import LandPlotsMap from '../ui/LandPlotMaps';
 import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
 import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreTasks } from '../../hooks/useFirestore';
 
-// =================================================================================
-// Updated and Enhanced UI Components
-// =================================================================================
-
 // [NEW FUNCTION] To get weather icon and description based on WMO code
 const getWeatherInfo = (code) => {
     switch (true) {
@@ -152,10 +148,7 @@ const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
     );
 };
 
-
-// =================================================================================
 // Main Page Component
-// =================================================================================
 const NipisOverview = () => {
     
     // API and connection hooks
@@ -229,6 +222,23 @@ const NipisOverview = () => {
         return () => { if(fetchControllerRef.current) fetchControllerRef.current.abort(); }
     }, [isConnected, selectedGarden]);
 
+    const latestSensorData = useMemo(() => sensorData?.[0] || null, [sensorData]);
+
+    // jiii masukin sini
+    const calculatedYield = useMemo(() => {
+        if (!latestSensorData) return 0;
+        const { nitrogen, organic_matter, soil_health, temperature, soil_moisture } = latestSensorData;
+        if (!nitrogen || !organic_matter || !soil_health || !temperature || !soil_moisture) return 0;
+        const yieldKg = 42434.72 + (-8647.17 * nitrogen) + (1751.18 * organic_matter) + (-8005.21 * soil_health) + (-29.76 * temperature) + (-4.01 * soil_moisture);
+        return Math.max(0, yieldKg.toFixed(2)); // Ensure yield is not negative
+    }, [latestSensorData]);
+
+    // Calculate revenue based on yield
+    const calculatedRevenue = useMemo(() => {
+        const revenue = calculatedYield * 3.65;
+        return revenue.toFixed(2);
+    }, [calculatedYield]);
+
     const chartData = useMemo(() => {
         if (!sensorData || sensorData.length === 0) { return { labels: [], datasets: {} }; }
         const groupedData = sensorData.reduce((acc, reading) => {
@@ -250,22 +260,21 @@ const NipisOverview = () => {
         }};
     }, [sensorData]);
 
-    const latestSensorData = useMemo(() => sensorData?.[0] || null, [sensorData]);
-
     const metricsData = useMemo(() => {
         const latest = latestSensorData;
         return [
-            { icon: Leaf, title: "Total Carbon", value: latest?.soil_health ? `${latest.soil_health}%` : "N/A", description: "Excellent growth.", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
-            { icon: Activity, title: "Soil Organic Carbon", value: latest?.temperature ? `${latest.temperature}°C` : "N/A", description: "Optimal temperature.", iconColor: "text-orange-500" },
-            { icon: Droplet, title: "Cation Exchange", value: latest?.soil_moisture ? `${latest.soil_moisture}%` : "N/A", description: "Good ventilation needed.", iconColor: "text-blue-400" },
-            { icon: Droplet, title: "Organic Matter", value: latest?.ph_level || "N/A", description: "Ideal for nutrients.", iconColor: "text-teal-500" },
-            { icon: Thermometer, title: "Temperature", value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "N/A", description: "Sufficient for roots.", iconColor: "text-purple-500" },
-            { icon: Wind, title: "Soil Moisture", value: latest?.potassium ? `${latest.potassium}ppm` : "N/A", description: "Promotes vigor.", iconColor: "text-sky-500" },
-            { icon: Sun, title: "Soil pH", value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "N/A", description: "Key for growth.", iconColor: "text-yellow-500" },
-            { icon: BarChart3, title: "NPK", value: latest?.organic_matter ? `${latest.organic_matter}%` : "N/A", description: "Within ideal range.", iconColor: "text-indigo-500" },
+            { icon: Leaf, title: "Total Carbon", value: latest?.soil_health ? `${latest.soil_health}%` : "8", description: "Excellent growth.", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
+            { icon: Activity, title: "Soil Organic Carbon", value: latest?.temperature ? `${latest.temperature}°C` : "8", description: "Optimal temperature.", iconColor: "text-orange-500" },
+            { icon: Droplet, title: "Cation Exchange", value: latest?.soil_moisture ? `${latest.soil_moisture}%` : "8", description: "Good ventilation needed.", iconColor: "text-blue-400" },
+            { icon: Droplet, title: "Organic Matter", value: latest?.ph_level || "8", description: "Ideal for nutrients.", iconColor: "text-teal-500" },
+            { icon: Thermometer, title: "Temperature", value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "8", description: "Sufficient for roots.", iconColor: "text-purple-500" },
+            { icon: Wind, title: "Soil Moisture", value: latest?.potassium ? `${latest.potassium}ppm` : "8", description: "Promotes vigor.", iconColor: "text-sky-500" },
+            { icon: Sun, title: "Soil pH", value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "8", description: "Key for growth.", iconColor: "text-yellow-500" },
+            { icon: BarChart3, title: "NPK", value: latest?.organic_matter ? `${latest.organic_matter}%` : "8", description: "Within ideal range.", iconColor: "text-indigo-500" },
         ];
     }, [latestSensorData]);
     
+
     const connectionStatus = useMemo(() => {
         if (error || sensorError) {
             return {
@@ -298,7 +307,6 @@ const NipisOverview = () => {
             pulse: false
         };
     }, [isConnected, wsConnected, error, sensorError]);
-
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -337,7 +345,14 @@ const NipisOverview = () => {
                                 {metricsData.map((metric, index) => <MetricCard key={index} {...metric} loading={sensorLoading && !latestSensorData} />)}
                             </div>
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <ProductionOverview totalProduction={productionData?.total_production || 0} productionUnit={productionData?.unit || "kg"} totalLandArea={productionData?.land_area || "0 acres"} landUsagePercentage={productionData?.land_usage || 0} revenue={productionData?.revenue || "$0"} loading={loading} />
+                                <ProductionOverview 
+                                    totalProduction={calculatedYield} 
+                                    productionUnit="kg" 
+                                    totalLandArea={productionData?.land_area || "3 acres"} 
+                                    landUsagePercentage={productionData?.land_usage || 0} 
+                                    revenue={`RM ${calculatedRevenue}`} 
+                                    loading={loading || sensorLoading} 
+                                />
                                 <FarmingSuggestions sensorData={latestSensorData} loading={sensorLoading} />
                             </div>
                             <SensorChart data={chartData} availableMetrics={[{ key: 'soilMoisture', label: 'Soil Moisture' }, { key: 'temperature', label: 'Temperature' }, { key: 'phLevel', label: 'pH Level' }, { key: 'soilNitrogen', label: 'Soil Nitrogen' }]} defaultSelectedMetrics={['soilMoisture', 'temperature']} loading={sensorLoading} error={sensorError} onRefresh={refetchSensorData} />
