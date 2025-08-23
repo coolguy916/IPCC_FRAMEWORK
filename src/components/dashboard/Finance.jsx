@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import {
-    Leaf, Droplet, Users, ShieldCheck, LandPlot, Globe, Handshake, Landmark, TrendingUp, CheckCircle, Scale, RefreshCw, BarChartHorizontal
+    Leaf, Droplet, Users, ShieldCheck, LandPlot, Globe, Handshake, Landmark, TrendingUp, CheckCircle, Scale, RefreshCw, BarChartHorizontal, Target, Heart, Zap, Book, Fish, TreePine
 } from 'lucide-react';
 
 // Core Layout Components
@@ -48,6 +48,123 @@ const environmentalImpactData = {
         { title: 'Provide Renewable Energy', description: 'Integrating clean energy sources into farming operations to minimize our carbon footprint.' }
     ]
 };
+
+// SDGs Impact Data for Regenerative Farming - Based on Scientific Research
+// Note: All data points are research-based estimates and should be validated with current studies
+const sdgsImpactData = [
+    {
+        goal: 1,
+        title: "No Poverty",
+        description: "Regenerative farming creates sustainable livelihoods for smallholder farmers through increased soil productivity and reduced input costs.",
+        impact: "20-40% increase in farmer profitability (estimated range)",
+        icon: Target,
+        color: "#E5243B",
+        metrics: [
+            { label: "Input cost reduction", value: "15-25%" },
+            { label: "Yield stability", value: "+improved" }
+        ],
+        sources: "Estimated based on reduced input costs and improved yield stability from regenerative practices",
+        disclaimer: "Data ranges based on general regenerative farming studies - specific percentages vary by region and crop"
+    },
+    {
+        goal: 2,
+        title: "Zero Hunger",
+        description: "Enhanced soil health and biodiversity lead to more nutritious food production and improved food security for farming communities.",
+        impact: "10-29% yield increase potential in degraded soils",
+        icon: Leaf,
+        color: "#DDA63A",
+        metrics: [
+            { label: "Yield resilience", value: "+20-30%" },
+            { label: "Nutrient density", value: "Variable" }
+        ],
+        sources: "Gattinger et al. (2012) - meta-analysis of organic vs conventional yields",
+        disclaimer: "Yield improvements typically seen after 3-5 year transition period"
+    },
+    {
+        goal: 3,
+        title: "Good Health",
+        description: "Reduced chemical pesticide use and improved soil microbiome contribute to healthier food systems and communities.",
+        impact: "Significant reduction in synthetic chemical exposure",
+        icon: Heart,
+        color: "#4C9F38",
+        metrics: [
+            { label: "Pesticide reduction", value: "50-90%" },
+            { label: "Health co-benefits", value: "Positive" }
+        ],
+        sources: "Typical reductions in regenerative/organic systems (variable by practice)",
+        disclaimer: "Health benefits are qualitative and vary by implementation"
+    },
+    {
+        goal: 6,
+        title: "Clean Water",
+        description: "Regenerative practices improve water retention, reduce erosion, and minimize agricultural runoff that pollutes water sources.",
+        impact: "30-50% improvement in water infiltration rates",
+        icon: Droplet,
+        color: "#26BDE2",
+        metrics: [
+            { label: "Water retention", value: "+30-50%" },
+            { label: "Erosion reduction", value: "Up to 90%" }
+        ],
+        sources: "Soil Health Institute studies on cover crops and no-till practices",
+        disclaimer: "Results vary significantly by soil type and climate conditions"
+    },
+    {
+        goal: 7,
+        title: "Affordable Energy",
+        description: "Integration of renewable energy systems and biogas from organic waste reduces energy costs for farming operations.",
+        impact: "20-40% reduction in external energy inputs",
+        icon: Zap,
+        color: "#FCC30B",
+        metrics: [
+            { label: "Fuel savings", value: "20-30%" },
+            { label: "Energy efficiency", value: "Improved" }
+        ],
+        sources: "Estimated from reduced tillage and synthetic fertilizer production energy",
+        disclaimer: "Energy savings primarily from reduced tillage and synthetic inputs"
+    },
+    {
+        goal: 13,
+        title: "Climate Action",
+        description: "Carbon sequestration in soils and reduced emissions from synthetic fertilizers contribute significantly to climate mitigation.",
+        impact: "0.3-2.0 tC/ha/yr soil carbon sequestration potential",
+        icon: Globe,
+        color: "#3F7E44",
+        metrics: [
+            { label: "Carbon sequestration", value: "0.3-2.0 tC/ha/yr" },
+            { label: "GHG reduction", value: "10-40%" }
+        ],
+        sources: "Minasny et al. (2017), Paustian et al. (2016) - soil carbon sequestration studies",
+        disclaimer: "Carbon sequestration rates highly variable by climate, soil type, and management"
+    },
+    {
+        goal: 14,
+        title: "Life Below Water",
+        description: "Reduced agricultural runoff and elimination of harmful chemicals protect marine ecosystems and water quality.",
+        impact: "Significant reduction in nutrient and chemical runoff",
+        icon: Fish,
+        color: "#0A97D9",
+        metrics: [
+            { label: "Nitrate leaching", value: "-40-70%" },
+            { label: "Chemical runoff", value: "Minimized" }
+        ],
+        sources: "Studies on cover crops and reduced fertilizer applications",
+        disclaimer: "Pollution reduction depends on specific practices and watershed characteristics"
+    },
+    {
+        goal: 15,
+        title: "Life on Land",
+        description: "Regenerative farming practices restore biodiversity, improve soil health, and create habitats for wildlife.",
+        impact: "2-5x increase in beneficial insect populations",
+        icon: TreePine,
+        color: "#56C02B",
+        metrics: [
+            { label: "Soil biodiversity", value: "+50-200%" },
+            { label: "Wildlife habitat", value: "Enhanced" }
+        ],
+        sources: "Bengtsson et al. (2005) - biodiversity in organic farming systems",
+        disclaimer: "Biodiversity benefits vary greatly by local ecosystem and farming transition period"
+    }
+];
 const socialImpactData = { 
     title: 'Social', 
     summary: 'Fostering trust and collaboration across the entire value chain for shared prosperity.', 
@@ -139,6 +256,101 @@ const FinancialComparisonChart = ({ title, data, loading, onRefresh }) => {
             </div>
             <div className="flex-grow h-96">
                 <LineChart data={data} options={chartOptions} />
+            </div>
+        </div>
+    );
+};
+
+const SDGCard = ({ sdg }) => {
+    const { goal, title, description, impact, icon: Icon, color, metrics, sources, disclaimer } = sdg;
+    
+    return (
+        <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+            <div className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg" style={{ backgroundColor: color }}>
+                            {goal}
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-slate-800">{title}</h3>
+                            <p className="text-sm text-slate-500">SDG Goal {goal}</p>
+                        </div>
+                    </div>
+                    <Icon className="w-8 h-8" style={{ color: color }} />
+                </div>
+                
+                <p className="text-sm text-slate-600 mb-4 leading-relaxed">{description}</p>
+                
+                <div className="bg-slate-50 rounded-lg p-4 mb-4">
+                    <p className="text-sm font-semibold text-slate-700 mb-2">Key Impact:</p>
+                    <p className="text-base font-bold" style={{ color: color }}>{impact}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                    {metrics.map((metric, index) => (
+                        <div key={index} className="text-center">
+                            <p className="text-2xl font-bold text-slate-800">{metric.value}</p>
+                            <p className="text-xs text-slate-500">{metric.label}</p>
+                        </div>
+                    ))}
+                </div>
+                
+                {/* Sources and Disclaimer */}
+                <div className="border-t border-slate-200 pt-4">
+                    <div className="mb-2">
+                        <p className="text-xs font-medium text-slate-600 mb-1">Source:</p>
+                        <p className="text-xs text-slate-500 leading-relaxed">{sources}</p>
+                    </div>
+                    {disclaimer && (
+                        <div>
+                            <p className="text-xs font-medium text-amber-600 mb-1">Note:</p>
+                            <p className="text-xs text-amber-600 leading-relaxed">{disclaimer}</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const SDGsOverview = () => {
+    const totalGoals = sdgsImpactData.length;
+    
+    return (
+        <div className="bg-gradient-to-br from-blue-50 to-green-50 rounded-xl p-6 mb-8">
+            <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">SDGs Impact Dashboard</h3>
+                <p className="text-slate-600">How regenerative farming contributes to UN Sustainable Development Goals</p>
+                <p className="text-xs text-slate-500 mt-2">
+                    * All data ranges are estimates based on scientific literature and may vary by location, climate, and implementation
+                </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="text-center">
+                    <div className="w-16 h-16 mx-auto bg-blue-500 rounded-full flex items-center justify-center mb-2">
+                        <Target className="w-8 h-8 text-white" />
+                    </div>
+                    <p className="text-3xl font-bold text-blue-600">{totalGoals}</p>
+                    <p className="text-sm text-slate-600">SDGs Addressed</p>
+                </div>
+                
+                <div className="text-center">
+                    <div className="w-16 h-16 mx-auto bg-green-500 rounded-full flex items-center justify-center mb-2">
+                        <TrendingUp className="w-8 h-8 text-white" />
+                    </div>
+                    <p className="text-3xl font-bold text-green-600">Variable</p>
+                    <p className="text-sm text-slate-600">Impact Range</p>
+                </div>
+                
+                <div className="text-center">
+                    <div className="w-16 h-16 mx-auto bg-orange-500 rounded-full flex items-center justify-center mb-2">
+                        <Book className="w-8 h-8 text-white" />
+                    </div>
+                    <p className="text-3xl font-bold text-orange-600">Research</p>
+                    <p className="text-sm text-slate-600">Based Data</p>
+                </div>
             </div>
         </div>
     );
@@ -267,6 +479,20 @@ const FinancePage = () => {
                         </div>
                     </div>
                     
+                    {/* SDGs Impact Section */}
+                    <div className="mb-12">
+                        <SectionHeader 
+                            title="UN Sustainable Development Goals Impact" 
+                            subtitle="How regenerative farming practices contribute to global sustainability targets and create measurable positive impact." 
+                        />
+                        <SDGsOverview />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {sdgsImpactData.map((sdg, index) => (
+                                <SDGCard key={index} sdg={sdg} />
+                            ))}
+                        </div>
+                    </div>
+
                     {/* ESG Section */}
                     <div className="mb-12">
                         <SectionHeader 
@@ -281,7 +507,7 @@ const FinancePage = () => {
                     </div>
 
                     {/* Financial & National Context Section */}
-                    <div>
+                    {/* <div>
                          <SectionHeader 
                             title="Financial & Economic Insights"
                             subtitle="Tracking financial performance against the broader national economic landscape."
@@ -294,7 +520,7 @@ const FinancePage = () => {
                         <div className="mt-8">
                             <DOSMDataWidget dosmStats={dosmStats}/>
                         </div>
-                    </div>
+                    </div> */}
                 </main>
             </div>
         </div>

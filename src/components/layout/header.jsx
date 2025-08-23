@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useMemo } from 'react';
+// Tambahkan 'useLocation' untuk membaca URL browser
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, Menu } from 'lucide-react';
 
-// Fungsi bantuan untuk mendapatkan salam berdasarkan waktu
+// Fungsi bantuan getGreeting (tidak berubah)
 const getGreeting = () => {
   const hour = new Date().getHours();
   if (hour < 12) return "Good Morning";
@@ -10,10 +11,9 @@ const getGreeting = () => {
   return "Good Evening";
 };
 
-// Komponen Toggle Switch dengan latar hijau
+// Komponen ToggleGardenSelector (tidak berubah, sudah bagus)
 const ToggleGardenSelector = ({ selected, onSelectionChange, options }) => {
     const [option1, option2] = options;
-
     return (
         <div className="relative flex w-60 items-center rounded-full bg-green-600 p-1">
             <span
@@ -25,14 +25,14 @@ const ToggleGardenSelector = ({ selected, onSelectionChange, options }) => {
             <button
                 onClick={() => onSelectionChange(option1)}
                 className={`relative z-10 flex-1 rounded-full py-1.5 text-sm font-bold transition-colors duration-300 ease-in-out focus:outline-none`}
-                style={{ color: selected === option1 ? '#22c55e' : 'white' }} // Warna hijau saat aktif
+                style={{ color: selected === option1 ? '#22c55e' : 'white' }}
             >
               {option1}
             </button>
             <button
               onClick={() => onSelectionChange(option2)}
               className={`relative z-10 flex-1 rounded-full py-1.5 text-sm font-bold transition-colors duration-300 ease-in-out focus:outline-none`}
-              style={{ color: selected === option2 ? '#22c55e' : 'white' }} // Warna hijau saat aktif
+              style={{ color: selected === option2 ? '#22c55e' : 'white' }}
             >
                 {option2}
             </button>
@@ -40,19 +40,35 @@ const ToggleGardenSelector = ({ selected, onSelectionChange, options }) => {
     );
 };
 
+
 const Header = ({ 
   onMenuClick,
   notifications = 15,
   user = { initials: "VG", name: "Admin" }
 }) => {
   const navigate = useNavigate();
+  const location = useLocation(); // Hook untuk mendapatkan info URL
   const greeting = getGreeting();
-  const [selectedGarden, setSelectedGarden] = useState('Katsuri Lime');
-  const gardenOptions = ['Katsuri Lime', 'Key Lime'];
+  // Ubah nama opsi agar cocok dengan nama file/komponen
+  const gardenOptions = ['Kasturi Lime', 'Key Lime'];
 
+  // PERUBAHAN 1: Hapus `useState`. Tentukan kebun aktif dari URL.
+  // Ini memastikan toggle selalu sinkron dengan halaman yang ditampilkan.
+  const selectedGarden = useMemo(() => {
+    if (location.pathname.includes('/key-lime')) {
+      return 'Key Lime';
+    }
+    // Jadikan Kasturi sebagai default untuk semua rute overview lainnya
+    return 'Kasturi Lime';
+  }, [location.pathname]);
+
+  // PERUBAHAN 2: Fungsi ini sekarang akan mengubah URL, bukan state lokal.
   const handleGardenChange = (garden) => {
-    setSelectedGarden(garden);
-    navigate('/overview');
+    if (garden === 'Key Lime') {
+      navigate('/overview/key-lime');
+    } else if (garden === 'Kasturi Lime') {
+      navigate('/overview/kasturi-lime');
+    }
   };
 
   return (
@@ -77,6 +93,7 @@ const Header = ({
         </div>
         <div className="flex items-center gap-4">
           <ToggleGardenSelector
+            // PERUBAHAN 3: Gunakan state yang didapat dari URL
             selected={selectedGarden}
             onSelectionChange={handleGardenChange}
             options={gardenOptions}

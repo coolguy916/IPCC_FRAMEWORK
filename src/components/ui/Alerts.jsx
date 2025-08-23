@@ -7,7 +7,7 @@ const Alerts = ({
   onViewAll,
   maxHeight = "400px"
 }) => {
-  // Default alerts if none provided
+  // Data contoh default jika tidak ada lansiran yang diberikan
   const defaultAlerts = [
     {
       id: 1,
@@ -49,27 +49,37 @@ const Alerts = ({
   const alertsToShow = alerts.length > 0 ? alerts : defaultAlerts;
   const totalAlerts = alertsToShow.length;
 
-  const getSeverityStyles = (color, severity) => {
+  const getSeverityStyles = (color) => {
     const colorMap = {
       red: {
-        border: 'border-red-500',
-        bg: 'bg-red-500',
-        text: 'text-white'
+        bg: 'bg-red-50',
+        border: 'border-red-400',
+        badgeBg: 'bg-red-500',
+        badgeText: 'text-white'
       },
       orange: {
-        border: 'border-orange-500',
-        bg: 'bg-orange-500',
-        text: 'text-white'
+        bg: 'bg-orange-50',
+        border: 'border-orange-400',
+        badgeBg: 'bg-orange-500',
+        badgeText: 'text-white'
       },
       blue: {
-        border: 'border-blue-500',
-        bg: 'bg-blue-500',
-        text: 'text-white'
+        bg: 'bg-blue-50',
+        border: 'border-blue-400',
+        badgeBg: 'bg-blue-500',
+        badgeText: 'text-white'
       },
       yellow: {
-        border: 'border-yellow-500',
-        bg: 'bg-yellow-400',
-        text: 'text-yellow-800'
+        bg: 'bg-yellow-50',
+        border: 'border-yellow-400',
+        badgeBg: 'bg-yellow-500',
+        badgeText: 'text-white'
+      },
+      green: {
+        bg: 'bg-green-50',
+        border: 'border-green-400',
+        badgeBg: 'bg-green-500',
+        badgeText: 'text-white'
       }
     };
 
@@ -80,7 +90,7 @@ const Alerts = ({
     <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col h-full">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        <span className="text-white text-xs bg-green-500 font-bold py-1 px-2.5 rounded-md">
+        <span className="text-white text-xs bg-gray-800 font-bold py-1 px-2.5 rounded-md">
           {totalAlerts}
         </span>
       </div>
@@ -90,18 +100,18 @@ const Alerts = ({
         style={{ maxHeight }}
       >
         {alertsToShow.map((alert) => {
-          const styles = getSeverityStyles(alert.color, alert.severity);
+          const styles = getSeverityStyles(alert.color);
           
           return (
             <div 
               key={alert.id} 
-              className={`flex items-center justify-between p-3 rounded-lg border-l-4 bg-green-50 ${styles.border}`}
+              className={`flex items-center justify-between p-3 rounded-lg border-l-4 ${styles.bg} ${styles.border}`}
             >
               <div>
                 <p className="font-semibold text-gray-800 text-sm">{alert.title}</p>
                 <p className="text-xs text-gray-500">{alert.description}</p>
               </div>
-              <span className={`text-xs font-medium py-1 px-3 rounded-md ${styles.bg} ${styles.text}`}>
+              <span className={`text-xs font-medium py-1 px-3 rounded-full ${styles.badgeBg} ${styles.badgeText}`}>
                 {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
               </span>
             </div>

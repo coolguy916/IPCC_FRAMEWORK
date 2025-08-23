@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
-    Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, AlertTriangle, Wifi, WifiOff, CloudRain, Sunrise, Sunset, X, Cloud, Zap
+    Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, AlertTriangle, Wifi, WifiOff, CloudRain, Sunrise, Sunset, X, Cloud, Zap, RefreshCw, ServerCrash
 } from 'lucide-react';
 
-// Import komponen-komponen UI dan layout yang sudah ada
+// Import existing UI and layout components
 import Header from '../layout/header';
 import Sidebar from '../layout/sidebar';
 import PlantInfo from '../ui/PlantInfo';
@@ -12,39 +12,41 @@ import SensorChart from '../charts/sensorChart';
 import Alerts from '../ui/Alerts';
 import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
+import FarmingSuggestions from '../ui/FarmingSuggestions';
 import image_url from '../images/limaunipis.png';
 
-// Import komponen LandPlotsMap dari file terpisahnya
-import LandPlotsMap from '../ui/LandPlotMaps'; 
+// Import the LandPlotsMap component from its separate file
+import LandPlotsMap from '../ui/LandPlotMaps';
 
 // Import hook API kustom dan Firestore hooks
+// Import your custom API hooks
 import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
 import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreTasks } from '../../hooks/useFirestore';
 
 // =================================================================================
-// Komponen UI yang Diperbarui dan Disempurnakan
+// Updated and Enhanced UI Components
 // =================================================================================
 
-// [FUNGSI BARU] Untuk mendapatkan ikon dan deskripsi cuaca berdasarkan WMO code
+// [NEW FUNCTION] To get weather icon and description based on WMO code
 const getWeatherInfo = (code) => {
     switch (true) {
-        case code <= 1: return { icon: Sun, description: "Cerah" };
-        case code <= 3: return { icon: Cloud, description: "Berawan" };
-        case (code >= 51 && code <= 67): return { icon: CloudRain, description: "Hujan" };
-        case (code >= 80 && code <= 82): return { icon: CloudRain, description: "Hujan Lebat" };
-        case (code >= 95 && code <= 99): return { icon: Zap, description: "Badai Petir" };
-        default: return { icon: Cloud, description: "Berawan" };
+        case code <= 1: return { icon: Sun, description: "Clear" };
+        case code <= 3: return { icon: Cloud, description: "Cloudy" };
+        case (code >= 51 && code <= 67): return { icon: CloudRain, description: "Rain" };
+        case (code >= 80 && code <= 82): return { icon: CloudRain, description: "Heavy Rain" };
+        case (code >= 95 && code <= 99): return { icon: Zap, description: "Thunderstorm" };
+        default: return { icon: Cloud, description: "Cloudy" };
     }
 };
 
 const WeatherForecastModal = ({ show, onClose, data }) => {
     return (
-        <div 
+        <div
             className={`fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
                 show ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
         >
-            <div 
+            <div
                 className={`bg-white p-6 rounded-lg shadow-xl w-full max-w-4xl transform transition-all duration-300 ${
                     show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
                 }`}
@@ -60,19 +62,20 @@ const WeatherForecastModal = ({ show, onClose, data }) => {
                 ) : (
                     <div className="space-y-3">
                         {data.daily.time.slice(0, 5).map((day, index) => {
-                            const { icon: WeatherIcon } = getWeatherInfo(data.daily.weather_code[index]);
+                            const { icon: WeatherIcon, description } = getWeatherInfo(data.daily.weather_code[index]);
                             return (
-                                <div key={index} className="grid grid-cols-2 md:grid-cols-5 gap-4 items-center bg-gray-50 p-3 rounded-lg border">
+                                <div key={index} className="grid grid-cols-2 md:grid-cols-6 gap-4 items-center bg-gray-50 p-3 rounded-lg border">
                                     <div className="col-span-2 md:col-span-1">
                                         <p className="font-semibold text-gray-800">{new Date(day).toLocaleDateString('en-US', { weekday: 'long' })}</p>
                                         <p className="text-sm text-gray-500">{new Date(day).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
                                     </div>
-                                    <div className="flex items-center justify-start md:justify-center">
+                                    <div className="flex items-center justify-start md:justify-center space-x-2">
                                         <WeatherIcon className="w-8 h-8 text-gray-600" />
+                                        <span className="text-sm text-gray-600 hidden md:block">{description}</span>
                                     </div>
                                     <div className="flex items-center justify-start md:justify-center space-x-2"><CloudRain className="w-5 h-5 text-blue-500" /><span className="font-medium text-gray-700">{data.daily.precipitation_sum[index]} mm</span></div>
                                     <div className="flex items-center justify-start md:justify-center space-x-2"><Thermometer className="w-5 h-5 text-red-500" /><span className="font-medium text-gray-700">{Math.round(data.daily.temperature_2m_max[index])}° / {Math.round(data.daily.temperature_2m_min[index])}°C</span></div>
-                                    <div className="col-span-2 md:col-span-1 text-sm md:text-right space-y-1">
+                                    <div className="col-span-2 md:col-span-2 text-sm md:text-right space-y-1">
                                         <div className="flex items-center justify-start md:justify-end space-x-2"><Sunrise className="w-5 h-5 text-orange-400" /><span>{new Date(data.daily.sunrise[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
                                         <div className="flex items-center justify-start md:justify-end space-x-2"><Sunset className="w-5 h-5 text-indigo-500" /><span>{new Date(data.daily.sunset[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
                                     </div>
@@ -86,25 +89,22 @@ const WeatherForecastModal = ({ show, onClose, data }) => {
     );
 };
 
-// [DIREVISI TOTAL] Komponen Widget Cuaca dengan tampilan baru
 const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
     if (loading || !data || !data.hourly || !data.daily || !data.hourly.weathercode) {
-        return <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 text-center h-full flex items-center justify-center"><p className="text-gray-500">Memuat data cuaca...</p></div>;
+        return <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 text-center h-full flex items-center justify-center"><p className="text-gray-500">Loading Weather Data...</p></div>;
     }
 
     const currentHourIndex = new Date().getHours();
     const currentTemp = data.hourly.temperature_2m[currentHourIndex];
     const currentHumidity = data.hourly.relative_humidity_2m[currentHourIndex];
     
-    // Mendapatkan ikon & deskripsi dinamis
     const currentWeatherCode = data.hourly.weathercode[currentHourIndex];
     const { icon: WeatherIcon, description } = getWeatherInfo(currentWeatherCode);
 
     return (
         <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-md border border-gray-200 flex flex-col justify-between h-full">
             <div>
-                {/* Bagian Cuaca Saat Ini */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-start mb-4">
                     <div>
                         <h3 className="text-xl font-bold text-slate-800">Selangor</h3>
                         <p className="text-sm text-slate-500">{description}</p>
@@ -113,10 +113,9 @@ const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
                 </div>
                 <p className="text-6xl font-bold text-slate-800 mb-6">{Math.round(currentTemp)}°C</p>
 
-                {/* Bagian Prakiraan Per Jam */}
                 <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-slate-600 mb-3 text-center">Prakiraan Beberapa Jam Kedepan</h4>
-                    <div className="flex justify-between items-center space-x-4 px-2 py-3 bg-slate-100 rounded-lg">
+                    <h4 className="text-sm font-semibold text-slate-600 mb-3 text-center">Next Few Hours</h4>
+                    <div className="flex justify-between items-center space-x-2 md:space-x-4 px-2 py-3 bg-slate-100 rounded-lg">
                         {data.hourly.time.slice(currentHourIndex + 1, currentHourIndex + 6).map((time, index) => {
                             const hourIndex = currentHourIndex + 1 + index;
                             const { icon: HourlyIcon } = getWeatherInfo(data.hourly.weathercode[hourIndex]);
@@ -135,21 +134,19 @@ const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
                     </div>
                 </div>
                 
-                {/* Detail Tambahan */}
                  <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 mb-4">
-                    <div className="flex items-center"><Droplet className="w-5 h-5 text-blue-500 mr-2" /><span>Kelembapan: {currentHumidity}%</span></div>
-                    <div className="flex items-center"><CloudRain className="w-5 h-5 text-gray-500 mr-2" /><span>Hujan: {data.hourly.rain[currentHourIndex]} mm</span></div>
+                    <div className="flex items-center"><Droplet className="w-5 h-5 text-blue-500 mr-2" /><span>Humidity: {currentHumidity}%</span></div>
+                    <div className="flex items-center"><CloudRain className="w-5 h-5 text-gray-500 mr-2" /><span>Rain: {data.hourly.rain[currentHourIndex]} mm</span></div>
                     <div className="flex items-center"><Sunrise className="w-5 h-5 text-orange-500 mr-2" /><span>{new Date(data.daily.sunrise[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
                     <div className="flex items-center"><Sunset className="w-5 h-5 text-indigo-500 mr-2" /><span>{new Date(data.daily.sunset[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
                 </div>
-
             </div>
             <button
                 onClick={onMoreDetailsClick}
                 disabled={loading}
-                className="w-full text-center bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 mt-4"
+                className="w-full text-center bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold px-4 py-2 rounded-lg text-sm transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
-                Lihat Detail 5 Hari
+                View 5-Day Details
             </button>
         </div>
     );
@@ -157,7 +154,7 @@ const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
 
 
 // =================================================================================
-// Komponen Halaman Utama
+// Main Page Component
 // =================================================================================
 const NipisOverview = () => {
     
@@ -197,8 +194,8 @@ const NipisOverview = () => {
     useEffect(() => {
         const fetchWeatherData = async () => {
             try {
-                // [UPDATED] Menambahkan 'weathercode' ke parameter 'hourly' untuk mendapatkan ikon dinamis
                 const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=3.50744&longitude=101.1077&hourly=temperature_2m,relative_humidity_2m,rain,is_day,weathercode&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum&timezone=auto');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 setWeatherData(data);
             } catch (error) { console.error('Error fetching weather data:', error); }
@@ -269,6 +266,40 @@ const NipisOverview = () => {
         ];
     }, [latestSensorData]);
     
+    const connectionStatus = useMemo(() => {
+        if (error || sensorError) {
+            return {
+                Icon: AlertTriangle,
+                text: "Connection Issues",
+                color: "bg-red-100 text-red-800",
+                pulse: false
+            };
+        }
+        if (!isConnected) {
+            return {
+                Icon: WifiOff,
+                text: "Disconnected",
+                color: "bg-gray-200 text-gray-700",
+                pulse: false
+            };
+        }
+        if (isConnected) {
+            return {
+                Icon: Wifi,
+                text: "Connected",
+                color: "bg-green-100 text-green-800",
+                pulse: wsConnected
+            };
+        }
+        return {
+            Icon: ServerCrash,
+            text: "Unknown Status",
+            color: "bg-yellow-100 text-yellow-800",
+            pulse: false
+        };
+    }, [isConnected, wsConnected, error, sensorError]);
+
+
     return (
         <div className="min-h-screen bg-gray-50 flex">
             <Sidebar 
@@ -287,40 +318,28 @@ const NipisOverview = () => {
                     onGardenChange={(garden) => setSelectedGarden(garden)} 
                 />
                 
-                <div className="bg-white border-b px-4 py-2 flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-4">
-                        {/* API Connection Status */}
-                        <div className="flex items-center gap-2">
-                            {isConnected ? <Wifi className="w-4 h-4 text-green-500" /> : <WifiOff className="w-4 h-4 text-red-500" />}
-                            <span>{isConnected ? 'API Connected' : 'API Disconnected'}</span>
-                        </div>
-                        
-                        {/* Firestore Connection Status */}
-                        <div className="flex items-center gap-2">
-                            <div className={`w-2 h-2 rounded-full ${
-                                !sensorLoading && !sensorError ? 'bg-green-500 animate-pulse' :
-                                sensorLoading ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
-                            }`} title="Firestore real-time status"></div>
-                            <span className="text-xs">
-                                {!sensorLoading && !sensorError ? '🔥 Firestore Live' :
-                                 sensorLoading ? '⏳ Connecting...' : '❌ Offline'}
-                            </span>
-                        </div>
+                <div className="bg-white border-b px-4 py-2 flex justify-between items-center text-sm sticky top-0 z-10">
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${connectionStatus.color}`}>
+                        <connectionStatus.Icon className="w-4 h-4" />
+                        <span>{connectionStatus.text}</span>
+                        {connectionStatus.pulse && <div className="w-2 h-2 bg-current rounded-full animate-pulse" title="Receiving live data"></div>}
                     </div>
-                    {lastUpdated && <span className="text-gray-500">Last updated: {new Date(lastUpdated).toLocaleTimeString()}</span>}
-                    {(error || sensorError) && <div className="flex items-center gap-2 text-red-600"><AlertTriangle className="w-4 h-4" /><span>Connection issues</span></div>}
+                    {lastUpdated && <span className="text-gray-500 hidden md:block">Last updated: {lastUpdated.toLocaleTimeString('en-US')}</span>}
                 </div>
 
                 <main className="flex-1 px-4 py-6 overflow-auto">
-                    {(loading || (sensorLoading && !sensorData)) && <div className="text-center py-12">Loading dashboard data...</div>}
+                    {(loading || (sensorLoading && !sensorData)) && <div className="text-center py-12 font-medium text-gray-600">Loading dashboard data...</div>}
                     
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
                         <div className="lg:col-span-2 flex flex-col gap-6">
-                            <PlantInfo plantName={plantData?.name || "Limau Nipis"} description={plantData?.description || "Loading plant information..."} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'spinach'}`} />
+                            <PlantInfo plantName={plantData?.name || "Lime"} description={plantData?.description || "Loading plant information..."} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'lime'}`} />
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {metricsData.map((metric, index) => <MetricCard key={index} {...metric} loading={sensorLoading && !latestSensorData} />)}
                             </div>
-                            <ProductionOverview totalProduction={productionData?.total_production || 0} productionUnit={productionData?.unit || "kg"} totalLandArea={productionData?.land_area || "0 acres"} landUsagePercentage={productionData?.land_usage || 0} revenue={productionData?.revenue || "$0"} loading={loading} />
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <ProductionOverview totalProduction={productionData?.total_production || 0} productionUnit={productionData?.unit || "kg"} totalLandArea={productionData?.land_area || "0 acres"} landUsagePercentage={productionData?.land_usage || 0} revenue={productionData?.revenue || "$0"} loading={loading} />
+                                <FarmingSuggestions sensorData={latestSensorData} loading={sensorLoading} />
+                            </div>
                             <SensorChart data={chartData} availableMetrics={[{ key: 'soilMoisture', label: 'Soil Moisture' }, { key: 'temperature', label: 'Temperature' }, { key: 'phLevel', label: 'pH Level' }, { key: 'soilNitrogen', label: 'Soil Nitrogen' }]} defaultSelectedMetrics={['soilMoisture', 'temperature']} loading={sensorLoading} error={sensorError} onRefresh={refetchSensorData} />
                             
                             <LandPlotsMap />
@@ -330,12 +349,30 @@ const NipisOverview = () => {
                             <WeatherWidget data={weatherData} loading={!weatherData} onMoreDetailsClick={() => setShowWeatherModal(true)} />
                             <Alerts alerts={alerts} onViewAll={() => {}} loading={loading} />
                             <DeviceStatus devices={devices} serialStatus={serialStatus} onSerialReconnect={serialReconnect} loading={loading} />
-                            <div className="bg-white rounded-lg p-4 shadow-sm border">
-                                <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                                <div className="space-y-2">
-                                    <button onClick={refetchSensorData} disabled={sensorLoading} className="w-full bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded text-sm font-medium disabled:opacity-50">{sensorLoading ? 'Refreshing...' : 'Refresh Sensor Data'}</button>
-                                    <button onClick={serialReconnect} className="w-full bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded text-sm font-medium">Reconnect Serial</button>
-                                    <button onClick={fetchAdditionalData} disabled={loading} className="w-full bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded text-sm font-medium disabled:opacity-50">{loading ? 'Loading...' : 'Refresh All Data'}</button>
+                            <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
+                                <h3 className="font-semibold text-slate-800 mb-4">Quick Actions</h3>
+                                <div className="space-y-3">
+                                    <button 
+                                        onClick={refetchSensorData} 
+                                        disabled={sensorLoading} 
+                                        className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                                    >
+                                        <RefreshCw className={`w-4 h-4 ${sensorLoading ? 'animate-spin' : ''}`} />
+                                        {sensorLoading ? 'Refreshing...' : 'Refresh Sensor Data'}
+                                    </button>
+                                    <button 
+                                        onClick={serialReconnect} 
+                                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
+                                    >
+                                        Reconnect Serial
+                                    </button>
+                                    <button 
+                                        onClick={fetchAdditionalData} 
+                                        disabled={loading} 
+                                        className="w-full bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                                    >
+                                        {loading ? 'Loading...' : 'Refresh All Data'}
+                                    </button>
                                 </div>
                             </div>
                         </div>
