@@ -507,7 +507,7 @@ const FinancePage = () => {
                     </div>
 
                     {/* Financial & National Context Section */}
-                    <div>
+                    {/* <div>
                          <SectionHeader 
                             title="Financial & Economic Insights"
                             subtitle="Tracking financial performance against the broader national economic landscape."
@@ -520,7 +520,7 @@ const FinancePage = () => {
                         <div className="mt-8">
                             <DOSMDataWidget dosmStats={dosmStats}/>
                         </div>
-                    </div>
+                    </div> */}
                 </main>
             </div>
         </div>
