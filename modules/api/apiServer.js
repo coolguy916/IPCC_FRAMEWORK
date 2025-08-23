@@ -12,6 +12,7 @@ const mauiController = require('../../App/Http/Controllers/mauiController');
 
 // Real-time services
 const RealtimeDataService = require('../websocket/realtimeDataService');
+const FirestoreRealtimeDataService = require('../websocket/firestoreRealtimeService');
 
 class APIServer {
     constructor(database, serialManager = null, websocketManager = null) {
@@ -74,7 +75,14 @@ class APIServer {
         // Initialize real-time service if websocket manager is available
         this.realtimeService = null;
         if (this.websocketManager) {
-            this.realtimeService = new RealtimeDataService(this.websocketManager, this.database);
+            // Use Firestore real-time service if database is Firestore, otherwise fallback to legacy
+            if (this.database && typeof this.database.isFirestore === 'function' && this.database.isFirestore()) {
+                this.realtimeService = new FirestoreRealtimeDataService(this.websocketManager, this.database);
+                console.log('🔥 Using Firestore Real-time Service');
+            } else {
+                this.realtimeService = new RealtimeDataService(this.websocketManager, this.database);
+                console.log('📡 Using Legacy Real-time Service');
+            }
         }
         
         dbController.initializeController(this.database, this.realtimeService);

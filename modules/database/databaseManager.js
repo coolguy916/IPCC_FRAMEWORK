@@ -1,18 +1,21 @@
 // modules/database/databaseManager.js
-const FirebaseDB = require('../../lib/db/firebaseDB');
+const FirestoreDB = require('../../lib/db/firestoreDB');
 const Database = require('../../lib/db/mysqlDB');
-// const { apiKey } = require('../../firebaseConfig');
+// Legacy Realtime Database (deprecated)
+const FirebaseDB = require('../../lib/db/firebaseDB');
 
 class DatabaseManager {
     constructor() {
         this.db = null;
         this.useFirebase = process.env.USE_FIREBASE === 'true';
+        this.useFirestore = process.env.USE_FIRESTORE === 'true';
     }
 
     async initialize() {
         try {
-            if (this.useFirebase) {
-                this.db = new FirebaseDB({
+            if (this.useFirebase || this.useFirestore) {
+                // Use Firestore (new) instead of Realtime Database (old)
+                this.db = new FirestoreDB({
                     apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyD8xIhB_DYAl9e1FeS7ILql2YfxSdnbqHU',
                     authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'pcc-5fa54.firebaseapp.com',
                     databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://ipcc-5fa54-default-rtdb.firebaseio.com',
@@ -32,7 +35,7 @@ class DatabaseManager {
                 await this.db.connect();
             }
 
-            console.log(`Database initialized: ${this.useFirebase ? 'Firebase' : 'MySQL'}`);
+            console.log(`Database initialized: ${this.useFirebase || this.useFirestore ? 'Firestore' : 'MySQL'}`);
         } catch (error) {
             console.error('Database initialization failed:', error);
             throw error;
@@ -56,7 +59,11 @@ class DatabaseManager {
     }
 
     isFirebase() {
-        return this.useFirebase;
+        return this.useFirebase || this.useFirestore;
+    }
+
+    isFirestore() {
+        return this.useFirestore;
     }
 }
 

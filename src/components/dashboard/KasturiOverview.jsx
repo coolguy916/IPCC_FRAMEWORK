@@ -13,6 +13,7 @@ import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
 import image_url from '../images/image.png';
 import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
+import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreTasks } from '../../hooks/useFirestore';
 
 const AgricultureDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -34,13 +35,25 @@ const AgricultureDashboard = () => {
     } = useApi();
 
     // Sensor data with auto-refresh
+    // Firestore real-time data hooks
+    const siteId = 'site_katsuri_orchard';
+    const firestoreSensorData = useFirestoreSensorData(siteId, 30);
+    const firestoreFinancialData = useFirestoreFinancialData(siteId, 10);
+    const firestoreTasks = useFirestoreTasks(siteId, false); // Only incomplete tasks
+    
+    // Use Firestore data with fallbacks
+    const sensorData = firestoreSensorData.data?.length > 0 ? firestoreSensorData.data : [];
+    const sensorLoading = firestoreSensorData.loading;
+    const sensorError = firestoreSensorData.error;
+    const lastUpdated = sensorData[0]?.timestamp || new Date().toISOString();
+    
+    // Legacy sensor data hook (for fallback if needed)
     const {
-        data: sensorData,
-        loading: sensorLoading,
-        error: sensorError,
-        lastUpdated,
+        data: legacySensorData,
+        loading: legacySensorLoading,
+        error: legacySensorError,
         refetch: refetchSensorData
-    } = useSensorData(30000); // Refresh every 30 seconds
+    } = useSensorData(30000);
 
     // Serial connection status
     const {
@@ -348,24 +361,33 @@ const AgricultureDashboard = () => {
 
     // Connection status indicator
     const ConnectionStatus = () => (
-        <div className="flex items-center gap-2 text-sm">
-            {isConnected ? (
-                <>
-                    <Wifi className="w-4 h-4 text-green-500" />
-                    <span className="text-green-600">Connected</span>
-                </>
-            ) : (
-                <>
-                    <WifiOff className="w-4 h-4 text-red-500" />
-                    <span className="text-red-600">Disconnected</span>
-                </>
-            )}
-            {wsConnected && (
-                <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-gray-500">Live</span>
-                </div>
-            )}
+        <div className="flex items-center gap-4 text-sm">
+            {/* API Connection */}
+            <div className="flex items-center gap-2">
+                {isConnected ? (
+                    <>
+                        <Wifi className="w-4 h-4 text-green-500" />
+                        <span className="text-green-600">API Connected</span>
+                    </>
+                ) : (
+                    <>
+                        <WifiOff className="w-4 h-4 text-red-500" />
+                        <span className="text-red-600">API Disconnected</span>
+                    </>
+                )}
+            </div>
+            
+            {/* Firestore Connection */}
+            <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                    !sensorLoading && !sensorError ? 'bg-green-500 animate-pulse' :
+                    sensorLoading ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+                }`} title="Firestore real-time status"></div>
+                <span className="text-xs">
+                    {!sensorLoading && !sensorError ? '🔥 Firestore Live' :
+                     sensorLoading ? '⏳ Connecting...' : '❌ Offline'}
+                </span>
+            </div>
         </div>
     );
 
@@ -394,7 +416,7 @@ const AgricultureDashboard = () => {
                     <ConnectionStatus />
                     {lastUpdated && (
                         <span className="text-xs text-gray-500">
-                            Last updated: {lastUpdated.toLocaleTimeString()}
+                            Last updated: {new Date(lastUpdated).toLocaleTimeString()}
                         </span>
                     )}
                     {(error || sensorError) && (

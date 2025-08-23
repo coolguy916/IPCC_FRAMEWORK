@@ -7,8 +7,8 @@ import Header from '../layout/header';
 import Sidebar from '../layout/sidebar';
 import keylimeBackground from '../images/image.png';
 
-// Real-time data hooks
-import { useRealtimeSensorData, useRealtimeFinancialData } from '../../hooks/useRealtimeData';
+// Real-time data hooks - Updated to use Firestore
+import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreDashboardData } from '../../hooks/useFirestore';
 import { useApi } from '../../hooks/useApi';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, RadialLinearScale, Title, Tooltip, Legend, Filler);
@@ -106,39 +106,56 @@ const DataPage = () => {
     // DATA LAYER & STATE MANAGEMENT
     // =================================================================================
 
-    // --- 1. Real-time Backend Data ---
-    // Real-time sensor data with WebSocket updates
+    // --- 1. Real-time Backend Data (Firestore) ---
+    // Real-time sensor data with Firestore real-time updates
     const { getSensorData } = useApi();
-    const { sensorData: realtimeSensorData, isConnected: sensorConnected } = useRealtimeSensorData('site_a_3_acres');
-    const { financialData: realtimeFinancialData } = useRealtimeFinancialData('site_a_3_acres');
+    const siteId = 'site_a_3_acres';
+    
+    // Use Firestore hooks for real-time data
+    const firestoreSensorData = useFirestoreSensorData(siteId, 30);
+    const firestoreFinancialData = useFirestoreFinancialData(siteId, 10);
+    
+    // Legacy fallback support
+    const sensorConnected = !firestoreSensorData.loading;
 
-    // Fallback to API data if real-time not available, else use dummy data for demo
-    const [fallbackSensorData, setFallbackSensorData] = useState(null);
+    // Firestore data state
     const [loading, setLoading] = useState(false);
-
-    // Load fallback data if needed
+    const [fallbackSensorData, setFallbackSensorData] = useState(null);
+    
+    // Load fallback data if Firestore fails
     React.useEffect(() => {
-        if (!sensorConnected && !fallbackSensorData && !loading) {
+        if (firestoreSensorData.error && !fallbackSensorData && !loading) {
+            console.log('🔄 Firestore failed, falling back to API...');
             setLoading(true);
             getSensorData({ limit: 30 })
                 .then(data => {
                     setFallbackSensorData(data || generateDummyData());
+                    console.log('✅ Fallback data loaded');
                 })
                 .catch(() => {
-                    setFallbackSensorData(generateDummyData()); // Demo data as final fallback
+                    console.log('⚠️ API fallback failed, using dummy data');
+                    setFallbackSensorData(generateDummyData());
                 })
                 .finally(() => setLoading(false));
         }
-    }, [sensorConnected, fallbackSensorData, loading, getSensorData]);
+    }, [firestoreSensorData.error, fallbackSensorData, loading, getSensorData]);
 
-    // Use real-time data if available, fallback to API data, then demo data
+    // Use Firestore data with fallbacks
     const sensorData = React.useMemo(() => {
-        if (realtimeSensorData) {
-            // Convert single sensor reading to array format for charts
-            return [realtimeSensorData];
+        // Priority: Firestore data > API fallback > dummy data
+        if (firestoreSensorData.data && firestoreSensorData.data.length > 0) {
+            console.log('🔥 Using Firestore sensor data:', firestoreSensorData.data.length, 'records');
+            return firestoreSensorData.data;
         }
-        return fallbackSensorData || generateDummyData();
-    }, [realtimeSensorData, fallbackSensorData]);
+        
+        if (fallbackSensorData) {
+            console.log('📡 Using API fallback sensor data:', fallbackSensorData.length, 'records');
+            return fallbackSensorData;
+        }
+        
+        console.log('🎭 Using dummy sensor data for demo');
+        return generateDummyData();
+    }, [firestoreSensorData.data, fallbackSensorData]);
 
     // Site/garden profile (could be fetched from sites API)
     const [gardenProfile] = useState({
@@ -147,22 +164,25 @@ const DataPage = () => {
         imageUrl: keylimeBackground
     });
 
-    // Financial metrics (use real-time data if available)
+    // Financial metrics (use Firestore data if available)
     const financialMetrics = React.useMemo(() => {
-        if (realtimeFinancialData && realtimeFinancialData.length > 0) {
-            const latest = realtimeFinancialData[0];
+        if (firestoreFinancialData.data && firestoreFinancialData.data.length > 0) {
+            const latest = firestoreFinancialData.data[0];
+            console.log('💰 Using Firestore financial data:', latest);
             return {
                 convCost: latest.conventional_cost || 5330,
                 regenCost: latest.regenerative_cost || 4260,
                 revenue: latest.revenue || 15500
             };
         }
+        
+        console.log('💰 Using default financial data');
         return {
             convCost: 5330,
             regenCost: 4260,
             revenue: 15500
         };
-    }, [realtimeFinancialData]);
+    }, [firestoreFinancialData.data]);
 
 
     // --- 2. UI-Specific State ---
@@ -234,13 +254,24 @@ const DataPage = () => {
                 <Header onMenuClick={() => setSidebarOpen(true)} selectedGarden={selectedGarden} onGardenChange={() => { }} />
 
                 <main className="flex-1 p-4 sm:p-6 overflow-auto">
-                    {/* Real-time Connection Status */}
-                    {sensorConnected && (
-                        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-green-700 font-medium">🟢 Live Data Connected - Real-time updates active</span>
-                        </div>
-                    )}
+                    {/* Firestore Connection Status */}
+                    <div className={`mb-4 p-3 border rounded-lg flex items-center gap-2 ${
+                        !firestoreSensorData.loading && !firestoreSensorData.error ? 'bg-green-50 border-green-200' :
+                        firestoreSensorData.loading ? 'bg-yellow-50 border-yellow-200' : 'bg-red-50 border-red-200'
+                    }`}>
+                        <div className={`w-2 h-2 rounded-full ${
+                            !firestoreSensorData.loading && !firestoreSensorData.error ? 'bg-green-500 animate-pulse' :
+                            firestoreSensorData.loading ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+                        }`}></div>
+                        <span className={`font-medium ${
+                            !firestoreSensorData.loading && !firestoreSensorData.error ? 'text-green-700' :
+                            firestoreSensorData.loading ? 'text-yellow-700' : 'text-red-700'
+                        }`}>
+                            {!firestoreSensorData.loading && !firestoreSensorData.error ? '🔥 Firestore Connected - Real-time updates active' :
+                             firestoreSensorData.loading ? '⏳ Connecting to Firestore...' : 
+                             `❌ Using Fallback Data - ${firestoreSensorData.error?.message || 'Connection failed'}`}
+                        </span>
+                    </div>
                     {loading && (
                         <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
                             <LoaderCircle className="w-4 h-4 text-blue-600 animate-spin" />

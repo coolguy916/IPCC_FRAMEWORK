@@ -17,8 +17,9 @@ import image_url from '../images/limaunipis.png';
 // Import komponen LandPlotsMap dari file terpisahnya
 import LandPlotsMap from '../ui/LandPlotMaps'; 
 
-// Import hook API kustom Anda
+// Import hook API kustom dan Firestore hooks
 import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
+import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreTasks } from '../../hooks/useFirestore';
 
 // =================================================================================
 // Komponen UI yang Diperbarui dan Disempurnakan
@@ -160,9 +161,28 @@ const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
 // =================================================================================
 const NipisOverview = () => {
     
+    // API and connection hooks
     const { isConnected, wsConnected, error, loading, getDataByFilters } = useApi();
-    const { data: sensorData, loading: sensorLoading, error: sensorError, lastUpdated, refetch: refetchSensorData } = useSensorData(30000);
     const { status: serialStatus, reconnect: serialReconnect, } = useSerialConnection();
+    
+    // Firestore real-time data hooks
+    const siteId = 'site_nipis_orchard';
+    const firestoreSensorData = useFirestoreSensorData(siteId, 30);
+    const firestoreFinancialData = useFirestoreFinancialData(siteId, 10);
+    const firestoreTasks = useFirestoreTasks(siteId, false); // Only incomplete tasks
+    
+    // Use Firestore data or fallback to API
+    const sensorData = firestoreSensorData.data?.length > 0 ? firestoreSensorData.data : [];
+    const sensorLoading = firestoreSensorData.loading;
+    const sensorError = firestoreSensorData.error;
+    
+    // Create a refetch function for compatibility
+    const refetchSensorData = () => {
+        // For Firestore real-time data, we don't need to manually refetch
+        // The data updates automatically. This is just for UI compatibility.
+        console.log('🔄 Firestore data updates automatically via real-time listeners');
+    };
+    const lastUpdated = sensorData[0]?.timestamp || new Date().toISOString();
     const [alerts, setAlerts] = useState([]);
     const [devices, setDevices] = useState([]);
     const [plantData, setPlantData] = useState(null);
@@ -268,12 +288,26 @@ const NipisOverview = () => {
                 />
                 
                 <div className="bg-white border-b px-4 py-2 flex justify-between items-center text-sm">
-                    <div className="flex items-center gap-2">
-                        {isConnected ? <Wifi className="w-4 h-4 text-green-500" /> : <WifiOff className="w-4 h-4 text-red-500" />}
-                        <span>{isConnected ? 'Connected' : 'Disconnected'}</span>
-                        {wsConnected && <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" title="Live data active"></div>}
+                    <div className="flex items-center gap-4">
+                        {/* API Connection Status */}
+                        <div className="flex items-center gap-2">
+                            {isConnected ? <Wifi className="w-4 h-4 text-green-500" /> : <WifiOff className="w-4 h-4 text-red-500" />}
+                            <span>{isConnected ? 'API Connected' : 'API Disconnected'}</span>
+                        </div>
+                        
+                        {/* Firestore Connection Status */}
+                        <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 rounded-full ${
+                                !sensorLoading && !sensorError ? 'bg-green-500 animate-pulse' :
+                                sensorLoading ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
+                            }`} title="Firestore real-time status"></div>
+                            <span className="text-xs">
+                                {!sensorLoading && !sensorError ? '🔥 Firestore Live' :
+                                 sensorLoading ? '⏳ Connecting...' : '❌ Offline'}
+                            </span>
+                        </div>
                     </div>
-                    {lastUpdated && <span className="text-gray-500">Last updated: {lastUpdated.toLocaleTimeString()}</span>}
+                    {lastUpdated && <span className="text-gray-500">Last updated: {new Date(lastUpdated).toLocaleTimeString()}</span>}
                     {(error || sensorError) && <div className="flex items-center gap-2 text-red-600"><AlertTriangle className="w-4 h-4" /><span>Connection issues</span></div>}
                 </div>
 

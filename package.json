@@ -32,6 +32,7 @@
     "env:backup": "node scripts/env-manager.js backup",
     "env:restore": "node scripts/env-manager.js restore",
     "seed-database": "node scripts/seed-database.js",
+    "seed-firestore": "node scripts/seed-firestore.js",
     "firebase:emulators": "firebase emulators:start",
     "firebase:login": "firebase login",
     "firebase:init": "firebase init",

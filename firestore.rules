@@ -1,0 +1,52 @@
+// Firestore Security Rules for IPCC Framework
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Allow read/write access for development
+    // TODO: Implement proper authentication-based rules for production
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Sensor data collection
+    match /sensor_data/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // Financial data collection  
+    match /financial_data/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // Tasks collection
+    match /tasks/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // Sites collection
+    match /sites/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // Team members collection
+    match /team_members/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // Program goals collection
+    match /program_goals/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // System metrics collection
+    match /system_metrics/{documentId} {
+      allow read, write: if true;
+    }
+    
+    // DOSM stats collection
+    match /dosm_stats/{documentId} {
+      allow read, write: if true;
+    }
+  }
+}

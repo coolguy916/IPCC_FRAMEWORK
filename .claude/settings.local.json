@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(firebase deploy:*)",
+      "Bash(firebase use:*)",
+      "Bash(node:*)",
+      "Bash(npm run start:web-server-dev:*)",
+      "Bash(set NODE_ENV=development)",
+      "Bash(npm run start:web:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
