@@ -13,17 +13,17 @@ const mapCenter = {
   lng: 101.1077
 };
 
-// --- DATA DUMMY untuk 9 petak lahan ---
+// --- DATA DUMMY untuk 9 petak lahan jeruk ---
 const landPlotsData = [
-  { id: 1, position: { lat: 3.5085, lng: 101.1070 }, title: "Plot A-1", description: "North-West quadrant, primarily clay soil. Excellent morning sun exposure.", imageUrl: "https://images.unsplash.com/photo-1589531739832-34f3a73c33a9?q=80&w=2070&auto=format&fit=crop" },
-  { id: 2, position: { lat: 3.5085, lng: 101.1077 }, title: "Plot A-2", description: "North-Central plot with loam soil. Equipped with drip irrigation.", imageUrl: "https://images.unsplash.com/photo-1445199149999-b8830b134a62?q=80&w=1952&auto=format&fit=crop" },
-  { id: 3, position: { lat: 3.5085, lng: 101.1084 }, title: "Plot A-3", description: "North-East plot, slightly sloped, providing excellent drainage.", imageUrl: "https://images.unsplash.com/photo-1599547464332-84337d12f550?q=80&w=2070&auto=format&fit=crop" },
-  { id: 4, position: { lat: 3.5074, lng: 101.1070 }, title: "Plot B-1", description: "West-Central plot with high organic matter.", imageUrl: "https://images.unsplash.com/photo-1625824539692-a14a42b1029c?q=80&w=2070&auto=format&fit=crop" },
-  { id: 5, position: { lat: 3.5074, lng: 101.1077 }, title: "Plot B-2 (Central Hub)", description: "The main operational plot where the primary sensor array is located.", imageUrl: "https://images.unsplash.com/photo-1605375109313-2647c4c9594f?q=80&w=1974&auto=format&fit=crop" },
-  { id: 6, position: { lat: 3.5074, lng: 101.1084 }, title: "Plot B-3", description: "East-Central plot reserved for crop rotation.", imageUrl: "https://images.unsplash.com/photo-1516253459639-65a88a04c143?q=80&w=2070&auto=format&fit=crop" },
-  { id: 7, position: { lat: 3.5063, lng: 101.1070 }, title: "Plot C-1", description: "South-West quadrant with sandy loam. Best suited for root vegetables.", imageUrl: "https://images.unsplash.com/photo-1624511037223-28f8f047432f?q=80&w=1974&auto=format&fit=crop" },
-  { id: 8, position: { lat: 3.5063, lng: 101.1077 }, title: "Plot C-2", description: "South-Central area, adjacent to the water reservoir.", imageUrl: "https://images.unsplash.com/photo-1563246282-33737c35a643?q=80&w=1939&auto=format&fit=crop" },
-  { id: 9, position: { lat: 3.5063, lng: 101.1084 }, title: "Plot C-3", description: "South-East corner with a natural windbreak. Used for delicate plants.", imageUrl: "https://images.unsplash.com/photo-1560962322-7935412499d2?q=80&w=2070&auto=format&fit=crop" }
+  { id: 1, position: { lat: 3.5360, lng: 101.1340 }, title: "Field 1 - Valencia Orange", description: "Mature Valencia orange trees (8-10 years). High-yield variety with excellent fruit quality. Drip irrigation system installed.", imageUrl: "https://images.unsplash.com/photo-1574856344991-aaa31b6f4ce3?q=80&w=2070&auto=format&fit=crop" },
+  { id: 2, position: { lat: 3.5170, lng: 101.1060 }, title: "Field 2 - Navel Orange", description: "Premium navel orange grove with optimal spacing. Clay-loam soil provides excellent water retention for citrus growth.", imageUrl: "https://images.unsplash.com/photo-1530841344095-37bae0bbe7a7?q=80&w=2070&auto=format&fit=crop" },
+  { id: 3, position: { lat: 3.5070, lng: 101.1120 }, title: "Field 3 - Blood Orange", description: "Specialty blood orange plantation. Eastern exposure provides ideal morning sunlight. Organic certified field.", imageUrl: "https://images.unsplash.com/photo-1605375109313-2647c4c9594f?q=80&w=2070&auto=format&fit=crop" },
+  { id: 4, position: { lat: 3.5014, lng: 101.1320 }, title: "Field 4 - Mandarin Grove", description: "Young mandarin trees (3-5 years). High-density planting with micro-sprinkler irrigation. Excellent soil fertility.", imageUrl: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2070&auto=format&fit=crop" },
+  { id: 5, position: { lat: 3.5074, lng: 101.1477 }, title: "Field 5 - Main Hub Orange", description: "Central monitoring station with mixed orange varieties. Primary sensor network location for soil and weather monitoring.", imageUrl: "https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=2074&auto=format&fit=crop" },
+  { id: 6, position: { lat: 3.5254, lng: 101.1484 }, title: "Field 6 - Lime Production", description: "Key lime and Persian lime trees. Well-established grove with consistent production. Natural windbreak protection.", imageUrl: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?q=80&w=2064&auto=format&fit=crop" },
+  { id: 7, position: { lat: 3.5163, lng: 101.1370 }, title: "Field 7 - Grapefruit Section", description: "Pink and white grapefruit varieties. Sandy-loam soil ideal for citrus root development. Integrated pest management zone.", imageUrl: "https://images.unsplash.com/photo-1624511037223-28f8f047432f?q=80&w=2070&auto=format&fit=crop" },
+  { id: 8, position: { lat: 3.5163, lng: 101.1577 }, title: "Field 8 - Lemon Grove", description: "Eureka and Lisbon lemon varieties. Located near water reservoir for optimal irrigation. Consistently high production yield.", imageUrl: "https://images.unsplash.com/photo-1553906297-dac2b76a5ceb?q=80&w=2070&auto=format&fit=crop" },
+  { id: 9, position: { lat: 3.5063, lng: 101.1684 }, title: "Field 9 - Experimental Plot", description: "Research area for new citrus varieties and cultivation techniques. Climate-controlled greenhouse and nursery section.", imageUrl: "https://images.unsplash.com/photo-1589531739832-34f3a73c33a9?q=80&w=2070&auto=format&fit=crop" }
 ];
 
 
@@ -50,10 +50,19 @@ const LandPlotsMap = () => {
                     mapContainerStyle={containerStyle}
                     center={mapCenter}
                     zoom={17}
+                    mapTypeId='satellite'
                     options={{ 
-                        mapTypeControl: false, 
+                        mapTypeControl: true, 
+                        mapTypeControlOptions: {
+                            style: window.google?.maps?.MapTypeControlStyle?.HORIZONTAL_BAR,
+                            position: window.google?.maps?.ControlPosition?.TOP_CENTER,
+                        },
                         streetViewControl: false, 
-                        fullscreenControl: false
+                        fullscreenControl: true,
+                        zoomControl: true,
+                        scaleControl: true,
+                        rotateControl: true,
+                        tilt: 0
                     }}
                 >
                     {landPlotsData.map((plot) => (
@@ -68,14 +77,21 @@ const LandPlotsMap = () => {
                         <InfoWindow
                             position={activeMarker.position}
                             onCloseClick={() => setActiveMarker(null)}
+                            options={{
+                                maxWidth: 400,
+                                pixelOffset: new window.google.maps.Size(0, -10)
+                            }}
                         >
-                            <div className="w-64">
-                                <img src={activeMarker.imageUrl} alt={activeMarker.title} className="w-full h-32 object-cover rounded-md" />
-                                <h4 className="font-bold text-md my-2 text-gray-800">{activeMarker.title}</h4>
-                                <p className="text-sm text-gray-600 mb-2">{activeMarker.description}</p>
-                                <a href={`https://www.google.com/maps?q=${activeMarker.position.lat},${activeMarker.position.lng}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs text-blue-600 hover:underline">
-                                    View Details <ExternalLink className="w-3 h-3 ml-1" />
-                                </a>
+                            <div className="w-96 max-w-sm">
+                                <img src={activeMarker.imageUrl} alt={activeMarker.title} className="w-full h-48 object-cover rounded-md shadow-lg" />
+                                <h4 className="font-bold text-lg my-3 text-gray-800">{activeMarker.title}</h4>
+                                <p className="text-sm text-gray-600 mb-3 leading-relaxed">{activeMarker.description}</p>
+                                <div className="flex justify-between items-center">
+                                    <a href={`https://www.google.com/maps?q=${activeMarker.position.lat},${activeMarker.position.lng}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-sm text-blue-600 hover:underline font-medium">
+                                        View in Google Maps <ExternalLink className="w-4 h-4 ml-1" />
+                                    </a>
+                                    <span className="text-xs text-gray-400">Field ID: {activeMarker.id}</span>
+                                </div>
                             </div>
                         </InfoWindow>
                     )}
