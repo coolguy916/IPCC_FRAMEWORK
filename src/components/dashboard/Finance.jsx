@@ -1,61 +1,82 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-    Leaf, Droplet, Activity, BarChart3, Wifi, WifiOff, DollarSign,
-    Users, ShieldCheck, LandPlot, Globe, Handshake, Landmark, TrendingUp, CheckCircle, Scale, RefreshCw
+    Leaf, Droplet, Users, ShieldCheck, LandPlot, Globe, Handshake, Landmark, TrendingUp, CheckCircle, Scale, RefreshCw, BarChartHorizontal
 } from 'lucide-react';
 
-// Pastikan path ke komponen-komponen ini benar
+// Core Layout Components
 import Header from '../layout/header';
 import Sidebar from '../layout/sidebar';
-import LineChart from '../charts/lineChart';
+import LineChart from '../charts/lineChart'; // Assuming a separate LineChart component
 
-// --- ASET GAMBAR ---
-// GANTI PATH INI dengan path ke gambar latar belakang Anda.
-import backgroundImage from '../images/image.png';
+// Page Assets
+import backgroundImage from '../images/sawah.jpg'; // Ensure this path is correct
 
 // =================================================================================
-// KOMPONEN-KOMPONEN VISUAL (DIRANCANG ULANG SESUAI GAMBAR)
+// Professional UI Theme & Palette
 // =================================================================================
-
-// Komponen Metrik Kunci (Numeric Display) yang sudah bagus dari versi sebelumnya
-const KeyMetricDisplay = ({ value, label, icon: Icon, isPercentage = false }) => {
-    const [currentValue, setCurrentValue] = useState(0);
-
-    useEffect(() => {
-        const end = value; let start = 0; const duration = 2000; const startTime = performance.now();
-        const animate = (currentTime) => { const elapsedTime = currentTime - startTime; const progress = Math.min(elapsedTime / duration, 1); start = progress * end; setCurrentValue(Math.round(start)); if (progress < 1) { requestAnimationFrame(animate); } };
-        requestAnimationFrame(animate);
-    }, [value]);
-
-    return (
-        <div className="text-center text-white">
-            <Icon className="w-10 h-10 mx-auto mb-3 opacity-90" />
-            <div className="text-5xl font-bold" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.4)' }}>
-                {currentValue}{isPercentage ? '%' : ''}
-            </div>
-            <div className="text-sm font-medium uppercase tracking-widest opacity-80 mt-1">{label}</div>
-        </div>
-    );
+const theme = {
+    colors: {
+        primary: '#16a34a', // green-600
+        primary_light: 'rgba(22, 163, 74, 0.15)',
+        secondary: '#475569', // slate-600
+        secondary_light: 'rgba(71, 85, 105, 0.15)',
+        border: '#e2e8f0', // slate-200
+        text_header: '#1e293b', // slate-800
+        text_body: '#475569', // slate-600
+        background: '#f8fafc', // slate-50
+    },
+    shadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
 };
 
-// Kartu Dampak ESG (Impact Card) - Desain ini juga sudah bagus
-const ImpactCard = ({ impactData }) => {
-    const { title, summary, icon: Icon, points, theme } = impactData;
-    const colorThemes = { green: { gradient: 'from-emerald-600 to-green-600', lightBg: 'bg-emerald-50' }, orange: { gradient: 'from-amber-600 to-orange-600', lightBg: 'bg-amber-50' }, indigo: { gradient: 'from-slate-700 to-gray-800', lightBg: 'bg-slate-50' }, };
-    const currentTheme = colorThemes[theme];
+// =================================================================================
+// Refined Components
+// =================================================================================
 
-    return (
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col h-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
-            <div className={`p-6 bg-gradient-to-br ${currentTheme.gradient} text-white`}>
-                <div className="flex items-center gap-4"><Icon className="w-8 h-8 flex-shrink-0" /><h3 className="text-xl font-bold">{title}</h3></div>
+const SectionHeader = ({ title, subtitle }) => (
+    <div className="mb-6">
+        <h2 className={`text-2xl font-bold ${theme.colors.text_header}`}>{title}</h2>
+        {subtitle && <p className={`mt-1 max-w-2xl text-base ${theme.colors.text_body}`}>{subtitle}</p>}
+    </div>
+);
+
+const ProgramGoal = ({ value, label, description }) => (
+    <div className="flex flex-col md:flex-row rounded-lg overflow-hidden backdrop-blur-md transition-all duration-300 hover:bg-white/20"
+        style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}>
+        <div className="p-6 md:w-64 flex-shrink-0 flex items-center justify-center border-b-2 md:border-b-0 md:border-r-2 border-white/20">
+            <div className="text-center">
+                <span className="text-5xl lg:text-6xl font-extrabold text-white">{value}</span>
+                <span className="mt-1 block text-lg font-semibold tracking-wider text-green-300">{label}</span>
             </div>
-            <div className="p-6 flex-grow flex flex-col">
-                <p className="text-slate-600 mb-5 text-sm">{summary}</p>
-                <ul className="space-y-4 flex-grow">
+        </div>
+        <div className="p-6 flex items-center">
+            <p className="text-base font-medium text-white/90">{description}</p>
+        </div>
+    </div>
+);
+
+const ImpactCard = ({ impactData }) => {
+    const { title, summary, icon: Icon, points, borderColor } = impactData;
+    return (
+        <div className="bg-white rounded-xl flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+            style={{ boxShadow: theme.shadow, borderTop: `4px solid ${borderColor}` }}>
+            <div className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="p-3 rounded-full" style={{ backgroundColor: `${borderColor}20` }}>
+                         <Icon className="w-7 h-7" style={{ color: borderColor }}/>
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800">{title}</h3>
+                </div>
+                 <p className="text-sm text-slate-600">{summary}</p>
+            </div>
+            <div className="p-6 border-t border-slate-100 flex-grow">
+                <ul className="space-y-4">
                     {points.map((point) => (
                         <li key={point.title} className="flex items-start gap-4">
-                            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${currentTheme.lightBg}`}><point.icon className={`w-5 h-5 ${theme === 'indigo' ? 'text-slate-600' : `text-${theme}-600`}`} /></div>
-                            <div><h5 className="font-semibold text-slate-800">{point.title}</h5><p className="text-xs text-slate-500">{point.description}</p></div>
+                            <CheckCircle className="w-5 h-5 mt-0.5 flex-shrink-0" style={{ color: borderColor }} />
+                            <div>
+                                <h5 className="font-semibold text-slate-700">{point.title}</h5>
+                                <p className="text-sm text-slate-500">{point.description}</p>
+                            </div>
                         </li>
                     ))}
                 </ul>
@@ -64,130 +85,161 @@ const ImpactCard = ({ impactData }) => {
     );
 };
 
-
-// [BARU] Komponen Chart untuk Perbandingan Finansial
-const FinancialComparisonChart = ({ title, subtitle, data, loading, onRefresh }) => {
-    const chartOptions = {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: { x: { grid: { display: false }, ticks: { display: false } }, y: { grid: { color: '#f1f5f9' }, border: { dash: [4, 4] } } },
-        interaction: { intersect: false, mode: 'index' },
-        elements: { point: { radius: 2, hoverRadius: 5 } }
+// [UPDATED] Financial Chart with Increased Height and Better Styling
+const FinancialComparisonChart = ({ title, data, loading, onRefresh }) => {
+    const chartOptions = { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        plugins: { 
+            legend: { display: false },
+            tooltip: {
+                enabled: true,
+                backgroundColor: '#1e293b', // slate-800
+                titleColor: '#cbd5e1', // slate-300
+                bodyColor: '#fff',
+                borderColor: '#334155', // slate-700
+                borderWidth: 1,
+                padding: 10,
+                displayColors: true,
+                boxPadding: 4,
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            // Format number with commas
+                            label += new Intl.NumberFormat('en-US').format(context.parsed.y);
+                        }
+                        return label;
+                    }
+                }
+            }
+        }, 
+        scales: { 
+            x: { 
+                grid: { display: false }, 
+                ticks: { color: theme.colors.text_body } 
+            }, 
+            y: { 
+                grid: { color: theme.colors.border, border: { dash: [4, 4] } }, 
+                ticks: { color: theme.colors.text_body } 
+            } 
+        }, 
+        interaction: { intersect: false, mode: 'index' }, 
+        elements: { 
+            point: { 
+                radius: 3, 
+                hoverRadius: 6, 
+                borderWidth: 2, 
+                hoverBorderWidth: 2
+            } 
+        } 
     };
-
     return (
-        <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="bg-white rounded-xl p-6 h-full flex flex-col" style={{ boxShadow: theme.shadow }}>
             <div className="flex justify-between items-start mb-4">
-                <div>
-                    <h3 className="font-bold text-slate-800">{title}</h3>
-                    <p className="text-sm text-slate-500">{subtitle}</p>
-                </div>
-                <button onClick={onRefresh} disabled={loading} className="p-2 rounded-full text-slate-400 hover:bg-slate-100"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
+                <h3 className="text-lg font-bold text-slate-800">{title}</h3>
+                <button onClick={onRefresh} disabled={loading} className="p-2 rounded-full text-slate-400 hover:bg-slate-100 disabled:opacity-50"><RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} /></button>
             </div>
-            <div className="h-64">
+            {/* --- THIS IS THE KEY CHANGE --- */}
+            <div className="flex-grow h-96">
                 <LineChart data={data} options={chartOptions} />
             </div>
         </div>
     );
 };
 
-// [BARU] Komponen Chart untuk Proyeksi Dampak ESG
-const ImpactForecastChart = ({ title, subtitle, data, loading, onRefresh }) => {
-    const chartOptions = {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, pointStyle: 'circle', boxHeight: 8 } } },
-        scales: { x: { grid: { display: false } }, y: { grid: { color: '#f1f5f9' }, border: { dash: [4, 4] } } },
-        interaction: { intersect: false, mode: 'index' },
-        elements: { point: { radius: 2, hoverRadius: 5 } }
-    };
-
+const DOSMDataWidget = () => {
+    const dosmStats = { gdpGrowth: 2.9, agriEmployment: "1.4M", foodSecurityIndex: "81.3" };
     return (
-        <div className="bg-white rounded-xl shadow-md p-6">
-            <div className="flex justify-between items-start mb-4">
+        <div className="bg-white rounded-xl p-6 h-full" style={{ boxShadow: theme.shadow }}>
+            <div className="flex items-start justify-between mb-6">
                 <div>
-                    <h3 className="font-bold text-slate-800">{title}</h3>
-                    <p className="text-sm text-slate-500">{subtitle}</p>
+                    <h3 className="text-lg font-bold text-slate-800">National Economic Context</h3>
+                    <p className="text-sm text-slate-500">Source: Dept. of Statistics Malaysia (DOSM) - Simulated</p>
                 </div>
-                 <button onClick={onRefresh} disabled={loading} className="p-2 rounded-full text-slate-400 hover:bg-slate-100"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
+                <Landmark className="w-7 h-7 text-slate-300"/>
             </div>
-            <div className="h-64">
-                <LineChart data={data} options={chartOptions} />
-            </div>
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                 <div>
+                    <p className="text-4xl font-bold text-green-600">{dosmStats.gdpGrowth}%</p>
+                    <p className="text-sm text-slate-500 mt-1">Q4 2024 Agri GDP Growth</p>
+                </div>
+                 <div>
+                    <p className="text-4xl font-bold text-blue-600">{dosmStats.agriEmployment}</p>
+                    <p className="text-sm text-slate-500 mt-1">Persons Employed in Agri</p>
+                </div>
+                 <div>
+                    <p className="text-4xl font-bold text-orange-600">{dosmStats.foodSecurityIndex}</p>
+                    <p className="text-sm text-slate-500 mt-1">Global Food Security Index</p>
+                </div>
+             </div>
         </div>
     );
-};
+}
 
 // =================================================================================
-// DATA & FUNGSI GENERATOR
+// Data Objects
 // =================================================================================
-
-const generateDummyFinancialData = (count = 30) => Array.from({ length: count }, (_, i) => ({ timestamp: new Date(new Date().getTime() - i * 24 * 3600000).toISOString(), pre_regenerative_profit: parseFloat((5000 + Math.random() * 800).toFixed(2)), regenerative_profit: parseFloat((6000 + Math.random() * 1500).toFixed(2)), pre_regenerative_cost: parseFloat((3000 + Math.random() * 500).toFixed(2)), regenerative_cost: parseFloat((2500 + Math.random() * 500).toFixed(2)) }));
-const generateDummyImpactData = (count = 12, forecastCount = 6, startValue, growthFactor) => { let historical = []; let currentValue = startValue; for (let i = 0; i < count; i++) { historical.push({ timestamp: new Date(new Date().setMonth(new Date().getMonth() - (count - 1 - i))).toISOString(), value: parseFloat(currentValue.toFixed(2)) }); currentValue += (Math.random() * growthFactor); } let forecast = []; for (let i = 0; i < forecastCount; i++) { forecast.push({ timestamp: new Date(new Date().setMonth(new Date().getMonth() + (i + 1))).toISOString(), value: parseFloat(currentValue.toFixed(2)) }); currentValue += (Math.random() * growthFactor) * 1.1; } return { historical, forecast }; };
-
-const environmentalImpactData = { title: 'Environmental Uplift', summary: 'Regenerative agriculture actively restores the planet by rebuilding soil health, sequestering carbon, and enhancing biodiversity.', icon: Globe, theme: 'green', points: [ { icon: Leaf, title: 'Carbon Sequestration', description: 'Draws CO2 from the atmosphere and stores it in the soil to combat climate change.' }, { icon: Droplet, title: 'Improved Water Cycles', description: 'Increases soil water retention, reducing runoff and drought impact.' }, { icon: LandPlot, title: 'Soil Resilience', description: 'Significantly reduces soil erosion, ensuring long-term fertility.' }]};
-const socialImpactData = { title: 'Social Empowerment', summary: 'These practices strengthen rural communities by creating economic opportunities, improving food security, and empowering farmers.', icon: Users, theme: 'orange', points: [ { icon: Handshake, title: 'Farmer Empowerment', description: 'Gives farmers greater autonomy and reduces dependency on external inputs.' }, { icon: TrendingUp, title: 'Job Creation', description: 'Increases local labor needs for more diverse and intensive practices.' }, { icon: CheckCircle, title: 'Enhanced Nutrition & Health', description: 'Produces more nutrient-dense food, benefiting consumer health.' }]};
-const governanceImpactData = { title: 'Economic Resilience', summary: 'Strong governance and proper incentives make regenerative agriculture a stable and profitable business model for the future.', icon: Landmark, theme: 'indigo', points: [ { icon: Scale, title: 'Risk Management', description: 'Reduces financial risks from extreme weather and soil degradation.' }, { icon: ShieldCheck, title: 'Premium Market Access', description: 'Regenerative certifications unlock access to conscious consumer markets.' }, { icon: DollarSign, title: 'Long-Term Economic Stability', description: 'Builds a healthy soil asset, the foundation of sustainable profit.' }]};
+const programGoalsData = [{value: '10K',label: 'FARMERS',description: 'Support and collaborate with 10,000 farmers globally, equipping them with sustainable practices to transform agriculture into a regenerative, climate-positive industry.'},{value: '100K',label: 'HECTARES',description: 'Regenerate 100,000 hectares of farmland using zero-carbon techniques, creating fertile, carbon-rich soils that enhance productivity and sustainability.'},{value: '1M',label: 'TONS OF FOOD',description: 'Produce 1,000,000 tons of zero-carbon food, showcasing how sustainable agriculture can meet global food demands while minimizing environmental impact.'},{value: '10M',label: 'TONS OF CO2',description: 'Sequester 10,000,000 tons of CO2, contributing significantly to global climate action through advanced carbon farming and innovative methods.'},];
+const environmentalImpactData = { title: 'Environmental', summary: 'Restoring the planet by rebuilding soil health, sequestering carbon, and enhancing biodiversity.', icon: Globe, borderColor: '#10b981', points: [{ title: 'Carbon Sequestration', description: 'Draws CO2 from the atmosphere and stores it in the soil.' }, { title: 'Improved Water Cycles', description: 'Increases soil water retention, reducing runoff and drought impact.' }]};
+const socialImpactData = { title: 'Social', summary: 'Strengthening rural communities by creating economic opportunities and improving food security.', icon: Users, borderColor: '#f97316', points: [{ title: 'Farmer Empowerment', description: 'Gives farmers greater autonomy and reduces dependency on inputs.' }, { title: 'Enhanced Nutrition & Health', description: 'Produces more nutrient-dense food for healthier communities.' }]};
+const governanceImpactData = { title: 'Economic & Governance', summary: 'Making regenerative farming a stable, transparent, and profitable model for the future.', icon: ShieldCheck, borderColor: '#3b82f6', points: [{ title: 'Financial Risk Management', description: 'Reduces risks from extreme weather and market volatility.' }, { title: 'Premium Market Access', description: 'Unlocks access to conscious consumer markets.' }]};
 
 // =================================================================================
-// KOMPONEN UTAMA HALAMAN
+// Main Page Component
 // =================================================================================
-
 const FinancePage = () => {
+    // State
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [selectedGarden, setSelectedGarden] = useState("Spinach Garden 08");
-    const [activeMenuItem, setActiveMenuItem] = useState("Finance");
-    
-    const [financialData, setFinancialData] = useState(generateDummyFinancialData(30));
-    const [carbonData, setCarbonData] = useState(generateDummyImpactData(12, 6, 0.4, 0.1));
-    const [soilData, setSoilData] = useState(generateDummyImpactData(12, 6, 2.0, 0.08));
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [financialData, setFinancialData] = useState( () => Array.from({ length: 30 }, (_, i) => ({ timestamp: new Date(new Date().setDate(new Date().getDate() - (29 - i))), regenerative_profit: parseFloat((6700 + Math.random() * 800 - 400).toFixed(0)), regenerative_cost: parseFloat((2750 + Math.random() * 300 - 150).toFixed(0)) })));
     const [loading, setLoading] = useState(false);
 
-    const refetchAllData = () => {
-        setLoading(true);
-        setTimeout(() => {
-            setFinancialData(generateDummyFinancialData(30));
-            setCarbonData(generateDummyImpactData(12, 6, 0.4, 0.1));
-            setSoilData(generateDummyImpactData(12, 6, 2.0, 0.08));
-            setLoading(false);
-        }, 1000);
-    };
+    // Handlers
+    const refetchAllData = () => { setLoading(true); setTimeout(() => { setFinancialData(Array.from({ length: 30 }, (_, i) => ({ timestamp: new Date(new Date().setDate(new Date().getDate() - (29 - i))), regenerative_profit: parseFloat((6700 + Math.random() * 800 - 400).toFixed(0)), regenerative_cost: parseFloat((2750 + Math.random() * 300 - 150).toFixed(0)) }))); setLoading(false); }, 1000); };
 
-    // Mempersiapkan data untuk setiap chart
-    const { profitData, costData, carbonChartData, soilChartData } = useMemo(() => {
-        const financialLabels = financialData.map(r => new Date(r.timestamp).toLocaleDateString());
-        const profitData = { labels: financialLabels, datasets: [ { label: 'Regenerative', data: financialData.map(r => r.regenerative_profit), borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.2)', fill: true, tension: 0.4 }, { label: 'Pre-Regenerative', data: financialData.map(r => r.pre_regenerative_profit), borderColor: '#f87171', backgroundColor: 'rgba(248, 113, 113, 0.2)', fill: true, tension: 0.4 } ]};
-        const costData = { labels: financialLabels, datasets: [ { label: 'Regenerative', data: financialData.map(r => r.regenerative_cost), borderColor: '#60a5fa', backgroundColor: 'rgba(96, 165, 250, 0.2)', fill: true, tension: 0.4 }, { label: 'Pre-Regenerative', data: financialData.map(r => r.pre_regenerative_cost), borderColor: '#f87171', backgroundColor: 'rgba(248, 113, 113, 0.2)', fill: true, tension: 0.4 } ]};
-
-        const impactLabels = [...carbonData.historical.map(d => new Date(d.timestamp).toLocaleDateString('default', { month: 'short', day: '2-digit' })), ...carbonData.forecast.map(d => new Date(d.timestamp).toLocaleDateString('default', { month: 'short', day: '2-digit' }))];
-        const carbonChartData = { labels: impactLabels, datasets: [ { label: 'Historical', data: carbonData.historical.map(d => d.value), borderColor: '#2dd4bf', backgroundColor: 'rgba(45, 212, 191, 0.2)', fill: true, tension: 0.4 }, { label: 'Forecast', data: [...Array(carbonData.historical.length - 1).fill(null), carbonData.historical.slice(-1)[0].value, ...carbonData.forecast.map(d => d.value)], borderColor: '#2dd4bf', borderDash: [5, 5], fill: false, tension: 0.4 } ]};
-        const soilChartData = { labels: impactLabels, datasets: [ { label: 'Historical', data: soilData.historical.map(d => d.value), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.2)', fill: true, tension: 0.4 }, { label: 'Forecast', data: [...Array(soilData.historical.length - 1).fill(null), soilData.historical.slice(-1)[0].value, ...soilData.forecast.map(d => d.value)], borderColor: '#f59e0b', borderDash: [5, 5], fill: false, tension: 0.4 } ]};
-
-        return { profitData, costData, carbonChartData, soilChartData };
-    }, [financialData, carbonData, soilData]);
-
-    const keyMetrics = [{ value: 20, label: 'ROI Improvement', icon: TrendingUp, isPercentage: true }, { value: 2, label: 'Carbon Saved (tCO2)', icon: Leaf }, { value: 3, label: 'Soil Organic Matter', icon: Activity, isPercentage: true }, { value: 30, label: 'Water Saved', icon: Droplet, isPercentage: true }];
+    // Memoized Chart Data
+    const { profitData, costData } = useMemo(() => {
+        const labels = financialData.map(r => r.timestamp.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+        return {
+            profitData: { labels, datasets: [{ label: 'Profit', data: financialData.map(r => r.regenerative_profit), borderColor: theme.colors.primary, backgroundColor: theme.colors.primary_light, pointBackgroundColor: '#fff', pointBorderColor: theme.colors.primary, fill: true, tension: 0.4 }] },
+            costData: { labels, datasets: [{ label: 'Cost', data: financialData.map(r => r.regenerative_cost), borderColor: theme.colors.secondary, backgroundColor: theme.colors.secondary_light, pointBackgroundColor: '#fff', pointBorderColor: theme.colors.secondary, fill: true, tension: 0.4 }] }
+        };
+    }, [financialData]);
 
     return (
-        <div className="min-h-screen bg-slate-50 flex text-slate-700">
-            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} activeItem={activeMenuItem} onItemClick={(key, label) => setActiveMenuItem(label)} />
-            <div className="flex-1 flex flex-col min-w-0">
-                <Header onMenuClick={() => setSidebarOpen(true)} selectedGarden={selectedGarden} onGardenChange={(garden) => setSelectedGarden(garden)} />
-                <div className="bg-white/60 backdrop-blur-sm border-b border-slate-200 px-6 py-2 flex justify-between items-center text-xs"><div className="flex items-center gap-2"><Wifi className="w-3 h-3 text-emerald-500" /><span className="text-emerald-600 font-semibold">Connected</span></div><span className="text-slate-500">Data fresh as of {new Date().toLocaleTimeString()}</span></div>
+        <div className="min-h-screen bg-slate-50 flex">
+            <Sidebar 
+                isOpen={sidebarOpen} 
+                onClose={() => setSidebarOpen(false)}
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(!isSidebarCollapsed)}
+            />
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+                <Header onMenuClick={() => setSidebarOpen(true)} selectedGarden={"Global Impact Program"} onGardenChange={() => {}} />
                 
-                <main className="flex-1 p-6 lg:p-8 overflow-auto">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-slate-800">Financial & ESG Dashboard</h1>
-                        <p className="text-slate-500 mt-1">Analyzing the profitability and sustainable impact of regenerative practices.</p>
-                    </div>
-
-                    <div className="relative mb-12 p-20 rounded-2xl shadow-xl overflow-hidden" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                            {keyMetrics.map(item => <KeyMetricDisplay key={item.label} {...item} />)}
+                <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+                    {/* Hero Section */}
+                    <div className="relative mb-12 rounded-xl shadow-lg overflow-hidden">
+                        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }}></div>
+                        <div className="absolute inset-0 bg-black/50"></div>
+                        <div className="relative p-6 md:p-8 space-y-4">
+                            <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight" style={{textShadow: '0 2px 5px rgba(0,0,0,0.5)'}}>Program Goals</h1>
+                            <div className="space-y-6 mt-4">
+                              {programGoalsData.map((goal, index) => <ProgramGoal key={index} {...goal} />)}
+                            </div>
                         </div>
                     </div>
-
+                    
+                    {/* ESG Section */}
                     <div className="mb-12">
-                        {/* <div className="text-center mb-8"><span className="text-sm font-bold text-emerald-600 uppercase tracking-wider">The Triple Bottom Line</span><h2 className="text-2xl font-bold text-slate-800 mt-1">Regenerative Impact Dimensions</h2></div> */}
+                        <SectionHeader 
+                            title="ESG Impact Dimensions" 
+                            subtitle="Analyzing the triple bottom line of regenerative agriculture: Environmental, Social, and Governance." 
+                        />
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             <ImpactCard impactData={environmentalImpactData} />
                             <ImpactCard impactData={socialImpactData} />
@@ -195,13 +247,19 @@ const FinancePage = () => {
                         </div>
                     </div>
 
+                    {/* Financial & National Context Section */}
                     <div>
-                        {/* <div className="text-center mb-8"><span className="text-sm font-bold text-emerald-600 uppercase tracking-wider">Data-Driven Insights</span><h2 className="text-3xl font-bold text-slate-800 mt-1">Financial & Impact Forecasts</h2></div> */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <FinancialComparisonChart title="Profit Comparison" subtitle="Regenerative vs. Pre-Regenerative ($/ha)" data={profitData} loading={loading} onRefresh={refetchAllData} />
-                            <FinancialComparisonChart title="Input Cost Comparison" subtitle="Regenerative vs. Pre-Regenerative ($/ha)" data={costData} loading={loading} onRefresh={refetchAllData} />
-                            <ImpactForecastChart title="Carbon Sequestration" subtitle="Projected Impact (tCO2/ha)" data={carbonChartData} loading={loading} onRefresh={refetchAllData} />
-                            <ImpactForecastChart title="Soil Organic Matter" subtitle="Projected Improvement (%)" data={soilChartData} loading={loading} onRefresh={refetchAllData} />
+                         <SectionHeader 
+                            title="Financial & Economic Insights"
+                            subtitle="Tracking financial performance against the broader national economic landscape."
+                         />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <FinancialComparisonChart title="Profitability Over Time" data={profitData} loading={loading} onRefresh={refetchAllData} />
+                            <FinancialComparisonChart title="Operational Costs Over Time" data={costData} loading={loading} onRefresh={refetchAllData} />
+                        </div>
+
+                        <div className="mt-8">
+                            <DOSMDataWidget />
                         </div>
                     </div>
                 </main>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Overview from './components/dashboard/NipisOverview';  // Adjust path// Import other components as you create them
+import Overview from './components/dashboard/NipisOverview'; 
 import DataPage from './components/dashboard/Data';
 import FinanceAnalytics from './components/dashboard/Finance';
 import Articles from './components/dashboard/Forecast';

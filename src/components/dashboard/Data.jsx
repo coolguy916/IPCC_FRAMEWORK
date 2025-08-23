@@ -1,297 +1,188 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-    Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, AlertTriangle, Wifi, WifiOff
-} from 'lucide-react';
+    Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, RadialLinearScale, Title, Tooltip, Legend, Filler
+} from 'chart.js';
+import { Line, Radar, Bar } from 'react-chartjs-2';
+import { Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, SlidersHorizontal, Info } from 'lucide-react';
+
 import Header from '../layout/header';
 import Sidebar from '../layout/sidebar';
-import LineChart from '../charts/lineChart';
 
-// Data dummy untuk simulasi data sensor (per hari, maks 20 entri)
-const generateDummyData = (count = 20) => {
-    const data = [];
-    const baseTime = new Date();
-    const maxEntries = Math.min(count, 20); // Batasi maksimum 20 entri
-    for (let i = 0; i < maxEntries; i++) {
-        data.push({
-            timestamp: new Date(baseTime.getTime() - i * 24 * 3600000).toISOString(), // 1 hari mundur per data
-            temperature: (20 + Math.random() * 10).toFixed(1), // 20-30°C
-            soil_moisture: (40 + Math.random() * 40).toFixed(1), // 40-80%
-            ph_level: (6 + Math.random() * 1.5).toFixed(1), // 6-7.5
-            nitrogen: (15 + Math.random() * 10).toFixed(1), // 15-25 ppm
-            phosphorus: (10 + Math.random() * 10).toFixed(1), // 10-20 ppm
-            potassium: (20 + Math.random() * 10).toFixed(1), // 20-30 ppm
-            soil_health: (90 + Math.random() * 10).toFixed(1), // 90-100
-            organic_matter: (2.5 + Math.random() * 2).toFixed(1), // 2.5-4.5%
-        });
-    }
-    return data.reverse(); // Urutan waktu ascending
+// [PENTING] Impor gambar latar Anda di sini
+import keylimeBackground from '../images/image.png'; // <-- Ganti path ini sesuai lokasi gambar Anda
+
+// Registrasi elemen Chart.js
+ChartJS.register( CategoryScale, LinearScale, PointElement, LineElement, BarElement, RadialLinearScale, Title, Tooltip, Legend, Filler );
+
+// ... (Palet warna dan data dummy tetap sama)
+const palette = {
+    primary: '#16a34a', primary_light: '#dcfce7', primary_dark: '#15803d', primary_transparent: 'rgba(22, 163, 74, 0.15)',
+    secondary: '#64748b', secondary_light: '#e2e8f0', secondary_transparent: 'rgba(100, 116, 139, 0.15)',
+    text_primary: '#1e293b', text_secondary: '#475569', border: '#e2e8f0', bg_subtle: '#f8fafc',    
 };
+const generateDummyData = (count = 30) => {
+    const data = []; const baseTime = new Date(); for (let i = 0; i < count; i++) {
+        const progressFactor = (count - i) / count;
+        data.push({
+            timestamp: new Date(baseTime.getTime() - i * 24 * 3600000).toISOString(),
+            temperature: (22 + Math.random() * 5).toFixed(1), soil_moisture: (65 + Math.random() * 10).toFixed(1),
+            ph_level: (6.7 + Math.random() * 0.4).toFixed(1), nitrogen: (20 + Math.random() * 5 * progressFactor).toFixed(1),
+            phosphorus: (15 + Math.random() * 5 * progressFactor).toFixed(1), potassium: (25 + Math.random() * 5 * progressFactor).toFixed(1),
+            soil_health: (92 + (Math.random() * 8 * progressFactor)).toFixed(1), organic_matter: (3.8 + (Math.random() * 1 * progressFactor)).toFixed(1),
+        });
+    } return data.reverse();
+};
+const metricsConfig = [ { key: 'soil_health', label: 'Soil Health', icon: Leaf, unit: '%' }, { key: 'soil_moisture', label: 'Soil Moisture', icon: Droplet, unit: '%' }, { key: 'temperature', label: 'Temperature', icon: Thermometer, unit: '°C' }, { key: 'ph_level', label: 'pH Level', icon: Droplet, unit: '' }, { key: 'nitrogen', label: 'Nitrogen', icon: Sun, unit: 'ppm' }, { key: 'phosphorus', label: 'Phosphorus', icon: Activity, unit: 'ppm' }, { key: 'potassium', label: 'Potassium', icon: Wind, unit: 'ppm' }, { key: 'organic_matter', label: 'Organic Matter', icon: BarChart3, unit: '%' }, ];
+const regenerativeBaseValues = { yield: 4500, costBenefit: 2.5 };
+const conventionalBaseValues = { yield: 5000, costBenefit: 1.5 };
 
-// Helper component for individual metric charts
-const MetricLineChart = ({ title, data, loading, error, onRefresh, icon: Icon, iconColor, color }) => (
-    <div className="bg-white rounded-lg p-4 shadow-sm border col-span-1 md:col-span-2">
-        <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-                {Icon && <Icon className={`w-6 h-6 ${iconColor || 'text-gray-700'}`} />}
-                <h3 className="font-semibold text-gray-900">{title}</h3>
-            </div>
-            <button
-                onClick={onRefresh}
-                disabled={loading}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded disabled:opacity-50"
-            >
-                {loading ? 'Refreshing...' : 'Refresh'}
-            </button>
-        </div>
-        <div style={{ height: '300px' }}>
-            <LineChart
-                data={{
-                    labels: data.labels,
-                    datasets: [{
-                        label: title,
-                        data: data.datasets?.metric?.data || [],
-                        borderColor: color,
-                        backgroundColor: `${color}20`,
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 3,
-                        pointHoverRadius: 6,
-                    }],
-                }}
-                options={{
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top',
-                            labels: { color: '#6b7280' },
-                        },
-                    },
-                    scales: {
-                        x: {
-                            grid: { drawOnChartArea: false },
-                            ticks: { color: '#6b7280', font: { size: 12, weight: '500' } },
-                        },
-                        y: {
-                            grid: { color: 'rgba(229, 231, 235, 1)', lineWidth: 1 },
-                            ticks: { color: '#6b7280', font: { size: 12, weight: '500' } },
-                        },
-                    },
-                    interaction: { intersect: false, mode: 'index' },
-                }}
-                height={300}
-            />
+const MetricDisplayCard = ({ icon: Icon, title, value, unit }) => (
+    <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200 flex items-center gap-4">
+        <div className="p-3 rounded-full bg-green-50"><Icon className="w-6 h-6 text-green-600" /></div>
+        <div>
+            <p className="text-sm text-slate-500">{title}</p>
+            <p className="text-xl font-bold text-slate-800">{value} <span className="text-base font-medium text-slate-500">{unit}</span></p>
         </div>
     </div>
 );
 
-// DataLogTable component for displaying historical data
-const DataLogTable = ({ data, loading }) => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-
-    const paginatedData = useMemo(() => {
-        if (!data) return [];
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        return data.slice(startIndex, startIndex + itemsPerPage);
-    }, [data, currentPage]);
-
-    const totalPages = data ? Math.ceil(data.length / itemsPerPage) : 1;
-
-    return (
-        <div className="bg-white rounded-lg p-4 shadow-sm border">
-            <h3 className="font-semibold text-gray-900 mb-4">Data Log</h3>
-            <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Temperature (°C)</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Soil Moisture (%)</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">pH Level</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nitrogen (ppm)</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phosphorus (ppm)</th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Potassium (ppm)</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {loading && !paginatedData.length ? (
-                            <tr><td colSpan="7" className="text-center py-4">Loading data...</td></tr>
-                        ) : paginatedData.map((log, index) => (
-                            <tr key={index}>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(log.timestamp).toLocaleDateString()}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.temperature ?? 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.soil_moisture ?? 'N/A'}</td>
-                                <td className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">pH Level</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.ph_level ?? 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.nitrogen ?? 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.phosphorus ?? 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{log.potassium ?? 'N/A'}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <div className="flex justify-between items-center mt-4">
-                <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
-                >
-                    Previous
-                </button>
-                <span className="text-sm text-gray-600">Page {currentPage} of {totalPages}</span>
-                <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-1 text-sm bg-gray-200 rounded disabled:opacity-50"
-                >
-                    Next
-                </button>
-            </div>
-        </div>
-    );
-};
 
 const DataPage = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [selectedGarden, setSelectedGarden] = useState("Spinach Garden 08");
-    const [activeMenuItem, setActiveMenuItem] = useState("Data");
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [selectedGarden] = useState("Primary Key Lime Orchard");
+    const [sensorData] = useState(generateDummyData());
+    const [selectedMetric, setSelectedMetric] = useState('soil_health');
+    const [comparisonRatio, setComparisonRatio] = useState(9); 
+    const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', align: 'end', labels: { color: palette.text_secondary, boxWidth: 12 } } }, scales: { y: { grid: { color: palette.border }, ticks: { color: palette.text_secondary } }, x: { grid: { display: false }, ticks: { color: palette.text_secondary } } } };
 
-    // State untuk data dummy
-    const [sensorData, setSensorData] = useState(generateDummyData(20));
-    const [sensorLoading, setSensorLoading] = useState(false);
-    const [sensorError, setSensorError] = useState(null);
-    const [lastUpdated, setLastUpdated] = useState(new Date());
-
-    // Simulasi status koneksi
-    const isConnected = true;
-
-    // Fungsi untuk simulasi refresh data
-    const refetchSensorData = ({ garden_id, limit = 20 }) => {
-        setSensorLoading(true);
-        setTimeout(() => {
-            setSensorData(generateDummyData(limit));
-            setLastUpdated(new Date());
-            setSensorLoading(false);
-        }, 1000);
-    };
-
-    // Memoized processing for chart data
-    const processChartData = (data, metricKey, color, defaultValue = 0) => {
-        return useMemo(() => {
-            if (!data || data.length === 0) {
-                return { labels: [], datasets: { metric: {} } };
-            }
-            const labels = data.map(r => new Date(r.timestamp).toLocaleDateString()).reverse();
-            const dataset = {
-                label: metricKey,
-                data: data.map(r => r[metricKey] || defaultValue).reverse(),
-                borderColor: color,
-                backgroundColor: `${color}20`,
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 3,
-                pointHoverRadius: 6,
-            };
-            return { labels, datasets: { metric: dataset } };
-        }, [data, metricKey, color]);
-    };
-
-    const metrics = [
-        { key: 'temperature', label: 'Temperature', icon: Thermometer, color: '#f97316', iconColor: 'text-orange-500' },
-        { key: 'soil_moisture', label: 'Soil Moisture', icon: Droplet, color: '#3b82f6', iconColor: 'text-blue-400' },
-        { key: 'ph_level', label: 'pH Level', icon: Droplet, color: '#10b981', iconColor: 'text-teal-500', defaultValue: 6.8 },
-        { key: 'nitrogen', label: 'Soil Nitrogen', icon: Sun, color: '#8b5cf6', iconColor: 'text-yellow-500', defaultValue: 18 },
-        { key: 'phosphorus', label: 'Phosphorus', icon: Activity, color: '#d946ef', iconColor: 'text-purple-500', defaultValue: 12 },
-        { key: 'potassium', label: 'Potassium', icon: Wind, color: '#0ea5e9', iconColor: 'text-sky-500', defaultValue: 25 },
-        { key: 'soil_health', label: 'Soil Health', icon: Leaf, color: '#22c55e', iconColor: 'text-green-500', defaultValue: 96 },
-        { key: 'organic_matter', label: 'Organic Matter', icon: BarChart3, color: '#6366f1', iconColor: 'text-indigo-500', defaultValue: 3.2 },
-    ];
-
-    const chartDataHooks = metrics.map(metric => 
-        processChartData(sensorData, metric.key, metric.color, metric.defaultValue)
-    );
-
-    const handleMenuItemClick = (key, label) => {
-        setActiveMenuItem(label);
-    };
-
-    const handleGardenChange = (garden) => {
-        setSelectedGarden(garden);
-        refetchSensorData({ garden_id: garden, limit: 20 });
-    };
+    const processedData = useMemo(() => {
+        const latestReading = sensorData[sensorData.length - 1];
+        const labels = sensorData.map(d => new Date(d.timestamp).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
+        const selectedConfig = metricsConfig.find(m => m.key === selectedMetric);
+        const mainLineChartData = {
+            labels,
+            datasets: [{ label: selectedConfig?.label || 'Selected Metric', data: sensorData.map(d => d[selectedMetric]), borderColor: palette.primary, backgroundColor: palette.primary_transparent, fill: true, tension: 0.4, pointRadius: 1, pointBackgroundColor: palette.primary,
+            }, { label: '7-Day Moving Average', data: sensorData.map((_, i, arr) => (arr.slice(Math.max(0, i - 6), i + 1).reduce((acc, val) => acc + parseFloat(val[selectedMetric]), 0) / Math.min(i + 1, 7)).toFixed(1)), borderColor: palette.secondary, borderDash: [5, 5], fill: false, tension: 0.4, pointRadius: 0, }]
+        };
+        const radarData = {
+            labels: ['Health', 'Moisture', 'Nitrogen', 'Phosphorus', 'Potassium', 'Organic Matter'],
+            datasets: [{ label: 'Current Performance (7-Day Avg)', data: ['soil_health', 'soil_moisture', 'nitrogen', 'phosphorus', 'potassium', 'organic_matter'].map(metric => (sensorData.slice(-7).reduce((sum, d) => sum + parseFloat(d[metric]), 0) / 7).toFixed(1)), backgroundColor: palette.primary_transparent, borderColor: palette.primary, borderWidth: 2, }]
+        };
+        const nutrientData = {
+            labels: ['Nitrogen', 'Phosphorus', 'Potassium'],
+            datasets: [{ label: 'Average Level (ppm)', data: ['nitrogen', 'phosphorus', 'potassium'].map(nutrient => (sensorData.reduce((s, d) => s + parseFloat(d[nutrient]), 0) / sensorData.length).toFixed(1)), backgroundColor: [palette.primary, palette.primary_dark, '#65a30d'], }]
+        };
+        return { latestReading, mainLineChartData, radarData, nutrientData };
+    }, [sensorData, selectedMetric]);
+    
+    const comparisonChartsData = useMemo(() => {
+        return { yieldChartData: { labels: ['Conventional', 'Regenerative'], datasets: [{ label: 'Projected Yield (kg/ha)', data: [conventionalBaseValues.yield, regenerativeBaseValues.yield], backgroundColor: [palette.secondary_light, palette.primary_light], borderColor: [palette.secondary, palette.primary], borderWidth: 1, borderRadius: 4 }] }, costBenefitChartData: { labels: ['Conventional', 'Regenerative'], datasets: [{ label: 'Cost-Benefit Ratio', data: [conventionalBaseValues.costBenefit, regenerativeBaseValues.costBenefit], backgroundColor: [palette.secondary_light, palette.primary_light], borderColor: [palette.secondary, palette.primary], borderWidth: 1, borderRadius: 4 }] } };
+    }, []);
+    
+    const blendedOutcomes = useMemo(() => {
+        const totalParts = 9; const regenWeight = comparisonRatio / totalParts; const convWeight = (totalParts - comparisonRatio) / totalParts;
+        return { yield: ((regenerativeBaseValues.yield * regenWeight) + (conventionalBaseValues.yield * convWeight)).toFixed(0), costBenefit: ((regenerativeBaseValues.costBenefit * regenWeight) + (conventionalBaseValues.costBenefit * convWeight)).toFixed(2), };
+    }, [comparisonRatio]);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
-            <Sidebar
-                isOpen={sidebarOpen}
+        <div className="min-h-screen bg-slate-50 flex">
+            <Sidebar 
+                isOpen={sidebarOpen} 
                 onClose={() => setSidebarOpen(false)}
-                activeItem={activeMenuItem}
-                onItemClick={handleMenuItemClick}
+                isCollapsed={isSidebarCollapsed}
+                onToggleCollapse={() => setSidebarCollapsed(!isSidebarCollapsed)}
             />
-            <div className="flex-1 flex flex-col min-w-0">
-                <Header
-                    onMenuClick={() => setSidebarOpen(true)}
-                    selectedGarden={selectedGarden}
-                    onGardenChange={handleGardenChange}
-                />
-                <div className="bg-white border-b px-4 py-2 flex justify-between items-center">
-                    <div className="flex items-center gap-2 text-sm">
-                        {isConnected ? (
-                            <>
-                                <Wifi className="w-4 h-4 text-green-500" />
-                                <span className="text-green-600">Connected</span>
-                            </>
-                        ) : (
-                            <>
-                                <WifiOff className="w-4 h-4 text-red-500" />
-                                <span className="text-red-600">Disconnected</span>
-                            </>
-                        )}
-                    </div>
-                    {lastUpdated && (
-                        <span className="text-xs text-gray-500">
-                            Last updated: {lastUpdated.toLocaleTimeString()}
-                        </span>
-                    )}
-                    {sensorError && (
-                        <div className="flex items-center gap-2 text-red-600">
-                            <AlertTriangle className="w-4 h-4" />
-                            <span className="text-sm">Connection issues detected</span>
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+                <Header onMenuClick={() => setSidebarOpen(true)} selectedGarden={selectedGarden} onGardenChange={() => {}} />
+                
+                <main className="flex-1 p-4 sm:p-6 overflow-auto">
+                    {/* [REDESIGNED] Page Header with Background Image and Rich Description */}
+                    <div className="relative p-8 rounded-xl shadow-lg overflow-hidden mb-6 bg-cover bg-center" style={{ backgroundImage: `url(${keylimeBackground})` }}>
+                        <div className="absolute inset-0 bg-black/60"></div>
+                        <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 text-white">
+                            <div className="md:col-span-2">
+                                <h2 className="text-3xl font-extrabold mb-3">Crop Profile: Key Lime</h2>
+                                <p className="text-slate-200 text-base leading-relaxed">
+                                    The Key Lime (*Citrus aurantiifolia*) is a small, highly aromatic citrus fruit prized for its distinctively tart and flavorful juice. Unlike other limes, it has a higher acidity, a stronger aroma, and a thinner rind. 
+                                    <br/><br/>
+                                    Thriving in well-drained soil and sunny conditions, this crop is sensitive to fluctuations in soil pH, moisture, and nutrient balance. This dashboard provides the real-time data crucial for managing these parameters, preventing disease, and ensuring a healthy, high-yield orchard.
+                                </p>
+                            </div>
+                            <div className="p-6 bg-black/30 rounded-lg">
+                                <h3 className="text-xl font-bold mb-4">Ideal Soil Set Points</h3>
+                                <ul className="space-y-3 text-base">
+                                    <li className="flex items-center gap-3"><Droplet className="w-5 h-5 text-green-400"/><span><strong>pH Level:</strong> 6.0 - 7.0</span></li>
+                                    <li className="flex items-center gap-3"><Droplet className="w-5 h-5 text-green-400"/><span><strong>Moisture:</strong> 60% - 75%</span></li>
+                                    <li className="flex items-center gap-3"><Sun className="w-5 h-5 text-green-400"/><span><strong>Nitrogen (N):</strong> 18 - 25 ppm</span></li>
+                                    <li className="flex items-center gap-3"><Activity className="w-5 h-5 text-green-400"/><span><strong>Phosphorus (P):</strong> 15 - 20 ppm</span></li>
+                                    <li className="flex items-center gap-3"><Wind className="w-5 h-5 text-green-400"/><span><strong>Potassium (K):</strong> 20 - 30 ppm</span></li>
+                                </ul>
+                            </div>
                         </div>
-                    )}
-                </div>
-                <main className="flex-1 px-4 py-6 overflow-auto">
-                    <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-2xl font-bold text-gray-800">Data Analytics</h1>
-                        <button 
-                            onClick={() => refetchSensorData({ garden_id: selectedGarden, limit: 20 })}
-                            disabled={sensorLoading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 flex items-center gap-2"
-                        >
-                            {sensorLoading ? 'Refreshing...' : 'Refresh All Data'}
-                        </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                        {metrics.map((metric, index) => (
-                            <MetricLineChart
-                                key={metric.key}
-                                title={metric.label}
-                                icon={metric.icon}
-                                iconColor={metric.iconColor}
-                                color={metric.color}
-                                data={chartDataHooks[index]}
-                                loading={sensorLoading}
-                                error={sensorError}
-                                onRefresh={() => refetchSensorData({ garden_id: selectedGarden, limit: 20 })}
-                            />
-                        ))}
+                    
+                    {/* Metric Cards */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-4 mb-6">
+                        {metricsConfig.map(metric => <MetricDisplayCard key={metric.key} icon={metric.icon} title={metric.label} value={processedData.latestReading?.[metric.key] || 'N/A'} unit={metric.unit} />)}
                     </div>
-                    <DataLogTable data={sensorData} loading={sensorLoading} />
+
+                    {/* Main Charts */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                        <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-200">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+                                <h3 className="text-lg font-bold text-slate-800 mb-2 sm:mb-0">Metric Statistics Over Time</h3>
+                                <select value={selectedMetric} onChange={(e) => setSelectedMetric(e.target.value)} className="text-sm border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-green-300 focus:border-green-300">
+                                    {metricsConfig.map(metric => <option key={metric.key} value={metric.key}>{metric.label}</option>)}
+                                </select>
+                            </div>
+                            <div className="h-80"><Line data={processedData.mainLineChartData} options={chartOptions} /></div>
+                        </div>
+                        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-200">
+                             <h3 className="text-lg font-bold text-slate-800 mb-4">Overall Performance</h3>
+                             <div className="h-80"><Radar data={processedData.radarData} options={{...chartOptions, scales: {r: { pointLabels: { font: { size: 10 } }, grid: { color: palette.border } }} }}/></div>
+                        </div>
+                    </div>
+
+                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4">Average Nutrient Levels (NPK)</h3>
+                            <div className="h-64"><Bar data={processedData.nutrientData} options={{...chartOptions, plugins: { legend: { display: false }}}} /></div>
+                        </div>
+                         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4">Soil Health (7-Day Trend)</h3>
+                             <p className="text-xs text-slate-500 -mt-3 mb-4">A stable or upward trend indicates positive soil activity.</p>
+                            <div className="h-52"><Line data={{...processedData.mainLineChartData, datasets: [processedData.mainLineChartData.datasets[0]]}} options={{...chartOptions, plugins: { legend: { display: false } }}}/></div>
+                        </div>
+                    </div>
+                    
+                    {/* Comparison Section */}
+                    <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-slate-200">
+                        <h2 className="text-xl font-bold text-slate-800 mb-4">Farming Practice Comparison</h2>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200 flex flex-col justify-center">
+                                <div className="flex justify-between items-center mb-2"><h3 className="font-bold text-slate-800">Farm Practice Scenario</h3><SlidersHorizontal className="w-5 h-5 text-slate-500"/></div>
+                                <p className="text-sm text-slate-500 mb-6">Adjust the ratio to model outcomes based on a blend of practices.</p>
+                                <input type="range" min="0" max="9" value={comparisonRatio} onChange={(e) => setComparisonRatio(parseInt(e.target.value, 10))} className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"/>
+                                <div className="flex justify-between text-sm font-medium text-slate-600 mt-2">
+                                    <span>Conventional: <strong>{9 - comparisonRatio}</strong> parts</span>
+                                    <span>Regenerative: <strong>{comparisonRatio}</strong> parts</span>
+                                </div>
+                                <div className="mt-6 pt-4 space-y-2 text-center border-t border-slate-200">
+                                    <p className="text-sm text-slate-500">Blended Scenario Outcome:</p>
+                                    <p className="text-lg font-bold text-green-700">{blendedOutcomes.yield} kg/ha Yield &amp; {blendedOutcomes.costBenefit} Cost-Benefit Ratio</p>
+                                </div>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                                <h3 className="font-bold text-center text-slate-800 mb-4">Yield Comparison (kg/ha)</h3>
+                                <div className="h-64"><Bar data={comparisonChartsData.yieldChartData} options={{...chartOptions, plugins: { legend: { display: false }}}} /></div>
+                            </div>
+                            <div className="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                                <h3 className="font-bold text-center text-slate-800 mb-4">Cost-Benefit Ratio</h3>
+                                <div className="h-64"><Bar data={comparisonChartsData.costBenefitChartData} options={{...chartOptions, plugins: { legend: { display: false }}}} /></div>
+                            </div>
+                        </div>
+                    </div>
                 </main>
             </div>
         </div>

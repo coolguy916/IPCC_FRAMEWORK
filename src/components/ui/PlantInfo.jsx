@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Leaf } from 'lucide-react';
 
 const PlantInfo = ({ 
-  plantName = "Kangkung",
+  plantName = "Limau",
   description = "Your plants are thriving and showing excellent growth. The current conditions are optimal for Kangkung cultivation.",
   backgroundImage,
   detailsLink = "/plant-details/kangkung",

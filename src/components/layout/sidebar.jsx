@@ -1,112 +1,109 @@
-// components/layout/sidebar.jsx
 import React from 'react';
 import { 
-  Leaf, X, Home, Calendar, Thermometer, 
-  Settings, Users, HelpCircle, BarChart2, History, FileText, Wrench 
+  Leaf, X, Home, BarChart2, History, Wrench, Users, LogOut, ChevronsLeft, ChevronsRight 
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = ({ 
   isOpen, 
-  onClose, 
-  activeItem = "Overview",
-  onItemClick,
-  menuItems = []
+  onClose,
+  isCollapsed,
+  onToggleCollapse
 }) => {
-  const defaultMenuItems = [
-    { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
-    { path: '/analytics', icon: BarChart2, label: 'Data Analytics', key: 'analytics' },
-    { path: '/revenue', icon: Thermometer, label: 'ESG Impact', key: 'revenue' },
-    { path: '/forecasting', icon: Calendar, label: 'Simulation & Forecasting', key: 'forecasting' },
-    { path: '/maintenance', icon: Settings, label: 'Maintenance Schedule', key: 'maintenance' },
-    { path: '/team', icon: Users, label: 'Team Profile', key: 'team' },
-    { path: '/help', icon: HelpCircle, label: 'Help & Support', key: 'help' },
-  ];
 
   const customMenuItems = [
-    { path: '/overview', icon: Home, label: 'Overview', key: 'overview' },
-    { path: '/data', icon: History, label: 'Data Analytics', key: 'historical-data' },
-    { path: '/finance-analytics', icon: BarChart2, label: 'ESG Impact', key: 'finance-analytics' },
-    { path: '/articles', icon: FileText, label: 'Simulation & Forecasting', key: 'articles' },
-    { path: '/maintenance', icon: Wrench, label: 'Task Schedule', key: 'maintenance' },
-    { path: '/team-profile', icon: Users, label: 'Team Profile', key: 'team-profile' },
+    { path: '/overview', icon: Home, label: 'Overview' },
+    { path: '/data', icon: History, label: 'Data Analytics' },
+    { path: '/finance-analytics', icon: BarChart2, label: 'ESG Impact' },
+    { path: '/maintenance', icon: Wrench, label: 'Task Schedule' },
+    { path: '/team-profile', icon: Users, label: 'Team Profile' },
   ];
 
   const location = useLocation();
 
-  // Use provided menuItems if any, else merge or choose custom/default. Here, prioritizing custom for specificity.
-  const items = menuItems.length > 0 ? menuItems : customMenuItems;
-
-  const handleItemClick = (item) => {
-    if (onItemClick) {
-      onItemClick(item.key, item.label);
-    }
-    // Close sidebar on mobile after selection
-    if (window.innerWidth < 1024) {
-      onClose();
-    }
-  };
-
   return (
     <>
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" 
-          onClick={onClose} 
-        />
-      )}
+      {/* Overlay untuk perangkat seluler */}
+      {isOpen && <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden" onClick={onClose} />}
       
-      {/* Sidebar */}
-      <div className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${
+      {/* Kontainer Sidebar Utama dengan tema terang */}
+      <div className={`fixed inset-y-0 left-0 z-50 bg-white shadow-lg transform ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 transition-transform duration-300 ease-in-out`}>
+      } lg:translate-x-0 h-screen flex flex-col transition-all duration-300 ease-in-out border-r border-slate-200 ${
+        isCollapsed ? 'w-20' : 'w-64'
+      }`}>
         
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+        {/* Header Sidebar */}
+        <div className="flex items-center p-4 border-b border-slate-200 flex-shrink-0 h-[68px]">
+          <div className={`flex items-center space-x-3 overflow-hidden ${isCollapsed ? 'justify-center w-full' : ''}`}>
+            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
               <Leaf className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">Farming</span>
+            {!isCollapsed && <span className="text-xl font-bold text-slate-800 whitespace-nowrap">Activities</span>}
           </div>
-          <button 
-            onClick={onClose} 
-            className="lg:hidden"
-          >
-            <X className="w-6 h-6" />
-          </button>
+          <button onClick={onClose} className="lg:hidden text-slate-500 hover:text-slate-800"><X className="w-6 h-6" /></button>
         </div>
         
-        {/* Navigation */}
-        <nav className="mt-8">
-          {items.map((item, index) => (
-            <Link
-              key={index}
-              to={item.path}
-              onClick={() => handleItemClick(item)}
-              className={`w-full flex items-center px-6 py-3 text-sm font-medium transition-colors ${
-                location.pathname === item.path || activeItem === item.label 
-                  ? 'bg-green-300 text-green-700 border-r-2 border-green-500' 
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <item.icon className="w-5 h-5 mr-3" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        
-        {/* Logout Button */}
-        <div className="absolute bottom-4 left-4 right-4">
-          <button className="w-full bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-            Logout
+        {/* Navigasi Utama */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden">
+          <nav className="mt-4 pb-4">
+            {customMenuItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              return (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  className={`w-full flex items-center py-3 transition-colors ${
+                    isCollapsed ? 'justify-center px-2' : 'px-6' // Justify center saat diciutkan
+                  } ${isActive 
+                    ? 'bg-green-50 text-green-700 font-semibold' 
+                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'}`}
+                  title={isCollapsed ? item.label : undefined}
+                >
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${!isCollapsed ? 'mr-3' : ''}`} />
+                  {!isCollapsed && <span>{item.label}</span>}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* [DIPERBAIKI] Bagian Bawah Sidebar (Footer) */}
+        <div className="p-4 border-t border-slate-200 flex-shrink-0 space-y-2">
+           <button 
+             onClick={onToggleCollapse} 
+             className={`w-full justify-center hidden lg:flex items-center text-slate-500 py-2 rounded-lg text-sm font-medium hover:bg-slate-100 hover:text-slate-900 transition-colors ${
+                isCollapsed ? 'px-2' : 'px-4' // Padding dinamis
+             }`}
+           >
+             {isCollapsed ? (
+                <ChevronsRight className="w-5 h-5" />
+             ) : (
+                <>
+                    <ChevronsLeft className="w-5 h-5" />
+                    <span className="ml-2">Collapse</span>
+                </>
+             )}
+           </button>
+
+           <button 
+            className={`w-full justify-center flex items-center bg-slate-100 text-slate-600 py-2 rounded-lg text-sm font-medium hover:bg-slate-200 hover:text-slate-900 transition-colors ${
+                isCollapsed ? 'px-2' : 'px-4' // Padding dinamis
+            }`}
+           >
+            {isCollapsed ? (
+                <LogOut className="w-5 h-5" />
+            ) : (
+                <>
+                    <LogOut className="w-5 h-5" />
+                    <span className="ml-2">Logout</span>
+                </>
+            )}
           </button>
         </div>
       </div>
     </>
   );
 };
-// 
 
 export default Sidebar;
