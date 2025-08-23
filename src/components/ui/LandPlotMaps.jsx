@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
-import { ExternalLink, X } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
-// --- Main Map Component Configuration ---
+// --- Konfigurasi Komponen Peta Utama ---
 const containerStyle = {
   width: '100%',
   height: '100%'
@@ -13,7 +13,7 @@ const mapCenter = {
   lng: 101.1077
 };
 
-// --- MOCK DATA for the 9 land plots ---
+// --- DATA DUMMY untuk 9 petak lahan ---
 const landPlotsData = [
   { id: 1, position: { lat: 3.5085, lng: 101.1070 }, title: "Plot A-1", description: "North-West quadrant, primarily clay soil. Excellent morning sun exposure.", imageUrl: "https://images.unsplash.com/photo-1589531739832-34f3a73c33a9?q=80&w=2070&auto=format&fit=crop" },
   { id: 2, position: { lat: 3.5085, lng: 101.1077 }, title: "Plot A-2", description: "North-Central plot with loam soil. Equipped with drip irrigation.", imageUrl: "https://images.unsplash.com/photo-1445199149999-b8830b134a62?q=80&w=1952&auto=format&fit=crop" },
@@ -28,7 +28,7 @@ const landPlotsData = [
 
 
 const LandPlotsMap = () => {
-    // This hook loads the Google Maps script and tells you when it's ready
+    // Hook ini memuat skrip Google Maps dan memberitahu Anda saat sudah siap
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
         googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
@@ -40,7 +40,7 @@ const LandPlotsMap = () => {
         setActiveMarker(marker);
     };
 
-    if (!isLoaded) return <div>Loading Map...</div>;
+    if (!isLoaded) return <div className="text-center p-8 bg-white rounded-lg shadow-md border border-gray-200">Loading Map...</div>;
 
     return (
         <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200">
@@ -53,8 +53,7 @@ const LandPlotsMap = () => {
                     options={{ 
                         mapTypeControl: false, 
                         streetViewControl: false, 
-                        fullscreenControl: false,
-                        mapId: "YOUR_CUSTOM_MAP_ID" // Optional: for custom styling in Cloud Console
+                        fullscreenControl: false
                     }}
                 >
                     {landPlotsData.map((plot) => (

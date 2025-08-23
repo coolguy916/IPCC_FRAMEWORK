@@ -1,6 +1,6 @@
-import React from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Menu, ChevronDown } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 
 // Fungsi bantuan untuk mendapatkan salam berdasarkan waktu
 const getGreeting = () => {
@@ -10,29 +10,54 @@ const getGreeting = () => {
   return "Good Evening";
 };
 
+// Komponen Toggle Switch dengan latar hijau
+const ToggleGardenSelector = ({ selected, onSelectionChange, options }) => {
+    const [option1, option2] = options;
+
+    return (
+        <div className="relative flex w-60 items-center rounded-full bg-green-600 p-1">
+            <span
+                className={`absolute h-[calc(100%-8px)] w-[calc(50%-4px)] rounded-full bg-white shadow-md transition-transform duration-300 ease-in-out`}
+                style={{
+                    transform: selected === option1 ? 'translateX(0)' : 'translateX(calc(100% + 4px))'
+                }}
+            />
+            <button
+                onClick={() => onSelectionChange(option1)}
+                className={`relative z-10 flex-1 rounded-full py-1.5 text-sm font-bold transition-colors duration-300 ease-in-out focus:outline-none`}
+                style={{ color: selected === option1 ? '#22c55e' : 'white' }} // Warna hijau saat aktif
+            >
+              {option1}
+            </button>
+            <button
+              onClick={() => onSelectionChange(option2)}
+              className={`relative z-10 flex-1 rounded-full py-1.5 text-sm font-bold transition-colors duration-300 ease-in-out focus:outline-none`}
+              style={{ color: selected === option2 ? '#22c55e' : 'white' }} // Warna hijau saat aktif
+            >
+                {option2}
+            </button>
+        </div>
+    );
+};
+
 const Header = ({ 
-  onMenuClick, 
-  selectedGarden = "Katsuri Lime", 
-  gardens = [],
+  onMenuClick,
   notifications = 15,
   user = { initials: "VG", name: "Admin" }
 }) => {
   const navigate = useNavigate();
   const greeting = getGreeting();
+  const [selectedGarden, setSelectedGarden] = useState('Katsuri Lime');
+  const gardenOptions = ['Katsuri Lime', 'Key Lime'];
 
   const handleGardenChange = (garden) => {
-    // Navigasi akan tetap sama, sesuaikan path jika perlu
-    if (garden === 'Key Lime') {
-      navigate('/overview'); // Atau path yang sesuai
-    } else if (garden === 'Katsuri Lime') {
-      navigate('/overview'); // Atau path yang sesuai
-    }
+    setSelectedGarden(garden);
+    navigate('/overview');
   };
 
   return (
     <header className="bg-white shadow-sm border-b border-slate-200 px-4 sm:px-6 py-3">
       <div className="flex items-center justify-between gap-4">
-        {/* Sisi Kiri: Tombol Menu dan Salam */}
         <div className="flex items-center gap-4">
           <button 
             onClick={onMenuClick} 
@@ -50,30 +75,13 @@ const Header = ({
             </p>
           </div>
         </div>
-        
-        {/* Sisi Kanan: Pemilih Kebun dan Aksi Pengguna */}
         <div className="flex items-center gap-4">
-          {/* [REDESIGNED] Garden Selector */}
-          <div className="relative">
-            <select 
-              className="appearance-none bg-transparent border border-slate-300 rounded-lg pl-4 pr-10 py-2 text-slate-700 text-sm font-semibold hover:border-slate-400 focus:ring-2 focus:ring-green-200 focus:outline-none focus:border-green-500 transition-all cursor-pointer"
-              value={selectedGarden}
-              onChange={(e) => handleGardenChange(e.target.value)}
-            >
-              {gardens.length > 0 ? gardens.map((garden) => (
-                <option key={garden} value={garden}>{garden}</option>
-              )) : (
-                <>
-                  <option>Katsuri Lime</option>
-                  <option>Key Lime</option>
-                </>
-              )}
-            </select>
-            <ChevronDown className="w-5 h-5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"/>
-          </div>
-          
+          <ToggleGardenSelector
+            selected={selectedGarden}
+            onSelectionChange={handleGardenChange}
+            options={gardenOptions}
+          />
           <div className="flex items-center gap-2">
-            {/* Tombol Notifikasi */}
             <button className="relative p-2 rounded-full hover:bg-slate-100 transition-colors" aria-label="Notifications">
               <Bell className="w-6 h-6 text-slate-500" />
               {notifications > 0 && (
@@ -82,7 +90,6 @@ const Header = ({
                 </span>
               )}
             </button>
-            {/* Avatar Pengguna */}
             <button className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-offset-2 ring-offset-white ring-transparent hover:ring-green-200 transition-all" aria-label="User profile">
               <span className="text-white text-sm font-bold">{user.initials}</span>
             </button>

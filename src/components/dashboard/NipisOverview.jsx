@@ -1,32 +1,48 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
-    Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, AlertTriangle, Wifi, WifiOff, CloudRain, Sunrise, Sunset, X, Cloud
+    Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, AlertTriangle, Wifi, WifiOff, CloudRain, Sunrise, Sunset, X, Cloud, Zap
 } from 'lucide-react';
-// Import your existing components
+
+// Import komponen-komponen UI dan layout yang sudah ada
 import Header from '../layout/header';
-import Sidebar from '../layout/sidebar'; // <-- Using your new Sidebar
+import Sidebar from '../layout/sidebar';
 import PlantInfo from '../ui/PlantInfo';
 import MetricCard from '../ui/MetricCard';
 import SensorChart from '../charts/sensorChart';
 import Alerts from '../ui/Alerts';
-import Tasks from '../ui/Tasks';
 import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
 import image_url from '../images/limaunipis.png';
 
-// Import our enhanced API hook
+// Import komponen LandPlotsMap dari file terpisahnya
+import LandPlotsMap from '../ui/LandPlotMaps'; 
+
+// Import hook API kustom Anda
 import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
 
-// *** CORRECTED & ENHANCED WEATHER FORECAST MODAL ***
+// =================================================================================
+// Komponen UI yang Diperbarui dan Disempurnakan
+// =================================================================================
+
+// [FUNGSI BARU] Untuk mendapatkan ikon dan deskripsi cuaca berdasarkan WMO code
+const getWeatherInfo = (code) => {
+    switch (true) {
+        case code <= 1: return { icon: Sun, description: "Cerah" };
+        case code <= 3: return { icon: Cloud, description: "Berawan" };
+        case (code >= 51 && code <= 67): return { icon: CloudRain, description: "Hujan" };
+        case (code >= 80 && code <= 82): return { icon: CloudRain, description: "Hujan Lebat" };
+        case (code >= 95 && code <= 99): return { icon: Zap, description: "Badai Petir" };
+        default: return { icon: Cloud, description: "Berawan" };
+    }
+};
+
 const WeatherForecastModal = ({ show, onClose, data }) => {
-    // The main container now handles visibility and transitions
     return (
         <div 
-            className={`fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
+            className={`fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${
                 show ? 'opacity-100' : 'opacity-0 pointer-events-none'
             }`}
         >
-            {/* The modal dialog itself has its own entrance animation */}
             <div 
                 className={`bg-white p-6 rounded-lg shadow-xl w-full max-w-4xl transform transition-all duration-300 ${
                     show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
@@ -38,24 +54,12 @@ const WeatherForecastModal = ({ show, onClose, data }) => {
                         <X className="w-6 h-6" />
                     </button>
                 </div>
-
-                {/* Show spinner if data is not yet available */}
                 {!data || !data.daily ? (
-                    <div className="text-center py-10">
-                        <p>Loading forecast data...</p>
-                    </div>
+                    <div className="text-center py-10"> <p>Loading forecast data...</p> </div>
                 ) : (
                     <div className="space-y-3">
                         {data.daily.time.slice(0, 5).map((day, index) => {
-                            const getWeatherIcon = (code, size = "w-8 h-8") => {
-                                if ([0, 1].includes(code)) return <Sun className={`${size} text-yellow-500`} />;
-                                if ([2, 3].includes(code)) return <Cloud className={`${size} text-gray-500`} />;
-                                if (code >= 51 && code <= 67) return <CloudRain className={`${size} text-blue-500`} />;
-                                if (code >= 71 && code <= 86) return <CloudRain className={`${size} text-gray-400`} />;
-                                if (code >= 95) return <CloudRain className={`${size} text-yellow-600`} />;
-                                return <Cloud className={`${size} text-gray-500`} />;
-                            };
-
+                            const { icon: WeatherIcon } = getWeatherInfo(data.daily.weather_code[index]);
                             return (
                                 <div key={index} className="grid grid-cols-2 md:grid-cols-5 gap-4 items-center bg-gray-50 p-3 rounded-lg border">
                                     <div className="col-span-2 md:col-span-1">
@@ -63,25 +67,13 @@ const WeatherForecastModal = ({ show, onClose, data }) => {
                                         <p className="text-sm text-gray-500">{new Date(day).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
                                     </div>
                                     <div className="flex items-center justify-start md:justify-center">
-                                        {getWeatherIcon(data.daily.weather_code[index])}
+                                        <WeatherIcon className="w-8 h-8 text-gray-600" />
                                     </div>
-                                    <div className="flex items-center justify-start md:justify-center space-x-2">
-                                        <CloudRain className="w-5 h-5 text-blue-500" />
-                                        <span className="font-medium text-gray-700">{data.daily.precipitation_sum[index]} mm</span>
-                                    </div>
-                                    <div className="flex items-center justify-start md:justify-center space-x-2">
-                                        <Thermometer className="w-5 h-5 text-red-500" />
-                                        <span className="font-medium text-gray-700">{Math.round(data.daily.temperature_2m_max[index])}° / {Math.round(data.daily.temperature_2m_min[index])}°C</span>
-                                    </div>
+                                    <div className="flex items-center justify-start md:justify-center space-x-2"><CloudRain className="w-5 h-5 text-blue-500" /><span className="font-medium text-gray-700">{data.daily.precipitation_sum[index]} mm</span></div>
+                                    <div className="flex items-center justify-start md:justify-center space-x-2"><Thermometer className="w-5 h-5 text-red-500" /><span className="font-medium text-gray-700">{Math.round(data.daily.temperature_2m_max[index])}° / {Math.round(data.daily.temperature_2m_min[index])}°C</span></div>
                                     <div className="col-span-2 md:col-span-1 text-sm md:text-right space-y-1">
-                                        <div className="flex items-center justify-start md:justify-end space-x-2">
-                                            <Sunrise className="w-5 h-5 text-orange-400" />
-                                            <span>{new Date(data.daily.sunrise[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                                        </div>
-                                        <div className="flex items-center justify-start md:justify-end space-x-2">
-                                            <Sunset className="w-5 h-5 text-indigo-500" />
-                                            <span>{new Date(data.daily.sunset[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                                        </div>
+                                        <div className="flex items-center justify-start md:justify-end space-x-2"><Sunrise className="w-5 h-5 text-orange-400" /><span>{new Date(data.daily.sunrise[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                                        <div className="flex items-center justify-start md:justify-end space-x-2"><Sunset className="w-5 h-5 text-indigo-500" /><span>{new Date(data.daily.sunset[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
                                     </div>
                                 </div>
                             );
@@ -93,175 +85,135 @@ const WeatherForecastModal = ({ show, onClose, data }) => {
     );
 };
 
-// Main Weather Widget for the sidebar
+// [DIREVISI TOTAL] Komponen Widget Cuaca dengan tampilan baru
 const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
-    if (loading || !data || !data.hourly || !data.daily) {
-        return (
-            <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200 text-center h-full flex items-center justify-center">
-                <p className="text-gray-500">Loading weather data...</p>
-            </div>
-        );
+    if (loading || !data || !data.hourly || !data.daily || !data.hourly.weathercode) {
+        return <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 text-center h-full flex items-center justify-center"><p className="text-gray-500">Memuat data cuaca...</p></div>;
     }
 
     const currentHourIndex = new Date().getHours();
     const currentTemp = data.hourly.temperature_2m[currentHourIndex];
     const currentHumidity = data.hourly.relative_humidity_2m[currentHourIndex];
-    const currentRain = data.hourly.rain[currentHourIndex];
+    
+    // Mendapatkan ikon & deskripsi dinamis
+    const currentWeatherCode = data.hourly.weathercode[currentHourIndex];
+    const { icon: WeatherIcon, description } = getWeatherInfo(currentWeatherCode);
 
     return (
-        <div className="bg-white rounded-lg p-4 shadow-md border border-gray-200 flex flex-col justify-between h-full">
+        <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-md border border-gray-200 flex flex-col justify-between h-full">
             <div>
-                <div className="flex justify-between items-start mb-4">
+                {/* Bagian Cuaca Saat Ini */}
+                <div className="flex justify-between items-center mb-4">
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-800">Selangor</h3>
-                        <p className="text-3xl font-bold text-gray-800 mt-2">{Math.round(currentTemp)}°C</p>
+                        <h3 className="text-xl font-bold text-slate-800">Selangor</h3>
+                        <p className="text-sm text-slate-500">{description}</p>
                     </div>
-                     <Sun className="w-12 h-12 text-yellow-500" />
+                    <WeatherIcon className="w-16 h-16 text-slate-700" />
                 </div>
-                <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-4">
-                    <div className="flex items-center">
-                        <Droplet className="w-5 h-5 text-blue-500 mr-2" />
-                        <span>Humidity: {currentHumidity}%</span>
-                    </div>
-                    <div className="flex items-center">
-                        <CloudRain className="w-5 h-5 text-gray-500 mr-2" />
-                        <span>Rain: {currentRain} mm</span>
-                    </div>
-                    <div className="flex items-center">
-                        <Sunrise className="w-5 h-5 text-orange-500 mr-2" />
-                        <span>{new Date(data.daily.sunrise[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
-                    </div>
-                    <div className="flex items-center">
-                        <Sunset className="w-5 h-5 text-indigo-500 mr-2" />
-                        <span>{new Date(data.daily.sunset[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                <p className="text-6xl font-bold text-slate-800 mb-6">{Math.round(currentTemp)}°C</p>
+
+                {/* Bagian Prakiraan Per Jam */}
+                <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-slate-600 mb-3 text-center">Prakiraan Beberapa Jam Kedepan</h4>
+                    <div className="flex justify-between items-center space-x-4 px-2 py-3 bg-slate-100 rounded-lg">
+                        {data.hourly.time.slice(currentHourIndex + 1, currentHourIndex + 6).map((time, index) => {
+                            const hourIndex = currentHourIndex + 1 + index;
+                            const { icon: HourlyIcon } = getWeatherInfo(data.hourly.weathercode[hourIndex]);
+                            return (
+                                <div key={time} className="flex flex-col items-center space-y-1">
+                                    <span className="text-xs font-medium text-slate-500">
+                                        {new Date(time).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true })}
+                                    </span>
+                                    <HourlyIcon className="w-7 h-7 text-slate-600" />
+                                    <span className="text-md font-bold text-slate-700">
+                                        {Math.round(data.hourly.temperature_2m[hourIndex])}°
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
+                
+                {/* Detail Tambahan */}
+                 <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 mb-4">
+                    <div className="flex items-center"><Droplet className="w-5 h-5 text-blue-500 mr-2" /><span>Kelembapan: {currentHumidity}%</span></div>
+                    <div className="flex items-center"><CloudRain className="w-5 h-5 text-gray-500 mr-2" /><span>Hujan: {data.hourly.rain[currentHourIndex]} mm</span></div>
+                    <div className="flex items-center"><Sunrise className="w-5 h-5 text-orange-500 mr-2" /><span>{new Date(data.daily.sunrise[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                    <div className="flex items-center"><Sunset className="w-5 h-5 text-indigo-500 mr-2" /><span>{new Date(data.daily.sunset[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                </div>
+
             </div>
             <button
                 onClick={onMoreDetailsClick}
                 disabled={loading}
-                className="w-full text-center bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded text-sm font-medium transition-colors disabled:opacity-50"
+                className="w-full text-center bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 mt-4"
             >
-                More Details
+                Lihat Detail 5 Hari
             </button>
         </div>
     );
 };
 
+
+// =================================================================================
+// Komponen Halaman Utama
+// =================================================================================
 const NipisOverview = () => {
-    // State for the sidebar overlay on mobile
-    const [sidebarOpen, setSidebarOpen] = useState(false);
     
-    // **NEW**: State for the collapsible sidebar on desktop
-    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-    const [selectedGarden, setSelectedGarden] = useState("Nipis Cytrus");
-
-    // API connection
-    const { 
-        isConnected, 
-        wsConnected, 
-        error, 
-        loading,
-        getDataByFilters,
-        updateData
-    } = useApi();
-
-    // Sensor data with auto-refresh
-    const {
-        data: sensorData,
-        loading: sensorLoading,
-        error: sensorError,
-        lastUpdated,
-        refetch: refetchSensorData
-    } = useSensorData(30000);
-
-    // Serial connection status
-    const {
-        status: serialStatus,
-        reconnect: serialReconnect,
-    } = useSerialConnection();
-
-    // State for additional data
+    const { isConnected, wsConnected, error, loading, getDataByFilters } = useApi();
+    const { data: sensorData, loading: sensorLoading, error: sensorError, lastUpdated, refetch: refetchSensorData } = useSensorData(30000);
+    const { status: serialStatus, reconnect: serialReconnect, } = useSerialConnection();
     const [alerts, setAlerts] = useState([]);
-    const [tasks, setTasks] = useState([]);
     const [devices, setDevices] = useState([]);
     const [plantData, setPlantData] = useState(null);
     const [productionData, setProductionData] = useState(null);
-    const fetchControllerRef = useRef(null);
-
-    // State for weather data and modal
     const [weatherData, setWeatherData] = useState(null);
+    const fetchControllerRef = useRef(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+    const [selectedGarden, setSelectedGarden] = useState("Nipis Cytrus");
     const [showWeatherModal, setShowWeatherModal] = useState(false);
 
-    // Fetch weather data
     useEffect(() => {
         const fetchWeatherData = async () => {
             try {
-                const response = await fetch(
-                    'https://api.open-meteo.com/v1/forecast?latitude=3.50744&longitude=101.1077&hourly=temperature_2m,relative_humidity_2m,rain,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum&timezone=auto'
-                );
+                // [UPDATED] Menambahkan 'weathercode' ke parameter 'hourly' untuk mendapatkan ikon dinamis
+                const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=3.50744&longitude=101.1077&hourly=temperature_2m,relative_humidity_2m,rain,is_day,weathercode&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum&timezone=auto');
                 const data = await response.json();
                 setWeatherData(data);
-            } catch (error) {
-                console.error('Error fetching weather data:', error);
-            }
+            } catch (error) { console.error('Error fetching weather data:', error); }
         };
-
         fetchWeatherData();
         const interval = setInterval(fetchWeatherData, 300000);
         return () => clearInterval(interval);
     }, []);
 
-    // Fetch other data
     const fetchAdditionalData = async () => {
         if (!isConnected) return;
         if (fetchControllerRef.current) fetchControllerRef.current.abort();
-        
         const controller = new AbortController();
         fetchControllerRef.current = controller;
-
         try {
-             const [alertsResponse, tasksResponse, devicesResponse, plantResponse, productionResponse] = await Promise.all([
+             const [alertsResponse, devicesResponse, plantResponse, productionResponse] = await Promise.all([
                 getDataByFilters('alerts', { status: 'active' }, { orderBy: { column: 'created_at', direction: 'DESC' }, limit: 5 }, { signal: controller.signal }),
-                getDataByFilters('tasks', { status: ['pending', 'in_progress'] }, { orderBy: { column: 'priority', direction: 'DESC' }, limit: 10 }, { signal: controller.signal }),
                 getDataByFilters('devices', {}, { orderBy: { column: 'last_seen', direction: 'DESC' } }, { signal: controller.signal }),
                 getDataByFilters('plants', { garden_id: selectedGarden }, { limit: 1 }, { signal: controller.signal }),
                 getDataByFilters('production', { month: new Date().getMonth() + 1, year: new Date().getFullYear() }, { limit: 1 }, { signal: controller.signal })
             ]);
-
-            const uniqueTasks = Array.from(new Set((tasksResponse || []).map(task => task.id))).map(id => tasksResponse.find(task => task.id === id));
-            
             setAlerts(alertsResponse || []);
-            setTasks(uniqueTasks);
             setDevices(devicesResponse || []);
             setPlantData(plantResponse?.[0] || null);
             setProductionData(productionResponse?.[0] || null);
-        } catch (error) {
-            if (error.name !== 'AbortError') {
-                console.error('Error fetching additional data:', error);
-            }
-        }
+        } catch (error) { if (error.name !== 'AbortError') console.error('Error fetching additional data:', error); }
     };
-
+    
     useEffect(() => {
         fetchAdditionalData();
-        return () => {
-            if(fetchControllerRef.current) fetchControllerRef.current.abort();
-        }
+        return () => { if(fetchControllerRef.current) fetchControllerRef.current.abort(); }
     }, [isConnected, selectedGarden]);
 
-
     const chartData = useMemo(() => {
-        if (!sensorData || sensorData.length === 0) {
-            return {
-                labels: ['Aug 14', 'Aug 15', 'Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20'],
-                datasets: {
-                    soilMoisture: { label: 'Soil Moisture (%)', data: [65, 62, 68, 72, 70, 66, 75], borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true, tension: 0.4 },
-                    temperature: { label: 'Temperature (°C)', data: [19, 21, 20, 22, 23, 22, 24], borderColor: '#f97316', backgroundColor: 'rgba(249, 115, 22, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }
-                }
-            };
-        }
+        if (!sensorData || sensorData.length === 0) { return { labels: [], datasets: {} }; }
         const groupedData = sensorData.reduce((acc, reading) => {
             const date = new Date(reading.timestamp || reading.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             if (!acc[date]) acc[date] = [];
@@ -270,11 +222,7 @@ const NipisOverview = () => {
         }, {});
         const labels = Object.keys(groupedData).sort((a,b) => new Date(a) - new Date(b));
         const createDataset = (key, label, color) => ({
-            label,
-            data: labels.map(date => {
-                const avg = groupedData[date].reduce((sum, r) => sum + (r[key] || 0), 0) / groupedData[date].length;
-                return Math.round(avg * 100) / 100;
-            }),
+            label, data: labels.map(date => (groupedData[date].reduce((sum, r) => sum + (r[key] || 0), 0) / groupedData[date].length).toFixed(2)),
             borderColor: color, backgroundColor: `${color}1A`, borderWidth: 2, fill: true, tension: 0.4
         });
         return { labels, datasets: {
@@ -290,29 +238,19 @@ const NipisOverview = () => {
     const metricsData = useMemo(() => {
         const latest = latestSensorData;
         return [
-            { icon: Leaf, title: "Total Carbon", value: latest?.soil_health ? `${latest.soil_health}%` : "96%", description: "Excellent growth and vitality observed.", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
-            { icon: Activity, title: "Soil Organic Carbon", value: latest?.temperature ? `${latest.temperature}°C` : "19%", description: "Maintain between 16°C and 28°C.", iconColor: "text-orange-500" },
-            { icon: Droplet, title: "Cation Exchange Capacity", value: latest?.soil_moisture ? `${latest.soil_moisture}%` : "82%", description: "Ensure good ventilation to prevent mold.", iconColor: "text-blue-400" },
-            { icon: Droplet, title: "Organic Matter", value: latest?.ph_level || "6.8%", description: "Ideal level for nutrient uptake.", iconColor: "text-teal-500" },
-            { icon: Thermometer, title: "Temperature", value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "12°C", description: "Sufficient for root development.", iconColor: "text-purple-500" },
-            { icon: Wind, title: "Soil Moisture", value: latest?.potassium ? `${latest.potassium}ppm` : "25%", description: "Promotes overall plant vigor.", iconColor: "text-sky-500" },
-            { icon: Sun, title: "Soil pH", value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "7", description: "Key for leaf and stem growth.", iconColor: "text-yellow-500" },
-            { icon: BarChart3, title: "NPK", value: latest?.organic_matter ? `${latest.organic_matter}%` : "3.2%", description: "NPK values are within the ideal range.", iconColor: "text-indigo-500" },
+            { icon: Leaf, title: "Total Carbon", value: latest?.soil_health ? `${latest.soil_health}%` : "N/A", description: "Excellent growth.", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
+            { icon: Activity, title: "Soil Organic Carbon", value: latest?.temperature ? `${latest.temperature}°C` : "N/A", description: "Optimal temperature.", iconColor: "text-orange-500" },
+            { icon: Droplet, title: "Cation Exchange", value: latest?.soil_moisture ? `${latest.soil_moisture}%` : "N/A", description: "Good ventilation needed.", iconColor: "text-blue-400" },
+            { icon: Droplet, title: "Organic Matter", value: latest?.ph_level || "N/A", description: "Ideal for nutrients.", iconColor: "text-teal-500" },
+            { icon: Thermometer, title: "Temperature", value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "N/A", description: "Sufficient for roots.", iconColor: "text-purple-500" },
+            { icon: Wind, title: "Soil Moisture", value: latest?.potassium ? `${latest.potassium}ppm` : "N/A", description: "Promotes vigor.", iconColor: "text-sky-500" },
+            { icon: Sun, title: "Soil pH", value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "N/A", description: "Key for growth.", iconColor: "text-yellow-500" },
+            { icon: BarChart3, title: "NPK", value: latest?.organic_matter ? `${latest.organic_matter}%` : "N/A", description: "Within ideal range.", iconColor: "text-indigo-500" },
         ];
     }, [latestSensorData]);
     
-    const handleTaskToggle = async (taskId, completed) => {
-        try {
-            await updateData('tasks', { status: completed ? 'completed' : 'pending' }, 'id = ?', [taskId]);
-            fetchAdditionalData();
-        } catch (error) {
-            console.error('Error updating task:', error);
-        }
-    };
-    
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            {/* Using the new Sidebar component and passing the correct props */}
             <Sidebar 
                 isOpen={sidebarOpen} 
                 onClose={() => setSidebarOpen(false)} 
@@ -320,11 +258,6 @@ const NipisOverview = () => {
                 onToggleCollapse={() => setSidebarCollapsed(!isSidebarCollapsed)}
             />
 
-            {/* 
-              Main content container
-              - 'transition-all' added for smooth margin animation
-              - 'lg:ml-64' or 'lg:ml-20' is set based on the sidebar state
-            */}
             <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
                 isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
             }`}>
@@ -345,33 +278,24 @@ const NipisOverview = () => {
                 </div>
 
                 <main className="flex-1 px-4 py-6 overflow-auto">
-                    {(loading || sensorLoading) && !sensorData && <div className="text-center py-12">Loading dashboard data...</div>}
+                    {(loading || (sensorLoading && !sensorData)) && <div className="text-center py-12">Loading dashboard data...</div>}
                     
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
                         <div className="lg:col-span-2 flex flex-col gap-6">
-                            <PlantInfo plantName={plantData?.name || "Limau Nipis"} description={plantData?.description || "Your plants are thriving and showing excellent growth. The current conditions are optimal."} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'spinach'}`} />
+                            <PlantInfo plantName={plantData?.name || "Limau Nipis"} description={plantData?.description || "Loading plant information..."} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'spinach'}`} />
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {metricsData.map((metric, index) => <MetricCard key={index} {...metric} loading={sensorLoading && !latestSensorData} />)}
                             </div>
-                            <ProductionOverview totalProduction={productionData?.total_production || 1250} productionUnit={productionData?.unit || "kg"} totalLandArea={productionData?.land_area || "50 acres"} landUsagePercentage={productionData?.land_usage || 75} revenue={productionData?.revenue || "$25,000"} loading={loading} />
+                            <ProductionOverview totalProduction={productionData?.total_production || 0} productionUnit={productionData?.unit || "kg"} totalLandArea={productionData?.land_area || "0 acres"} landUsagePercentage={productionData?.land_usage || 0} revenue={productionData?.revenue || "$0"} loading={loading} />
                             <SensorChart data={chartData} availableMetrics={[{ key: 'soilMoisture', label: 'Soil Moisture' }, { key: 'temperature', label: 'Temperature' }, { key: 'phLevel', label: 'pH Level' }, { key: 'soilNitrogen', label: 'Soil Nitrogen' }]} defaultSelectedMetrics={['soilMoisture', 'temperature']} loading={sensorLoading} error={sensorError} onRefresh={refetchSensorData} />
+                            
+                            <LandPlotsMap />
+
                         </div>
                         <div className="flex flex-col gap-6">
                             <WeatherWidget data={weatherData} loading={!weatherData} onMoreDetailsClick={() => setShowWeatherModal(true)} />
-                            <Alerts alerts={alerts} onViewAll={() => { /* Navigation logic will be handled by links within the Alerts component */ }} loading={loading} />
-                            <Tasks tasks={tasks} onTaskToggle={handleTaskToggle} loading={loading} />
+                            <Alerts alerts={alerts} onViewAll={() => {}} loading={loading} />
                             <DeviceStatus devices={devices} serialStatus={serialStatus} onSerialReconnect={serialReconnect} loading={loading} />
-                            <div className="bg-white rounded-lg p-4 shadow-sm border">
-                                <h3 className="font-semibold text-gray-900 mb-4">Real-time Data</h3>
-                                {latestSensorData ? (
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between"><span>Temperature:</span><span className="font-medium">{latestSensorData.temperature}°C</span></div>
-                                        <div className="flex justify-between"><span>Soil Moisture:</span><span className="font-medium">{latestSensorData.soil_moisture}%</span></div>
-                                        <div className="flex justify-between"><span>pH Level:</span><span className="font-medium">{latestSensorData.ph_level}</span></div>
-                                        <div className="text-xs text-gray-500 mt-2">Last reading: {new Date(latestSensorData.timestamp || latestSensorData.created_at).toLocaleString()}</div>
-                                    </div>
-                                ) : <div className="text-sm text-gray-500">{sensorLoading ? 'Loading sensor data...' : 'No sensor data available'}</div>}
-                            </div>
                             <div className="bg-white rounded-lg p-4 shadow-sm border">
                                 <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
                                 <div className="space-y-2">
@@ -384,7 +308,6 @@ const NipisOverview = () => {
                     </div>
                 </main>
             </div>
-            {/* The modal will now render correctly here */}
             <WeatherForecastModal show={showWeatherModal} onClose={() => setShowWeatherModal(false)} data={weatherData} />
         </div>
     );

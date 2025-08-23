@@ -29,7 +29,51 @@ const theme = {
 };
 
 // =================================================================================
-// Refined Components
+// Data Objects & KPI Integration
+// =================================================================================
+
+// TODO: Data ini akan diambil dari endpoint API yang berisi tujuan program secara global.
+const programGoalsData = [{value: '10K',label: 'FARMERS',description: 'Support and collaborate with 10,000 farmers globally, equipping them with sustainable practices to transform agriculture into a regenerative, climate-positive industry.'},{value: '100K',label: 'HECTARES',description: 'Regenerate 100,000 hectares of farmland using zero-carbon techniques, creating fertile, carbon-rich soils that enhance productivity and sustainability.'},{value: '1M',label: 'TONS OF FOOD',description: 'Produce 1,000,000 tons of zero-carbon food, showcasing how sustainable agriculture can meet global food demands while minimizing environmental impact.'},{value: '10M',label: 'TONS OF CO2',description: 'Sequester 10,000,000 tons of CO2, contributing significantly to global climate action through advanced carbon farming and innovative methods.'},];
+
+// [UPDATED] KPI dari Anda telah diintegrasikan di sini.
+// TODO: Data untuk kartu-kartu ini sebaiknya diambil dari CMS atau tabel khusus di database.
+const environmentalImpactData = { 
+    title: 'Environmental', 
+    summary: 'Restoring the planet by rebuilding soil health, sequestering carbon, and embracing renewable energy.', 
+    icon: Globe, 
+    borderColor: '#10b981', 
+    points: [
+        { title: 'Reduce CO2', description: 'Actively sequestering carbon from the atmosphere into the soil.' }, 
+        { title: 'Optimize Soil Health', description: 'Enhancing fertility and water retention to create resilient ecosystems.' },
+        { title: 'Provide Renewable Energy', description: 'Integrating clean energy sources into farming operations to minimize our carbon footprint.' }
+    ]
+};
+const socialImpactData = { 
+    title: 'Social', 
+    summary: 'Fostering trust and collaboration across the entire value chain for shared prosperity.', 
+    icon: Users, 
+    borderColor: '#f97316', 
+    points: [
+        { title: 'Enhance Public Trust', description: 'Building confidence through transparent and ethical practices.' }, 
+        { title: 'Engage The Triple Helix', description: 'Fostering innovation through collaboration between university, industry, and government.' },
+        { title: 'Accelerate Supply Chain', description: 'Ensuring efficient and convenient trade transactions from farm to consumer.' }
+    ]
+};
+const governanceImpactData = { 
+    title: 'Governance', 
+    summary: 'Ensuring a transparent, accountable, and financially robust framework for sustainable growth.', 
+    icon: ShieldCheck, 
+    borderColor: '#3b82f6', 
+    points: [
+        { title: 'Financial Transparency', description: 'Providing clear insights into company management and financial health.' },
+        { title: 'Enhance Accountability', description: 'Attracting investors through a responsible and accountable operational model.' }, 
+        { title: 'Optimize Tax Revenues', description: 'Promoting fiscal responsibility by reducing the potential for tax evasion.' }
+    ]
+};
+
+
+// =================================================================================
+// Refined Reusable Components
 // =================================================================================
 
 const SectionHeader = ({ title, subtitle }) => (
@@ -85,65 +129,14 @@ const ImpactCard = ({ impactData }) => {
     );
 };
 
-// [UPDATED] Financial Chart with Increased Height and Better Styling
 const FinancialComparisonChart = ({ title, data, loading, onRefresh }) => {
-    const chartOptions = { 
-        responsive: true, 
-        maintainAspectRatio: false, 
-        plugins: { 
-            legend: { display: false },
-            tooltip: {
-                enabled: true,
-                backgroundColor: '#1e293b', // slate-800
-                titleColor: '#cbd5e1', // slate-300
-                bodyColor: '#fff',
-                borderColor: '#334155', // slate-700
-                borderWidth: 1,
-                padding: 10,
-                displayColors: true,
-                boxPadding: 4,
-                callbacks: {
-                    label: function(context) {
-                        let label = context.dataset.label || '';
-                        if (label) {
-                            label += ': ';
-                        }
-                        if (context.parsed.y !== null) {
-                            // Format number with commas
-                            label += new Intl.NumberFormat('en-US').format(context.parsed.y);
-                        }
-                        return label;
-                    }
-                }
-            }
-        }, 
-        scales: { 
-            x: { 
-                grid: { display: false }, 
-                ticks: { color: theme.colors.text_body } 
-            }, 
-            y: { 
-                grid: { color: theme.colors.border, border: { dash: [4, 4] } }, 
-                ticks: { color: theme.colors.text_body } 
-            } 
-        }, 
-        interaction: { intersect: false, mode: 'index' }, 
-        elements: { 
-            point: { 
-                radius: 3, 
-                hoverRadius: 6, 
-                borderWidth: 2, 
-                hoverBorderWidth: 2
-            } 
-        } 
-    };
+    const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { enabled: true, backgroundColor: '#1e293b', titleColor: '#cbd5e1', bodyColor: '#fff', borderColor: '#334155', borderWidth: 1, padding: 10, displayColors: true, boxPadding: 4, callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) { label += ': '; } if (context.parsed.y !== null) { label += new Intl.NumberFormat('en-US').format(context.parsed.y); } return label; } } } }, scales: { x: { grid: { display: false }, ticks: { color: theme.colors.text_body } }, y: { grid: { color: theme.colors.border, border: { dash: [4, 4] } }, ticks: { color: theme.colors.text_body } } }, interaction: { intersect: false, mode: 'index' }, elements: { point: { radius: 3, hoverRadius: 6, borderWidth: 2, hoverBorderWidth: 2 } } };
     return (
         <div className="bg-white rounded-xl p-6 h-full flex flex-col" style={{ boxShadow: theme.shadow }}>
             <div className="flex justify-between items-start mb-4">
                 <h3 className="text-lg font-bold text-slate-800">{title}</h3>
                 <button onClick={onRefresh} disabled={loading} className="p-2 rounded-full text-slate-400 hover:bg-slate-100 disabled:opacity-50"><RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} /></button>
             </div>
-            {/* --- THIS IS THE KEY CHANGE --- */}
             <div className="flex-grow h-96">
                 <LineChart data={data} options={chartOptions} />
             </div>
@@ -151,8 +144,7 @@ const FinancialComparisonChart = ({ title, data, loading, onRefresh }) => {
     );
 };
 
-const DOSMDataWidget = () => {
-    const dosmStats = { gdpGrowth: 2.9, agriEmployment: "1.4M", foodSecurityIndex: "81.3" };
+const DOSMDataWidget = ({ dosmStats }) => {
     return (
         <div className="bg-white rounded-xl p-6 h-full" style={{ boxShadow: theme.shadow }}>
             <div className="flex items-start justify-between mb-6">
@@ -181,34 +173,75 @@ const DOSMDataWidget = () => {
 }
 
 // =================================================================================
-// Data Objects
-// =================================================================================
-const programGoalsData = [{value: '10K',label: 'FARMERS',description: 'Support and collaborate with 10,000 farmers globally, equipping them with sustainable practices to transform agriculture into a regenerative, climate-positive industry.'},{value: '100K',label: 'HECTARES',description: 'Regenerate 100,000 hectares of farmland using zero-carbon techniques, creating fertile, carbon-rich soils that enhance productivity and sustainability.'},{value: '1M',label: 'TONS OF FOOD',description: 'Produce 1,000,000 tons of zero-carbon food, showcasing how sustainable agriculture can meet global food demands while minimizing environmental impact.'},{value: '10M',label: 'TONS OF CO2',description: 'Sequester 10,000,000 tons of CO2, contributing significantly to global climate action through advanced carbon farming and innovative methods.'},];
-const environmentalImpactData = { title: 'Environmental', summary: 'Restoring the planet by rebuilding soil health, sequestering carbon, and enhancing biodiversity.', icon: Globe, borderColor: '#10b981', points: [{ title: 'Carbon Sequestration', description: 'Draws CO2 from the atmosphere and stores it in the soil.' }, { title: 'Improved Water Cycles', description: 'Increases soil water retention, reducing runoff and drought impact.' }]};
-const socialImpactData = { title: 'Social', summary: 'Strengthening rural communities by creating economic opportunities and improving food security.', icon: Users, borderColor: '#f97316', points: [{ title: 'Farmer Empowerment', description: 'Gives farmers greater autonomy and reduces dependency on inputs.' }, { title: 'Enhanced Nutrition & Health', description: 'Produces more nutrient-dense food for healthier communities.' }]};
-const governanceImpactData = { title: 'Economic & Governance', summary: 'Making regenerative farming a stable, transparent, and profitable model for the future.', icon: ShieldCheck, borderColor: '#3b82f6', points: [{ title: 'Financial Risk Management', description: 'Reduces risks from extreme weather and market volatility.' }, { title: 'Premium Market Access', description: 'Unlocks access to conscious consumer markets.' }]};
-
-// =================================================================================
 // Main Page Component
 // =================================================================================
 const FinancePage = () => {
-    // State
+
+    // =================================================================================
+    // A. DATA LAYER & STATE MANAGEMENT
+    // =================================================================================
+
+    // --- 1. Backend Data Placeholders ---
+    // Di sinilah data dari backend akan disimpan. Gunakan useEffect untuk mengambilnya.
+
+    // TODO: Ganti fungsi dummy ini dengan panggilan API untuk mengambil data time-series.
+    const [financialData, setFinancialData] = useState(() => Array.from({ length: 30 }, (_, i) => ({ timestamp: new Date(new Date().setDate(new Date().getDate() - (29 - i))), regenerative_profit: parseFloat((6700 + Math.random() * 800 - 400).toFixed(0)), regenerative_cost: parseFloat((2750 + Math.random() * 300 - 150).toFixed(0)) })));
+    
+    // TODO: Ganti objek statis ini dengan data dari endpoint API DOSM atau database internal.
+    const [dosmStats, setDosmStats] = useState({ 
+        gdpGrowth: 2.9, 
+        agriEmployment: "1.4M", 
+        foodSecurityIndex: "81.3" 
+    });
+
+
+    // --- 2. UI-Specific State ---
+    // State ini murni untuk mengontrol antarmuka, bukan data.
+
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [financialData, setFinancialData] = useState( () => Array.from({ length: 30 }, (_, i) => ({ timestamp: new Date(new Date().setDate(new Date().getDate() - (29 - i))), regenerative_profit: parseFloat((6700 + Math.random() * 800 - 400).toFixed(0)), regenerative_cost: parseFloat((2750 + Math.random() * 300 - 150).toFixed(0)) })));
     const [loading, setLoading] = useState(false);
 
-    // Handlers
-    const refetchAllData = () => { setLoading(true); setTimeout(() => { setFinancialData(Array.from({ length: 30 }, (_, i) => ({ timestamp: new Date(new Date().setDate(new Date().getDate() - (29 - i))), regenerative_profit: parseFloat((6700 + Math.random() * 800 - 400).toFixed(0)), regenerative_cost: parseFloat((2750 + Math.random() * 300 - 150).toFixed(0)) }))); setLoading(false); }, 1000); };
 
-    // Memoized Chart Data
+    // =================================================================================
+    // B. HANDLERS & DATA FETCHING
+    // =================================================================================
+    
+    // TODO: Kembangkan fungsi ini untuk mengambil semua data yang relevan dari beberapa endpoint API secara bersamaan.
+    const refetchAllData = () => { 
+        setLoading(true); 
+        console.log("Refetching data from backend...");
+        // Simulasi panggilan API
+        setTimeout(() => { 
+            setFinancialData(Array.from({ length: 30 }, (_, i) => ({ 
+                timestamp: new Date(new Date().setDate(new Date().getDate() - (29 - i))), 
+                regenerative_profit: parseFloat((6700 + Math.random() * 800 - 400).toFixed(0)), 
+                regenerative_cost: parseFloat((2750 + Math.random() * 300 - 150).toFixed(0)) 
+            }))); 
+            // setDosmStats(...) juga akan dipanggil di sini jika perlu di-refresh.
+            setLoading(false); 
+        }, 1000); 
+    };
+
+
+    // =================================================================================
+    // C. DATA PROCESSING & MEMOIZATION
+    // =================================================================================
+    
+    // Memoized Chart Data - Mengubah data mentah menjadi format yang siap untuk chart.
     const { profitData, costData } = useMemo(() => {
+        // TODO: Pastikan nama field (e.g., regenerative_profit) cocok dengan yang dikirim oleh backend.
+        if (!financialData) return { profitData: { labels: [], datasets: [] }, costData: { labels: [], datasets: [] }};
         const labels = financialData.map(r => r.timestamp.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }));
         return {
             profitData: { labels, datasets: [{ label: 'Profit', data: financialData.map(r => r.regenerative_profit), borderColor: theme.colors.primary, backgroundColor: theme.colors.primary_light, pointBackgroundColor: '#fff', pointBorderColor: theme.colors.primary, fill: true, tension: 0.4 }] },
             costData: { labels, datasets: [{ label: 'Cost', data: financialData.map(r => r.regenerative_cost), borderColor: theme.colors.secondary, backgroundColor: theme.colors.secondary_light, pointBackgroundColor: '#fff', pointBorderColor: theme.colors.secondary, fill: true, tension: 0.4 }] }
         };
     }, [financialData]);
+
+    // =================================================================================
+    // D. COMPONENT RENDERING (JSX)
+    // =================================================================================
 
     return (
         <div className="min-h-screen bg-slate-50 flex">
@@ -259,7 +292,7 @@ const FinancePage = () => {
                         </div>
 
                         <div className="mt-8">
-                            <DOSMDataWidget />
+                            <DOSMDataWidget dosmStats={dosmStats}/>
                         </div>
                     </div>
                 </main>
