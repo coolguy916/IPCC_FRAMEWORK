@@ -16,7 +16,7 @@ import ProductionOverview from '../ui/ProductionOverview';
 import image_url from '../images/image.png';
 
 // Import our enhanced API hook
-import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
+import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
 
 const AgricultureDashboard = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -76,7 +76,7 @@ const AgricultureDashboard = () => {
             // Fetch tasks
             const tasksResponse = await getDataByFilters('tasks',
                 { status: ['pending', 'in_progress'] },
-                { orderBy: { column: 'priority', direction: 'DESC' }, limit: 10 }
+                { orderBy: { direction: 'DESC' }, limit: 10 }
             );
             setTasks(tasksResponse || []);
 

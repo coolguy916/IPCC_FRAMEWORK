@@ -13,14 +13,14 @@ class DatabaseManager {
         try {
             if (this.useFirebase) {
                 this.db = new FirebaseDB({
-                    apiKey: process.env.FIREBASE_API_KEY || 'your-api-key',
-                    authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'your-auth-domain',
-                    databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://your-database-url.firebaseio.com',
-                    projectId: process.env.FIREBASE_PROJECT_ID || 'yocmdur-project-id',
-                    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'your-storage-bucket',
-                    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || 'your-messaging-sender-id',
-                    appId: process.env.FIREBASE_APP_ID || 'your-app-id',
-                    measurementId: process.env.FIREBASE_MEASUREMENT_ID || 'your-measurement-id'
+                    apiKey: process.env.FIREBASE_API_KEY || 'AIzaSyD8xIhB_DYAl9e1FeS7ILql2YfxSdnbqHU',
+                    authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'pcc-5fa54.firebaseapp.com',
+                    databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://ipcc-5fa54-default-rtdb.firebaseio.com',
+                    projectId: process.env.FIREBASE_PROJECT_ID || 'ipcc-5fa54',
+                    storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'ipcc-5fa54.appspot.com',
+                    messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID || '481875426357',
+                    appId: process.env.FIREBASE_APP_ID || '1:481875426357:web:0ac421ed7e70b95614057c',
+                    measurementId: process.env.FIREBASE_MEASUREMENT_ID || 'G-70NL19SKHL'
                 });
             } else {
                 this.db = new Database({
