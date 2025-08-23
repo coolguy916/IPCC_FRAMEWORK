@@ -11,12 +11,12 @@ import { Leaf, Thermometer, Droplet, Wind, Sun, Activity, BarChart3, SlidersHori
 import Header from '../layout/header';
 import Sidebar from '../layout/sidebar';
 import keylimeBackground from '../images/image.png'; // Pastikan path gambar ini benar
-import { useApi } from '../../hooks/useApi'; // Pastikan path hook ini benar
-import { useRealtimeSensorData, useRealtimeFinancialData } from '../../hooks/useRealtimeData'; // Pastikan path hook ini benar
+import { useApi } from '../../hook/useApi'; // Pastikan path hook ini benar
+import { useRealtimeSensorData, useRealtimeFinancialData } from '../../hook/useRealtimeData'; // Pastikan path hook ini benar
 
 // Real-time data hooks - Updated to use Firestore
-import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreDashboardData } from '../../hooks/useFirestore';
-import { useApi } from '../../hooks/useApi';
+import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreDashboardData } from '../../hook/useFirestore';
+// import { useApi } from '../../hook/useApi';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, RadialLinearScale, Title, Tooltip, Legend, Filler);
 
@@ -346,15 +346,15 @@ const DataPage = () => {
                             <span className="text-blue-700 font-medium">Loading sensor data...</span>
                         </div>
                     )}
-                    {/* Bagian Header / Profil Tanaman */}
                     <div className="relative p-8 rounded-xl shadow-lg overflow-hidden mb-6 bg-cover bg-center" style={{ backgroundImage: `url(${gardenProfile.imageUrl})` }}>
                         <div className="absolute inset-0 bg-black/60"></div>
                         <div className="relative grid grid-cols-1 md:grid-cols-3 gap-8 text-white">
                             <div className="md:col-span-2"><h2 className="text-3xl font-extrabold mb-3">Crop Profile: {appConfig.siteProfile.name}</h2><p className="text-slate-200 text-base leading-relaxed" dangerouslySetInnerHTML={{ __html: appConfig.siteProfile.description }}></p></div>
                             <div className="p-6 bg-black/30 rounded-lg"><h3 className="text-xl font-bold mb-4">Ideal Soil Set Points</h3><ul className="space-y-3 text-base"><li className="flex items-center gap-3"><Droplet className="w-5 h-5 text-green-400" /><span><strong>CEC:</strong> 21,94 </span></li><li className="flex items-center gap-3"><Droplet className="w-5 h-5 text-green-400" /><span><strong>Nitrogen:</strong> 0,53 %</span></li><li className="flex items-center gap-3"><Sun className="w-5 h-5 text-green-400" /><span><strong>Nitrogen (N):</strong> 18 - 25 ppm</span></li><li className="flex items-center gap-3"><Activity className="w-5 h-5 text-green-400" /><span><strong>Phosphorus (P):</strong> 8 - 25 ppm</span></li><li className="flex items-center gap-3"><Wind className="w-5 h-5 text-green-400" /><span><strong>Potassium (K):</strong> 173,9 ppm</span></li></ul></div>
                         </div>
-                    </div>
+                    </div>                    {/* this metrix display is from the dataset collection variable,... show em all*/}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6"> {appConfig.metrics.map(metric => <MetricDisplayCard key={metric.key} icon={metric.icon} title={metric.label} value={processedData.latestReading?.[metric.key] || 'N/A'} unit={metric.unit} />)} </div>
+                    {/* this input of file uploader is insert into dataset collection */}
                     <div className="mb-6"><FileUploader onFileUpload={handleCsvUpload} isLoading={uploading || apiLoading} /></div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                         <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200"><div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4"><h3 className="text-lg font-bold text-slate-800 mb-2 sm:mb-0">Metric Statistics Over Time</h3><select value={selectedMetric} onChange={(e) => setSelectedMetric(e.target.value)} className="text-sm border-slate-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-green-300 focus:border-green-300">{appConfig.metrics.map(metric => <option key={metric.key} value={metric.key}>{metric.label}</option>)}</select></div><div className="h-80"><Line data={processedData.mainLineChartData} options={chartOptions} /></div></div>
@@ -363,7 +363,6 @@ const DataPage = () => {
                         <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200"><h3 className="text-lg font-bold text-slate-800 mb-4">Soil Health (30-Day Trend)</h3><p className="text-xs text-slate-500 -mt-3 mb-4">A stable or upward trend indicates positive soil activity.</p><div className="h-52"><Line data={processedData.soilHealthTrendData} options={{ ...chartOptions, plugins: { legend: { display: false } } }} /></div></div>
                     </div>
 
-                    {/* Simulation Section */}
                     <div className="mt-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                         <h2 className="text-2xl font-bold text-slate-800 mb-6">Regenerative Farming Simulation</h2>
                         

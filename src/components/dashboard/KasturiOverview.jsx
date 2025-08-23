@@ -13,64 +13,198 @@ import Alerts from '../ui/Alerts';
 import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
 import FarmingSuggestions from '../ui/FarmingSuggestions';
-import image_url from '../images/limaunipis.png';
+import image_url from '../images/limaukatsuri.png'; // Different image for Katsuri
 
 // Import the LandPlotsMap component from its separate file
 import LandPlotsMap from '../ui/LandPlotMaps';
 
 // Import your custom API hooks
-import { useApi, useSensorData, useSerialConnection } from '../../hooks/useApi';
-import { useFirestoreSensorData, useFirestoreFinancialData, useFirestoreTasks } from '../../hooks/useFirestore';
+import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
+import { useFirestore } from '../../hook/useFirestore';
 
-const AgricultureDashboard = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [selectedGarden, setSelectedGarden] = useState("Limau Nipis"); // Diperbaiki dari "Nipis Cytrus"
-    const [activeMenuItem, setActiveMenuItem] = useState("Overview");
+// Weather components (same as Nipis)
+const getWeatherInfo = (code) => {
+    switch (true) {
+        case code <= 1: return { icon: Sun, description: "Clear" };
+        case code <= 3: return { icon: Cloud, description: "Cloudy" };
+        case (code >= 51 && code <= 67): return { icon: CloudRain, description: "Rain" };
+        case (code >= 80 && code <= 82): return { icon: CloudRain, description: "Heavy Rain" };
+        case (code >= 95 && code <= 99): return { icon: Zap, description: "Thunderstorm" };
+        default: return { icon: Cloud, description: "Cloudy" };
+    }
+};
 
-    // Daftar kebun untuk dropdown
-    const gardens = ['Limau Katsuri', 'Limau Nipis'];
+const WeatherForecastModal = ({ show, onClose, data }) => {
+    return (
+        <div
+            className={`fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4 transition-opacity duration-300 ${show ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}
+        >
+            <div
+                className={`bg-white p-6 rounded-lg shadow-xl w-full max-w-4xl transform transition-all duration-300 ${show ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                    }`}
+            >
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900">5-Day Weather Forecast</h3>
+                    <button onClick={onClose} className="p-1 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-800">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+                {!data || !data.daily ? (
+                    <div className="text-center py-10"> <p>Loading forecast data...</p> </div>
+                ) : (
+                    <div className="space-y-3">
+                        {data.daily.time.slice(0, 5).map((day, index) => {
+                            const { icon: WeatherIcon, description } = getWeatherInfo(data.daily.weather_code[index]);
+                            return (
+                                <div key={index} className="grid grid-cols-2 md:grid-cols-6 gap-4 items-center bg-gray-50 p-3 rounded-lg border">
+                                    <div className="col-span-2 md:col-span-1">
+                                        <p className="font-semibold text-gray-800">{new Date(day).toLocaleDateString('en-US', { weekday: 'long' })}</p>
+                                        <p className="text-sm text-gray-500">{new Date(day).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}</p>
+                                    </div>
+                                    <div className="flex items-center justify-start md:justify-center space-x-2">
+                                        <WeatherIcon className="w-8 h-8 text-gray-600" />
+                                        <span className="text-sm text-gray-600 hidden md:block">{description}</span>
+                                    </div>
+                                    <div className="flex items-center justify-start md:justify-center space-x-2"><CloudRain className="w-5 h-5 text-blue-500" /><span className="font-medium text-gray-700">{data.daily.precipitation_sum[index]} mm</span></div>
+                                    <div className="flex items-center justify-start md:justify-center space-x-2"><Thermometer className="w-5 h-5 text-red-500" /><span className="font-medium text-gray-700">{Math.round(data.daily.temperature_2m_max[index])}° / {Math.round(data.daily.temperature_2m_min[index])}°C</span></div>
+                                    <div className="col-span-2 md:col-span-2 text-sm md:text-right space-y-1">
+                                        <div className="flex items-center justify-start md:justify-end space-x-2"><Sunrise className="w-5 h-5 text-orange-400" /><span>{new Date(data.daily.sunrise[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                                        <div className="flex items-center justify-start md:justify-end space-x-2"><Sunset className="w-5 h-5 text-indigo-500" /><span>{new Date(data.daily.sunset[index]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
 
-    // API connection
-    const { 
-        isConnected, 
-        wsConnected, 
-        error, 
-        loading,
-        getDataByFilters,
-        insertData,
-        updateData
-    } = useApi();
+const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
+    if (loading || !data || !data.hourly || !data.daily || !data.hourly.weathercode) {
+        return <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200 text-center h-full flex items-center justify-center"><p className="text-gray-500">Loading Weather Data...</p></div>;
+    }
 
-    // Sensor data with auto-refresh
-    // Firestore real-time data hooks
-    const siteId = 'site_katsuri_orchard';
-    const firestoreSensorData = useFirestoreSensorData(siteId, 30);
-    const firestoreFinancialData = useFirestoreFinancialData(siteId, 10);
-    const firestoreTasks = useFirestoreTasks(siteId, false); // Only incomplete tasks
+    const currentHourIndex = new Date().getHours();
+    const currentTemp = data.hourly.temperature_2m[currentHourIndex];
+    const currentHumidity = data.hourly.relative_humidity_2m[currentHourIndex];
+
+    const currentWeatherCode = data.hourly.weathercode[currentHourIndex];
+    const { icon: WeatherIcon, description } = getWeatherInfo(currentWeatherCode);
+
+    return (
+        <div className="bg-gradient-to-br from-white to-slate-50 rounded-xl p-6 shadow-md border border-gray-200 flex flex-col justify-between h-full">
+            <div>
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 className="text-xl font-bold text-slate-800">Selangor</h3>
+                        <p className="text-sm text-slate-500">{description}</p>
+                    </div>
+                    <WeatherIcon className="w-16 h-16 text-slate-700" />
+                </div>
+                <p className="text-6xl font-bold text-slate-800 mb-6">{Math.round(currentTemp)}°C</p>
+
+                <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-slate-600 mb-3 text-center">Next Few Hours</h4>
+                    <div className="flex justify-between items-center space-x-2 md:space-x-4 px-2 py-3 bg-slate-100 rounded-lg">
+                        {data.hourly.time.slice(currentHourIndex + 1, currentHourIndex + 6).map((time, index) => {
+                            const hourIndex = currentHourIndex + 1 + index;
+                            const { icon: HourlyIcon } = getWeatherInfo(data.hourly.weathercode[hourIndex]);
+                            return (
+                                <div key={time} className="flex flex-col items-center space-y-1">
+                                    <span className="text-xs font-medium text-slate-500">
+                                        {new Date(time).toLocaleTimeString('en-US', { hour: 'numeric', hour12: true })}
+                                    </span>
+                                    <HourlyIcon className="w-7 h-7 text-slate-600" />
+                                    <span className="text-md font-bold text-slate-700">
+                                        {Math.round(data.hourly.temperature_2m[hourIndex])}°
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm text-slate-600 mb-4">
+                    <div className="flex items-center"><Droplet className="w-5 h-5 text-blue-500 mr-2" /><span>Humidity: {currentHumidity}%</span></div>
+                    <div className="flex items-center"><CloudRain className="w-5 h-5 text-gray-500 mr-2" /><span>Rain: {data.hourly.rain[currentHourIndex]} mm</span></div>
+                    <div className="flex items-center"><Sunrise className="w-5 h-5 text-orange-500 mr-2" /><span>{new Date(data.daily.sunrise[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                    <div className="flex items-center"><Sunset className="w-5 h-5 text-indigo-500 mr-2" /><span>{new Date(data.daily.sunset[0]).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span></div>
+                </div>
+            </div>
+            <button
+                onClick={onMoreDetailsClick}
+                disabled={loading}
+                className="w-full text-center bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold px-4 py-2 rounded-lg text-sm transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+            >
+                View 5-Day Details
+            </button>
+        </div>
+    );
+};
+
+const KatsuriOverview = () => {
+    // API and connection hooks
+    const { isConnected, wsConnected, error, loading, getDataByFilters } = useApi();
+    const { status: serialStatus, reconnect: serialReconnect, } = useSerialConnection();
+
+    // Firestore real-time data hooks - Using new collections with sample_id filtering for Katsuri
+    const sampleId = 'kasturi_orchard'; // Different sample_id for Katsuri
     
-    // Use Firestore data with fallbacks
-    const sensorData = firestoreSensorData.data?.length > 0 ? firestoreSensorData.data : [];
-    const sensorLoading = firestoreSensorData.loading;
-    const sensorError = firestoreSensorData.error;
+    // Dataset collection - CSV input format data
+    const datasetParamData = useFirestore('dataset_param', {
+        where: { field: 'sample_id', operator: '==', value: sampleId },
+        orderBy: { field: 'timestamp', direction: 'desc' },
+        limit: 20
+    });
+
+    // Sensors collection - 4 main sensor readings
+    const sensorsData = useFirestore('sensors', {
+        where: { field: 'sample_id', operator: '==', value: sampleId },
+        orderBy: { field: 'timestamp', direction: 'desc' },
+        limit: 30
+    });
+
+    // Actions collection - action logs
+    const actionsData = useFirestore('actions', {
+        where: { field: 'sample_id', operator: '==', value: sampleId },
+        orderBy: { field: 'timestamp', direction: 'desc' },
+        limit: 15
+    });
+
+    // History collection - combined data
+    const historyData = useFirestore('history', {
+        where: { field: 'sample_id', operator: '==', value: sampleId },
+        orderBy: { field: 'timestamp', direction: 'desc' },
+        limit: 25
+    });
+
+    // Alerts collection - system alerts
+    const alertsData = useFirestore('alerts', {
+        where: { field: 'sample_id', operator: '==', value: sampleId },
+        orderBy: { field: 'timestamp', direction: 'desc' },
+        limit: 10
+    });
+
+    // Forecast collection - predictions
+    const forecastData = useFirestore('forecast', {
+        where: { field: 'sample_id', operator: '==', value: sampleId },
+        orderBy: { field: 'timestamp', direction: 'desc' },
+        limit: 7
+    });
+
+    // Use the new collections data
+    const sensorData = sensorsData.data?.length > 0 ? sensorsData.data : [];
+    const sensorLoading = sensorsData.loading;
+    const sensorError = sensorsData.error;
+
+    const refetchSensorData = () => {
+        console.log('Firestore data updates automatically via real-time listeners');
+    };
+    
     const lastUpdated = sensorData[0]?.timestamp || new Date().toISOString();
-    
-    // Legacy sensor data hook (for fallback if needed)
-    const {
-        data: legacySensorData,
-        loading: legacySensorLoading,
-        error: legacySensorError,
-        refetch: refetchSensorData
-    } = useSensorData(30000);
-
-    // Serial connection status
-    const {
-        status: serialStatus,
-        reconnect: serialReconnect,
-        sendData: sendSerialData
-    } = useSerialConnection();
-
-    // State for additional data
-    const [alerts, setAlerts] = useState([]);
     const [devices, setDevices] = useState([]);
     const [plantData, setPlantData] = useState(null);
     const [productionData, setProductionData] = useState(null);
@@ -78,7 +212,7 @@ const AgricultureDashboard = () => {
     const fetchControllerRef = useRef(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [selectedGarden, setSelectedGarden] = useState("Nipis Cytrus");
+    const [selectedGarden, setSelectedGarden] = useState("Katsuri Orchard");
     const [showWeatherModal, setShowWeatherModal] = useState(false);
 
     useEffect(() => {
@@ -101,38 +235,39 @@ const AgricultureDashboard = () => {
         const controller = new AbortController();
         fetchControllerRef.current = controller;
         try {
-             const [alertsResponse, devicesResponse, plantResponse, productionResponse] = await Promise.all([
-                getDataByFilters('alerts', { status: 'active' }, { orderBy: { column: 'created_at', direction: 'DESC' }, limit: 5 }, { signal: controller.signal }),
+            const [devicesResponse, plantResponse, productionResponse] = await Promise.all([
                 getDataByFilters('devices', {}, { orderBy: { column: 'last_seen', direction: 'DESC' } }, { signal: controller.signal }),
                 getDataByFilters('plants', { garden_id: selectedGarden }, { limit: 1 }, { signal: controller.signal }),
                 getDataByFilters('production', { month: new Date().getMonth() + 1, year: new Date().getFullYear() }, { limit: 1 }, { signal: controller.signal })
             ]);
-            setAlerts(alertsResponse || []);
             setDevices(devicesResponse || []);
             setPlantData(plantResponse?.[0] || null);
             setProductionData(productionResponse?.[0] || null);
         } catch (error) { if (error.name !== 'AbortError') console.error('Error fetching additional data:', error); }
     };
-    
+
     useEffect(() => {
         fetchAdditionalData();
-        return () => { if(fetchControllerRef.current) fetchControllerRef.current.abort(); }
+        return () => { if (fetchControllerRef.current) fetchControllerRef.current.abort(); }
     }, [isConnected, selectedGarden]);
 
     const latestSensorData = useMemo(() => sensorData?.[0] || null, [sensorData]);
+    const latestDatasetParam = useMemo(() => datasetParamData.data?.[0] || null, [datasetParamData.data]);
 
-    // jiii masukin sini
+    // Calculate yield using dataset_param collection data - Different formula for Katsuri
     const calculatedYield = useMemo(() => {
-        if (!latestSensorData) return 0;
-        const { nitrogen, organic_matter, soil_health, temperature, soil_moisture } = latestSensorData;
-        if (!nitrogen || !organic_matter || !soil_health || !temperature || !soil_moisture) return 0;
-        const yieldKg = -113481.12 + (652168.99 * nitrogen) + (1228.76 * organic_matter) + (-20577.85 * karbon)+ (-1107.59 * temperature)+ (1349.29 * humidity);
-        return Math.max(0, yieldKg.toFixed(2)); // Ensure yield is not negative
-    }, [latestSensorData]);
+        if (!latestDatasetParam) return 0;
+        const { total_nitrogen, organic_matter, total_carbon, temperature, humidity } = latestDatasetParam;
+        if (!total_nitrogen || !organic_matter || !total_carbon || !temperature || !humidity) return 0;
+        
+        // Formula for Katsuri yield calculation (different from Nipis)
+        const yieldKg = -113481.12 + (652168.99 * total_nitrogen) + (1228.76 * organic_matter) + (-20577.85 * total_carbon) + (-1107.59 * temperature) + (1349.29 * humidity);
+        return Math.max(0, yieldKg.toFixed(2));
+    }, [latestDatasetParam]);
 
-    // Calculate revenue based on yield
+    // Calculate revenue based on yield - Different price for Katsuri
     const calculatedRevenue = useMemo(() => {
-        const revenue = calculatedYield * 3.03;
+        const revenue = calculatedYield * 3.03; // Different price per kg for Katsuri
         return revenue.toFixed(2);
     }, [calculatedYield]);
 
@@ -144,33 +279,39 @@ const AgricultureDashboard = () => {
             acc[date].push(reading);
             return acc;
         }, {});
-        const labels = Object.keys(groupedData).sort((a,b) => new Date(a) - new Date(b));
+        const labels = Object.keys(groupedData).sort((a, b) => new Date(a) - new Date(b));
         const createDataset = (key, label, color) => ({
             label, data: labels.map(date => (groupedData[date].reduce((sum, r) => sum + (r[key] || 0), 0) / groupedData[date].length).toFixed(2)),
             borderColor: color, backgroundColor: `${color}1A`, borderWidth: 2, fill: true, tension: 0.4
         });
-        return { labels, datasets: {
-            soilMoisture: createDataset('soil_moisture', 'Soil Moisture (%)', '#3b82f6'),
-            temperature: createDataset('temperature', 'Temperature (°C)', '#f97316'),
-            phLevel: createDataset('ph_level', 'pH Level', '#10b981'),
-            soilNitrogen: createDataset('nitrogen', 'Soil Nitrogen (ppm)', '#8b5cf6')
-        }};
+        return {
+            labels, datasets: {
+                temperature: createDataset('temperature', 'Temperature (°C)', '#f97316'),
+                humidity: createDataset('humidity', 'Humidity (%)', '#3b82f6'),
+                ph: createDataset('ph', 'pH Level', '#10b981'),
+                nitrogenNPK: createDataset('npk.nitrogen', 'NPK Nitrogen (ppm)', '#8b5cf6')
+            }
+        };
     }, [sensorData]);
 
+    // Updated metrics using dataset_param collection for top 4, sensors for bottom 4
     const metricsData = useMemo(() => {
-        const latest = latestSensorData;
+        const latestDataset = latestDatasetParam;
+        const latestSensor = latestSensorData;
         return [
-            { icon: Leaf, title: "Total Carbon", value: latest?.soil_health ? `${latest.soil_health}%` : "8", description: "Excellent growth.", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
-            { icon: Activity, title: "Soil Organic Carbon", value: latest?.temperature ? `${latest.temperature}°C` : "N/A", description: "Optimal temperature.", iconColor: "text-orange-500" },
-            { icon: Droplet, title: "Cation Exchange", value: latest?.soil_moisture ? `${latest.soil_moisture}%` : "N/A", description: "Good ventilation needed.", iconColor: "text-blue-400" },
-            { icon: Droplet, title: "Organic Matter", value: latest?.ph_level || "N/A", description: "Ideal for nutrients.", iconColor: "text-teal-500" },
-            { icon: Thermometer, title: "Temperature", value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "N/A", description: "Sufficient for roots.", iconColor: "text-purple-500" },
-            { icon: Wind, title: "Soil Moisture", value: latest?.potassium ? `${latest.potassium}ppm` : "N/A", description: "Promotes vigor.", iconColor: "text-sky-500" },
-            { icon: Sun, title: "Soil pH", value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "N/A", description: "Key for growth.", iconColor: "text-yellow-500" },
-            { icon: BarChart3, title: "NPK", value: latest?.organic_matter ? `${latest.organic_matter}%` : "N/A", description: "Within ideal range.", iconColor: "text-indigo-500" },
+            // Top 4 from dataset_param collection
+            { icon: Leaf, title: "Total Nitrogen", value: latestDataset?.total_nitrogen ? `${latestDataset.total_nitrogen}%` : "N/A", description: "Soil nitrogen content", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
+            { icon: Activity, title: "Organic Matter", value: latestDataset?.organic_matter ? `${latestDataset.organic_matter}%` : "N/A", description: "Soil organic content", iconColor: "text-orange-500" },
+            { icon: Droplet, title: "Total Carbon", value: latestDataset?.total_carbon ? `${latestDataset.total_carbon}%` : "N/A", description: "Carbon levels", iconColor: "text-blue-400" },
+            { icon: Thermometer, title: "Temperature", value: latestDataset?.temperature ? `${latestDataset.temperature}°C` : "N/A", description: "Environmental temp", iconColor: "text-red-500" },
+            // Bottom 4 from sensors collection  
+            { icon: Wind, title: "Humidity", value: latestSensor?.humidity ? `${latestSensor.humidity}%` : "N/A", description: "Air moisture", iconColor: "text-sky-500" },
+            { icon: Sun, title: "pH Level", value: latestSensor?.ph || "N/A", description: "Soil acidity", iconColor: "text-yellow-500" },
+            { icon: BarChart3, title: "NPK-N", value: latestSensor?.npk?.nitrogen ? `${latestSensor.npk.nitrogen}ppm` : "N/A", description: "Available nitrogen", iconColor: "text-indigo-500" },
+            { icon: Leaf, title: "NPK-P", value: latestSensor?.npk?.phosphorus ? `${latestSensor.npk.phosphorus}ppm` : "N/A", description: "Available phosphorus", iconColor: "text-purple-500" },
         ];
-    }, [latestSensorData]);
-    
+    }, [latestDatasetParam, latestSensorData]);
+
     const connectionStatus = useMemo(() => {
         if (error || sensorError) {
             return {
@@ -180,162 +321,127 @@ const AgricultureDashboard = () => {
                 pulse: false
             };
         }
-    };
-
-    const handleViewAllAlerts = () => {
-        setActiveMenuItem("Alerts");
-    };
-
-    const handleProductionTimeframeChange = async (timeframe) => {
-        // Fetch production data for the selected timeframe
-        try {
-            let filters = {};
-            const now = new Date();
-            
-            switch (timeframe) {
-                case 'week':
-                    filters = { 
-                        created_at: `>= ${new Date(now.setDate(now.getDate() - 7)).toISOString()}`,
-                        garden_id: selectedGarden
-                    };
-                    break;
-                case 'month':
-                    filters = { 
-                        month: now.getMonth() + 1, 
-                        year: now.getFullYear(),
-                        garden_id: selectedGarden
-                    };
-                    break;
-                case 'year':
-                    filters = { 
-                        year: now.getFullYear(),
-                        garden_id: selectedGarden
-                    };
-                    break;
-            }
-
-            const productionResponse = await getDataByFilters('production', filters);
-            setProductionData(productionResponse?.[0] || null);
-        } catch (error) {
-            console.error('Error fetching production data:', error);
+        if (!isConnected) {
+            return {
+                Icon: WifiOff,
+                text: "Disconnected",
+                color: "bg-gray-200 text-gray-700",
+                pulse: false
+            };
         }
-    };
-
-    // Connection status indicator
-    const ConnectionStatus = () => (
-        <div className="flex items-center gap-4 text-sm">
-            {/* API Connection */}
-            <div className="flex items-center gap-2">
-                {isConnected ? (
-                    <>
-                        <Wifi className="w-4 h-4 text-green-500" />
-                        <span className="text-green-600">API Connected</span>
-                    </>
-                ) : (
-                    <>
-                        <WifiOff className="w-4 h-4 text-red-500" />
-                        <span className="text-red-600">API Disconnected</span>
-                    </>
-                )}
-            </div>
-            
-            {/* Firestore Connection */}
-            <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                    !sensorLoading && !sensorError ? 'bg-green-500 animate-pulse' :
-                    sensorLoading ? 'bg-yellow-500 animate-pulse' : 'bg-red-500'
-                }`} title="Firestore real-time status"></div>
-                <span className="text-xs">
-                    {!sensorLoading && !sensorError ? '🔥 Firestore Live' :
-                     sensorLoading ? '⏳ Connecting...' : '❌ Offline'}
-                </span>
-            </div>
-        </div>
-    );
+        if (isConnected) {
+            return {
+                Icon: Wifi,
+                text: "Connected",
+                color: "bg-green-100 text-green-800",
+                pulse: wsConnected
+            };
+        }
+        return {
+            Icon: ServerCrash,
+            text: "Unknown Status",
+            color: "bg-yellow-100 text-yellow-800",
+            pulse: false
+        };
+    }, [isConnected, wsConnected, error, sensorError]);
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            <Sidebar 
-                isOpen={sidebarOpen} 
-                onClose={() => setSidebarOpen(false)} 
+            <Sidebar
+                isOpen={sidebarOpen}
+                onClose={() => setSidebarOpen(false)}
                 isCollapsed={isSidebarCollapsed}
                 onToggleCollapse={() => setSidebarCollapsed(!isSidebarCollapsed)}
             />
 
-            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
-                isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
-            }`}>
-                <Header 
-                    onMenuClick={() => setSidebarOpen(true)} 
-                    selectedGarden={selectedGarden} 
-                    onGardenChange={(garden) => setSelectedGarden(garden)} 
+            <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'
+                }`}>
+                <Header
+                    onMenuClick={() => setSidebarOpen(true)}
+                    selectedGarden={selectedGarden}
+                    onGardenChange={(garden) => setSelectedGarden(garden)}
                 />
 
-                {/* Connection Status Bar */}
-                <div className="bg-white border-b px-4 py-2 flex justify-between items-center">
-                    <ConnectionStatus />
-                    {lastUpdated && (
-                        <span className="text-xs text-gray-500">
-                            Last updated: {new Date(lastUpdated).toLocaleTimeString()}
-                        </span>
-                    )}
-                    {(error || sensorError) && (
-                        <div className="flex items-center gap-2 text-red-600">
-                            <AlertTriangle className="w-4 h-4" />
-                            <span className="text-sm">Connection issues detected</span>
-                        </div>
-                    )}
+                <div className="bg-white border-b px-4 py-2 flex justify-between items-center text-sm sticky top-0 z-10">
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${connectionStatus.color}`}>
+                        <connectionStatus.Icon className="w-4 h-4" />
+                        <span>{connectionStatus.text}</span>
+                        {connectionStatus.pulse && <div className="w-2 h-2 bg-current rounded-full animate-pulse" title="Receiving live data"></div>}
+                    </div>
+                    {lastUpdated && <span className="text-gray-500 hidden md:block">Last updated: {new Date(lastUpdated).toLocaleTimeString('en-US')}</span>}
                 </div>
 
                 <main className="flex-1 px-4 py-6 overflow-auto">
                     {(loading || (sensorLoading && !sensorData)) && <div className="text-center py-12 font-medium text-gray-600">Loading dashboard data...</div>}
-                    
+
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
                         <div className="lg:col-span-2 flex flex-col gap-6">
-                            <PlantInfo plantName={plantData?.name || "Lime"} description={plantData?.description || "Loading plant information..."} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'lime'}`} />
+                            <PlantInfo plantName={plantData?.name || "Limau Katsuri"} description={plantData?.description || "Katsuri lime experimental plot for research purposes"} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'katsuri'}`} />
+                            
+                            {/* Metrics display - top 4 from dataset_param, bottom 4 from sensors */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {metricsData.map((metric, index) => <MetricCard key={index} {...metric} loading={sensorLoading && !latestSensorData} />)}
                             </div>
+                            
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <ProductionOverview 
-                                    totalProduction={calculatedYield} 
-                                    productionUnit="kg" 
-                                    totalLandArea={productionData?.land_area || "0 acres"} 
-                                    landUsagePercentage={productionData?.land_usage || 0} 
-                                    revenue={`RM ${calculatedRevenue}`} 
-                                    loading={loading || sensorLoading} 
+                                <ProductionOverview
+                                    totalProduction={calculatedYield}
+                                    productionUnit="kg"
+                                    totalLandArea={productionData?.land_area || "2.0 hectares"}
+                                    landUsagePercentage={productionData?.land_usage || 0}
+                                    revenue={`RM ${calculatedRevenue}`}
+                                    loading={loading || sensorLoading}
                                 />
+                                {/* Farming suggestions based on sensor data */}
                                 <FarmingSuggestions sensorData={latestSensorData} loading={sensorLoading} />
                             </div>
-                            <SensorChart data={chartData} availableMetrics={[{ key: 'soilMoisture', label: 'Soil Moisture' }, { key: 'temperature', label: 'Temperature' }, { key: 'phLevel', label: 'pH Level' }, { key: 'soilNitrogen', label: 'Soil Nitrogen' }]} defaultSelectedMetrics={['soilMoisture', 'temperature']} loading={sensorLoading} error={sensorError} onRefresh={refetchSensorData} />
                             
-                            <LandPlotsMap />
+                            {/* Chart focused on sensors collection data */}
+                            <SensorChart 
+                                data={chartData} 
+                                availableMetrics={[
+                                    { key: 'temperature', label: 'Temperature' }, 
+                                    { key: 'humidity', label: 'Humidity' }, 
+                                    { key: 'ph', label: 'pH Level' }, 
+                                    { key: 'nitrogenNPK', label: 'NPK Nitrogen' }
+                                ]} 
+                                defaultSelectedMetrics={['temperature', 'humidity']} 
+                                loading={sensorLoading} 
+                                error={sensorError} 
+                                onRefresh={refetchSensorData} 
+                            />
 
+                            <LandPlotsMap />
                         </div>
+                        
                         <div className="flex flex-col gap-6">
                             <WeatherWidget data={weatherData} loading={!weatherData} onMoreDetailsClick={() => setShowWeatherModal(true)} />
-                            <Alerts alerts={alerts} onViewAll={() => {}} loading={loading} />
+                            
+                            {/* Alerts from alerts collection */}
+                            <Alerts alerts={alertsData.data || []} onViewAll={() => { }} loading={alertsData.loading} />
+                            
                             <DeviceStatus devices={devices} serialStatus={serialStatus} onSerialReconnect={serialReconnect} loading={loading} />
+                            
                             <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
                                 <h3 className="font-semibold text-slate-800 mb-4">Quick Actions</h3>
                                 <div className="space-y-3">
-                                    <button 
-                                        onClick={refetchSensorData} 
-                                        disabled={sensorLoading} 
+                                    <button
+                                        onClick={refetchSensorData}
+                                        disabled={sensorLoading}
                                         className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                                     >
                                         <RefreshCw className={`w-4 h-4 ${sensorLoading ? 'animate-spin' : ''}`} />
                                         {sensorLoading ? 'Refreshing...' : 'Refresh Sensor Data'}
                                     </button>
-                                    <button 
-                                        onClick={serialReconnect} 
+                                    <button
+                                        onClick={serialReconnect}
                                         className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm hover:shadow-md"
                                     >
                                         Reconnect Serial
                                     </button>
-                                    <button 
-                                        onClick={fetchAdditionalData} 
-                                        disabled={loading} 
+                                    <button
+                                        onClick={fetchAdditionalData}
+                                        disabled={loading}
                                         className="w-full bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
                                     >
                                         {loading ? 'Loading...' : 'Refresh All Data'}
@@ -351,4 +457,4 @@ const AgricultureDashboard = () => {
     );
 };
 
-export default NipisOverview;
+export default KatsuriOverview;
