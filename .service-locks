@@ -4,19 +4,4 @@
     "mode": "electron",
     "timestamp": 1755509837359
   }
-}  "database": {
-    "pid": 35560,
-    "mode": "web",
-    "timestamp": 1755986064988
-  },
-  "websocket": {
-    "pid": 35560,
-    "mode": "web",
-    "timestamp": 1755986064989
-  },
-  "api": {
-    "pid": 35560,
-    "mode": "web",
-    "timestamp": 1755986064989
-  }
 }

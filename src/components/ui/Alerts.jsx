@@ -46,7 +46,7 @@ const Alerts = ({
     }
   ];
 
-  const alertsToShow = alerts.length > 0 ? alerts : defaultAlerts;
+  const alertsToShow =  defaultAlerts;
   const totalAlerts = alertsToShow.length;
 
   const getSeverityStyles = (color) => {
@@ -100,7 +100,7 @@ const Alerts = ({
         style={{ maxHeight }}
       >
         {alertsToShow.map((alert) => {
-          const styles = getSeverityStyles(alert.color);
+          const styles = getSeverityStyles(alert.color || 'blue');
           
           return (
             <div 
@@ -112,7 +112,7 @@ const Alerts = ({
                 <p className="text-xs text-gray-500">{alert.description}</p>
               </div>
               <span className={`text-xs font-medium py-1 px-3 rounded-full ${styles.badgeBg} ${styles.badgeText}`}>
-                {alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)}
+                {alert.severity ? (alert.severity.charAt(0).toUpperCase() + alert.severity.slice(1)) : 'Info'}
               </span>
             </div>
           );

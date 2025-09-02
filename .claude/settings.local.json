@@ -6,7 +6,9 @@
       "Bash(node:*)",
       "Bash(npm run start:web-server-dev:*)",
       "Bash(set NODE_ENV=development)",
-      "Bash(npm run start:web:*)"
+      "Bash(npm run start:web:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm start)"
     ],
     "deny": [],
     "ask": []

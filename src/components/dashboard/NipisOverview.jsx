@@ -147,6 +147,7 @@ const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
 
 // Main Page Component
 const NipisOverview = () => {
+
     // API and connection hooks
     const { isConnected, wsConnected, error, loading, getDataByFilters } = useApi();
     const { status: serialStatus, reconnect: serialReconnect, } = useSerialConnection();
@@ -168,32 +169,11 @@ const NipisOverview = () => {
         limit: 30
     });
 
-    // Actions collection - action logs
-    const actionsData = useFirestore('actions', {
-        where: { field: 'sample_id', operator: '==', value: sampleId },
-        orderBy: { field: 'timestamp', direction: 'desc' },
-        limit: 15
-    });
-
-    // History collection - combined data
-    const historyData = useFirestore('history', {
-        where: { field: 'sample_id', operator: '==', value: sampleId },
-        orderBy: { field: 'timestamp', direction: 'desc' },
-        limit: 25
-    });
-
     // Alerts collection - system alerts
     const alertsData = useFirestore('alerts', {
         where: { field: 'sample_id', operator: '==', value: sampleId },
         orderBy: { field: 'timestamp', direction: 'desc' },
         limit: 10
-    });
-
-    // Forecast collection - predictions
-    const forecastData = useFirestore('forecast', {
-        where: { field: 'sample_id', operator: '==', value: sampleId },
-        orderBy: { field: 'timestamp', direction: 'desc' },
-        limit: 7
     });
 
     // Use the new collections data
@@ -204,10 +184,11 @@ const NipisOverview = () => {
     // Create a refetch function for compatibility
     const refetchSensorData = () => {
         // For Firestore real-time data, we don't need to manually refetch
-        console.log('Firestore data updates automatically via real-time listeners');
+        // The data updates automatically. This is just for UI compatibility.
+        console.log('🔄 Firestore data updates automatically via real-time listeners');
     };
-    
     const lastUpdated = sensorData[0]?.timestamp || new Date().toISOString();
+    const [alerts, setAlerts] = useState([]);
     const [devices, setDevices] = useState([]);
     const [plantData, setPlantData] = useState(null);
     const [productionData, setProductionData] = useState(null);
@@ -215,7 +196,7 @@ const NipisOverview = () => {
     const fetchControllerRef = useRef(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [selectedGarden, setSelectedGarden] = useState("Nipis Orchard");
+    const [selectedGarden, setSelectedGarden] = useState("Nipis Cytrus");
     const [showWeatherModal, setShowWeatherModal] = useState(false);
 
     useEffect(() => {
@@ -238,11 +219,13 @@ const NipisOverview = () => {
         const controller = new AbortController();
         fetchControllerRef.current = controller;
         try {
-            const [devicesResponse, plantResponse, productionResponse] = await Promise.all([
+            const [alertsResponse, devicesResponse, plantResponse, productionResponse] = await Promise.all([
+                getDataByFilters('alerts', { status: 'active' }, { orderBy: { column: 'created_at', direction: 'DESC' }, limit: 5 }, { signal: controller.signal }),
                 getDataByFilters('devices', {}, { orderBy: { column: 'last_seen', direction: 'DESC' } }, { signal: controller.signal }),
                 getDataByFilters('plants', { garden_id: selectedGarden }, { limit: 1 }, { signal: controller.signal }),
                 getDataByFilters('production', { month: new Date().getMonth() + 1, year: new Date().getFullYear() }, { limit: 1 }, { signal: controller.signal })
             ]);
+            setAlerts(alertsResponse || []);
             setDevices(devicesResponse || []);
             setPlantData(plantResponse?.[0] || null);
             setProductionData(productionResponse?.[0] || null);
@@ -255,18 +238,15 @@ const NipisOverview = () => {
     }, [isConnected, selectedGarden]);
 
     const latestSensorData = useMemo(() => sensorData?.[0] || null, [sensorData]);
-    const latestDatasetParam = useMemo(() => datasetParamData.data?.[0] || null, [datasetParamData.data]);
 
-    // Calculate yield using dataset_param collection data
+    // jiii masukin sini
     const calculatedYield = useMemo(() => {
-        if (!latestDatasetParam) return 0;
-        const { total_nitrogen, organic_matter, total_carbon, temperature, humidity } = latestDatasetParam;
-        if (!total_nitrogen || !organic_matter || !total_carbon || !temperature || !humidity) return 0;
-        
-        // Formula for Nipis yield calculation
-        const yieldKg = 42434.72 + (-8647.17 * total_nitrogen) + (1751.18 * organic_matter) + (-8005.21 * total_carbon) + (-29.76 * temperature) + (-4.01 * humidity);
-        return Math.max(0, yieldKg.toFixed(2));
-    }, [latestDatasetParam]);
+        if (!latestSensorData) return 0;
+        const { nitrogen, organic_matter, soil_health, temperature, soil_moisture } = latestSensorData;
+        if (!nitrogen || !organic_matter || !soil_health || !temperature || !soil_moisture) return 0;
+        const yieldKg = 42434.72 + (-8647.17 * nitrogen) + (1751.18 * organic_matter) + (-8005.21 * soil_health) + (-29.76 * temperature) + (-4.01 * soil_moisture);
+        return Math.max(0, yieldKg.toFixed(2)); // Ensure yield is not negative
+    }, [latestSensorData]);
 
     // Calculate revenue based on yield
     const calculatedRevenue = useMemo(() => {
@@ -289,31 +269,28 @@ const NipisOverview = () => {
         });
         return {
             labels, datasets: {
+                soilMoisture: createDataset('soil_moisture', 'Soil Moisture (%)', '#3b82f6'),
                 temperature: createDataset('temperature', 'Temperature (°C)', '#f97316'),
-                humidity: createDataset('humidity', 'Humidity (%)', '#3b82f6'),
-                ph: createDataset('ph', 'pH Level', '#10b981'),
-                nitrogenNPK: createDataset('npk.nitrogen', 'NPK Nitrogen (ppm)', '#8b5cf6')
+                phLevel: createDataset('ph_level', 'pH Level', '#10b981'),
+                soilNitrogen: createDataset('nitrogen', 'Soil Nitrogen (ppm)', '#8b5cf6')
             }
         };
     }, [sensorData]);
 
-    // Updated metrics using dataset_param collection for top 4, sensors for bottom 4
     const metricsData = useMemo(() => {
-        const latestDataset = latestDatasetParam;
-        const latestSensor = latestSensorData;
+        const latest = latestSensorData;
         return [
-            // Top 4 from dataset_param collection
-            { icon: Leaf, title: "Total Nitrogen", value: latestDataset?.total_nitrogen ? `${latestDataset.total_nitrogen}%` : "N/A", description: "Soil nitrogen content", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
-            { icon: Activity, title: "Organic Matter", value: latestDataset?.organic_matter ? `${latestDataset.organic_matter}%` : "N/A", description: "Soil organic content", iconColor: "text-orange-500" },
-            { icon: Droplet, title: "Total Carbon", value: latestDataset?.total_carbon ? `${latestDataset.total_carbon}%` : "N/A", description: "Carbon levels", iconColor: "text-blue-400" },
-            { icon: Thermometer, title: "Temperature", value: latestDataset?.temperature ? `${latestDataset.temperature}°C` : "N/A", description: "Environmental temp", iconColor: "text-red-500" },
-            // Bottom 4 from sensors collection  
-            { icon: Wind, title: "Humidity", value: latestSensor?.humidity ? `${latestSensor.humidity}%` : "N/A", description: "Air moisture", iconColor: "text-sky-500" },
-            { icon: Sun, title: "pH Level", value: latestSensor?.ph || "N/A", description: "Soil acidity", iconColor: "text-yellow-500" },
-            { icon: BarChart3, title: "NPK-N", value: latestSensor?.npk?.nitrogen ? `${latestSensor.npk.nitrogen}ppm` : "N/A", description: "Available nitrogen", iconColor: "text-indigo-500" },
-            { icon: Leaf, title: "NPK-P", value: latestSensor?.npk?.phosphorus ? `${latestSensor.npk.phosphorus}ppm` : "N/A", description: "Available phosphorus", iconColor: "text-purple-500" },
+            { icon: Leaf, title: "Total Carbon", value: latest?.soil_health ? `${latest.soil_health}%` : "8", description: "Excellent growth.", gradient: true, gradientFrom: "from-green-500", gradientTo: "to-green-600" },
+            { icon: Activity, title: "Soil Organic Carbon", value: latest?.temperature ? `${latest.temperature}°C` : "8", description: "Optimal temperature.", iconColor: "text-orange-500" },
+            { icon: Droplet, title: "Cation Exchange", value: latest?.soil_moisture ? `${latest.soil_moisture}%` : "8", description: "Good ventilation needed.", iconColor: "text-blue-400" },
+            { icon: Droplet, title: "Organic Matter", value: latest?.ph_level || "8", description: "Ideal for nutrients.", iconColor: "text-teal-500" },
+            { icon: Thermometer, title: "Temperature", value: latest?.phosphorus ? `${latest.phosphorus}ppm` : "8", description: "Sufficient for roots.", iconColor: "text-purple-500" },
+            { icon: Wind, title: "Soil Moisture", value: latest?.potassium ? `${latest.potassium}ppm` : "8", description: "Promotes vigor.", iconColor: "text-sky-500" },
+            { icon: Sun, title: "Soil pH", value: latest?.nitrogen ? `${latest.nitrogen}ppm` : "8", description: "Key for growth.", iconColor: "text-yellow-500" },
+            { icon: BarChart3, title: "NPK", value: latest?.organic_matter ? `${latest.organic_matter}%` : "8", description: "Within ideal range.", iconColor: "text-indigo-500" },
         ];
-    }, [latestDatasetParam, latestSensorData]);
+    }, [latestSensorData]);
+
 
     const connectionStatus = useMemo(() => {
         if (error || sensorError) {
@@ -371,7 +348,7 @@ const NipisOverview = () => {
                         <span>{connectionStatus.text}</span>
                         {connectionStatus.pulse && <div className="w-2 h-2 bg-current rounded-full animate-pulse" title="Receiving live data"></div>}
                     </div>
-                    {lastUpdated && <span className="text-gray-500 hidden md:block">Last updated: {new Date(lastUpdated).toLocaleTimeString('en-US')}</span>}
+                    {lastUpdated && <span className="text-gray-500 hidden md:block">Last updated: {lastUpdated.toLocaleTimeString('en-US')}</span>}
                 </div>
 
                 <main className="flex-1 px-4 py-6 overflow-auto">
@@ -379,52 +356,34 @@ const NipisOverview = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
                         <div className="lg:col-span-2 flex flex-col gap-6">
-                            <PlantInfo plantName={plantData?.name || "Limau Nipis"} description={plantData?.description || "Nipis lime cultivation with sustainable farming methods"} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'nipis'}`} />
-                            
-                            {/* Metrics display - top 4 from dataset_param, bottom 4 from sensors */}
+                            <PlantInfo plantName={plantData?.name || "Lime"} description={plantData?.description || "Loading plant information..."} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'lime'}`} />
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {/* edit this part metrix so that the top 4 row is focused using dataset collection, and the 4 below is from sensors collection*/}
                                 {metricsData.map((metric, index) => <MetricCard key={index} {...metric} loading={sensorLoading && !latestSensorData} />)}
                             </div>
-                            
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <ProductionOverview
                                     totalProduction={calculatedYield}
                                     productionUnit="kg"
-                                    totalLandArea={productionData?.land_area || "2.5 hectares"}
+                                    totalLandArea={productionData?.land_area || "3 acres"}
                                     landUsagePercentage={productionData?.land_usage || 0}
                                     revenue={`RM ${calculatedRevenue}`}
                                     loading={loading || sensorLoading}
                                 />
-                                {/* Farming suggestions based on sensor data */}
+                                {/* in this place just focused on putting suggestion */}
                                 <FarmingSuggestions sensorData={latestSensorData} loading={sensorLoading} />
                             </div>
-                            
-                            {/* Chart focused on sensors collection data */}
-                            <SensorChart 
-                                data={chartData} 
-                                availableMetrics={[
-                                    { key: 'temperature', label: 'Temperature' }, 
-                                    { key: 'humidity', label: 'Humidity' }, 
-                                    { key: 'ph', label: 'pH Level' }, 
-                                    { key: 'nitrogenNPK', label: 'NPK Nitrogen' }
-                                ]} 
-                                defaultSelectedMetrics={['temperature', 'humidity']} 
-                                loading={sensorLoading} 
-                                error={sensorError} 
-                                onRefresh={refetchSensorData} 
-                            />
+                            {/* in this placed is focus on sensor collection element*/}
+                            <SensorChart data={chartData} availableMetrics={[{ key: 'soilMoisture', label: 'Soil Moisture' }, { key: 'temperature', label: 'Temperature' }, { key: 'phLevel', label: 'pH Level' }, { key: 'soilNitrogen', label: 'Soil Nitrogen' }]} defaultSelectedMetrics={['soilMoisture', 'temperature']} loading={sensorLoading} error={sensorError} onRefresh={refetchSensorData} />
 
                             <LandPlotsMap />
+
                         </div>
-                        
                         <div className="flex flex-col gap-6">
                             <WeatherWidget data={weatherData} loading={!weatherData} onMoreDetailsClick={() => setShowWeatherModal(true)} />
-                            
                             {/* Alerts from alerts collection */}
                             <Alerts alerts={alertsData.data || []} onViewAll={() => { }} loading={alertsData.loading} />
-                            
                             <DeviceStatus devices={devices} serialStatus={serialStatus} onSerialReconnect={serialReconnect} loading={loading} />
-                            
                             <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
                                 <h3 className="font-semibold text-slate-800 mb-4">Quick Actions</h3>
                                 <div className="space-y-3">

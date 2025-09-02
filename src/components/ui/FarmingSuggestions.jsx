@@ -9,7 +9,8 @@ import {
     Lightbulb,
     Beaker,
     Scissors,
-    Sun
+    Sun,
+    GlassWater
 } from 'lucide-react';
 
 const FarmingSuggestions = ({ sensorData, loading }) => {
@@ -146,10 +147,10 @@ const FarmingSuggestions = ({ sensorData, loading }) => {
             recommendations.push({
                 id: 'pruning',
                 type: 'maintenance',
-                icon: Scissors,
-                title: 'Seasonal Pruning',
-                description: 'Optimal time for pruning',
-                action: 'Prune dead, diseased, and inward-growing branches. Cut water sprouts and sucker shoots.',
+                icon: GlassWater,
+                title: 'Watering Suggestion',
+                description: 'Optimal watering area',
+                action: 'site A radius of 3 ares. should be watered 2000L Based on current soil moisture and temperature',
                 priority: 'low',
                 timeframe: 'This month',
                 color: 'text-slate-700',

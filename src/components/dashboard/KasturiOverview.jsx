@@ -13,16 +13,16 @@ import Alerts from '../ui/Alerts';
 import DeviceStatus from '../ui/DeviceStatus';
 import ProductionOverview from '../ui/ProductionOverview';
 import FarmingSuggestions from '../ui/FarmingSuggestions';
-import image_url from '../images/limaukatsuri.png'; // Different image for Katsuri
+import image_url from '../images/limaunipis.png';
 
 // Import the LandPlotsMap component from its separate file
 import LandPlotsMap from '../ui/LandPlotMaps';
 
-// Import your custom API hooks
+// Import hook API kustom dan Firestore hooks
 import { useApi, useSensorData, useSerialConnection } from '../../hook/useApi';
 import { useFirestore } from '../../hook/useFirestore';
 
-// Weather components (same as Nipis)
+// [NEW FUNCTION] To get weather icon and description based on WMO code
 const getWeatherInfo = (code) => {
     switch (true) {
         case code <= 1: return { icon: Sun, description: "Clear" };
@@ -145,13 +145,14 @@ const WeatherWidget = ({ data, loading, onMoreDetailsClick }) => {
     );
 };
 
-const KatsuriOverview = () => {
+// Main Page Component
+const KasturiOverview = () => {
     // API and connection hooks
     const { isConnected, wsConnected, error, loading, getDataByFilters } = useApi();
     const { status: serialStatus, reconnect: serialReconnect, } = useSerialConnection();
 
-    // Firestore real-time data hooks - Using new collections with sample_id filtering for Katsuri
-    const sampleId = 'kasturi_orchard'; // Different sample_id for Katsuri
+    // Firestore real-time data hooks - Using new collections with sample_id filtering
+    const sampleId = 'kasturi_orchard';
     
     // Dataset collection - CSV input format data
     const datasetParamData = useFirestore('dataset_param', {
@@ -200,7 +201,9 @@ const KatsuriOverview = () => {
     const sensorLoading = sensorsData.loading;
     const sensorError = sensorsData.error;
 
+    // Create a refetch function for compatibility
     const refetchSensorData = () => {
+        // For Firestore real-time data, we don't need to manually refetch
         console.log('Firestore data updates automatically via real-time listeners');
     };
     
@@ -212,7 +215,7 @@ const KatsuriOverview = () => {
     const fetchControllerRef = useRef(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
-    const [selectedGarden, setSelectedGarden] = useState("Katsuri Orchard");
+    const [selectedGarden, setSelectedGarden] = useState("Kasturi Orchard");
     const [showWeatherModal, setShowWeatherModal] = useState(false);
 
     useEffect(() => {
@@ -254,20 +257,20 @@ const KatsuriOverview = () => {
     const latestSensorData = useMemo(() => sensorData?.[0] || null, [sensorData]);
     const latestDatasetParam = useMemo(() => datasetParamData.data?.[0] || null, [datasetParamData.data]);
 
-    // Calculate yield using dataset_param collection data - Different formula for Katsuri
+    // Calculate yield using dataset_param collection data
     const calculatedYield = useMemo(() => {
         if (!latestDatasetParam) return 0;
         const { total_nitrogen, organic_matter, total_carbon, temperature, humidity } = latestDatasetParam;
         if (!total_nitrogen || !organic_matter || !total_carbon || !temperature || !humidity) return 0;
         
-        // Formula for Katsuri yield calculation (different from Nipis)
+        // Formula for Kasturi yield calculation - different from Nipis
         const yieldKg = -113481.12 + (652168.99 * total_nitrogen) + (1228.76 * organic_matter) + (-20577.85 * total_carbon) + (-1107.59 * temperature) + (1349.29 * humidity);
         return Math.max(0, yieldKg.toFixed(2));
     }, [latestDatasetParam]);
 
-    // Calculate revenue based on yield - Different price for Katsuri
+    // Calculate revenue based on yield
     const calculatedRevenue = useMemo(() => {
-        const revenue = calculatedYield * 3.03; // Different price per kg for Katsuri
+        const revenue = calculatedYield * 3.03;
         return revenue.toFixed(2);
     }, [calculatedYield]);
 
@@ -376,7 +379,7 @@ const KatsuriOverview = () => {
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
                         <div className="lg:col-span-2 flex flex-col gap-6">
-                            <PlantInfo plantName={plantData?.name || "Limau Katsuri"} description={plantData?.description || "Katsuri lime experimental plot for research purposes"} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'katsuri'}`} />
+                            <PlantInfo plantName={plantData?.name || "Limau Kasturi"} description={plantData?.description || "Kasturi lime cultivation with sustainable farming methods"} backgroundImage={plantData?.image_url || image_url} detailsLink={`/plant-details/${plantData?.id || 'kasturi'}`} />
                             
                             {/* Metrics display - top 4 from dataset_param, bottom 4 from sensors */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -387,7 +390,7 @@ const KatsuriOverview = () => {
                                 <ProductionOverview
                                     totalProduction={calculatedYield}
                                     productionUnit="kg"
-                                    totalLandArea={productionData?.land_area || "2.0 hectares"}
+                                    totalLandArea={productionData?.land_area || "2.5 hectares"}
                                     landUsagePercentage={productionData?.land_usage || 0}
                                     revenue={`RM ${calculatedRevenue}`}
                                     loading={loading || sensorLoading}
@@ -457,4 +460,4 @@ const KatsuriOverview = () => {
     );
 };
 
-export default KatsuriOverview;
+export default KasturiOverview;

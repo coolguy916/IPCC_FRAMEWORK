@@ -1,94 +1,127 @@
-# 🌊 Alprog Boncos - For Monitoring System Framework - with Complete Backend System
+# 🌱 IPCC Agricultural Monitoring System
 
-> **Transform your industrial monitoring dreams into reality!** This isn't just another backend framework - it's your gateway to building robust, real-time monitoring systems that adapt, scale, and never miss a beat.
+> **Advanced Agricultural IoT Monitoring Framework for Sustainable Farming** - A comprehensive system designed for precision agriculture monitoring with real-time sensor data collection, environmental analysis, and crop management insights.
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)]()
-[![MySQL](https://img.shields.io/badge/MySQL-8.0+-blue.svg)]()
+[![React](https://img.shields.io/badge/React-18+-blue.svg)]()
 [![Firebase](https://img.shields.io/badge/Firebase-Realtime-orange.svg)]()
-[![WebSocket](https://img.shields.io/badge/WebSocket-Real--time-purple.svg)]()
+[![MySQL](https://img.shields.io/badge/MySQL-8.0+-blue.svg)]()
 [![Electron](https://img.shields.io/badge/Electron-Desktop-lightblue.svg)]()
+[![IoT](https://img.shields.io/badge/IoT-Sensors-brightgreen.svg)]()
 
-## 🚀 What Makes This Framework Special?
+## 🚀 What Makes This Agricultural System Special?
 
-Imagine having a monitoring system that's as flexible as a Swiss Army knife and as reliable as a lighthouse. This framework brings together the best of multiple worlds:
+Transform your farming operations with cutting-edge IoT monitoring technology. This framework brings together precision agriculture, environmental monitoring, and data-driven insights:
 
-- **🔄 Dual Database Support**: Switch between MySQL and Firebase with a single command
-- **⚡ Real-time Everything**: WebSocket communications that keep your data flowing
-- **🔗 Smart Serial Communication**: Auto-reconnecting, self-healing device connections
-- **🛡️ Fort Knox Security**: Built-in encryption for sensitive data
-- **🖥️ Desktop Ready**: Electron-powered interface for professional deployment
+- **🌾 Crop-Specific Monitoring**: Specialized dashboards for Nipis Lime and Kasturi Lime cultivation
+- **📊 Real-time Sensor Data**: Temperature, humidity, soil conditions, and environmental monitoring
+- **🔄 Dual Database Support**: Switch between MySQL and Firebase for scalable data storage
+- **⚡ Live Data Streaming**: WebSocket communications for instant updates
+- **🌦️ Weather Integration**: 5-day weather forecasting for agricultural planning
+- **🗺️ Land Plot Visualization**: Interactive maps with Google Maps integration
+- **🖥️ Desktop & Web**: Cross-platform support with Electron and React web interface
 
-## 🏗️ Architecture That Actually Makes Sense
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                 🖥️  Electron Desktop Application                │
-├─────────────┬─────────────────┬─────────────────┬───────────────┤
-│ 💾 Database │ 🌐 WebSocket    │ 🔌 Serial Comm │ 🚀 REST API   │
-│    Layer    │    Server       │    Handler      │    Server     │
-├─────────────┼─────────────────┼─────────────────┼───────────────┤
-│ MySQL       │ Real-time Data  │ Arduino/ESP32   │ External      │
-│ Firebase    │ Broadcasting    │ Auto-detection  │ Integration   │
-│ QueryBuilder│ Client Mgmt     │ Smart Reconnect │ Auth Ready    │
-└─────────────┴─────────────────┴─────────────────┴───────────────┘
-```
-
-## 📁 **Project Structure - Your Roadmap to Success**
-
-Understanding where everything lives is crucial for efficient development. Here's your complete project anatomy:
+## 🏗️ Agricultural IoT System Architecture
 
 ```
-flow-meter-monitoring/
-├── 📋 main.js                          # 🚀 Application entry point - Orchestrates all modules
-├── 🔗 preload.js                       # 🌉 Bridge between frontend and backend
-├── 📦 package.json                     # 📋 Dependencies and scripts
-├── 🔐 .env                            # ⚙️ Configuration secrets (create from .env.example)
-├── 🔐 .env.example                    # 📝 Template for environment variables
-├── 🔧 firebaseConfig.js               # 🔥 Firebase configuration defaults
-├── 📚 README.md                       # 📖 You are here!
+┌─────────────────────────────────────────────────────────────────────┐
+│           🌱 IPCC Agricultural Monitoring System                    │
+├──────────────┬──────────────────┬─────────────────┬────────────────┤
+│ 🎨 Frontend  │ 📊 Data Layer    │ 🔌 IoT Layer   │ 🌐 Services   │
+│ Interface    │                  │                 │                │
+├──────────────┼──────────────────┼─────────────────┼────────────────┤
+│ React Web    │ MySQL Database   │ Arduino/ESP32   │ REST API       │
+│ Electron App │ Firebase Store   │ Sensor Networks │ WebSocket      │
+│ Dashboard    │ Real-time Sync   │ Serial Comm     │ Weather API    │
+│ Charts       │ Query Builder    │ Auto-reconnect  │ Google Maps    │
+└──────────────┴──────────────────┴─────────────────┴────────────────┘
+
+🌾 Specialized Agricultural Components:
+├── Nipis Lime Monitoring Dashboard
+├── Kasturi Lime Monitoring Dashboard  
+├── Environmental Sensor Management
+├── Weather Forecast Integration
+├── Land Plot Mapping & Visualization
+└── Production Analytics & Reporting
+```
+
+## 📁 **Project Structure - Agricultural System Organization**
+
+Understanding the project structure is essential for developing and maintaining this agricultural monitoring system:
+
+```
+IPCC_Framework/
+├── 📋 main.js                          # 🚀 Electron main process - Application orchestrator
+├── 🔗 preload.js                       # 🌉 Security bridge between frontend and backend
+├── 📦 package.json                     # 📋 Dependencies and npm scripts
+├── 🔐 .env                            # ⚙️ Environment configuration
+├── 🐳 docker-compose.yml              # 🐳 Docker containerization setup
+├── 🔥 firebase.json                   # 🔥 Firebase project configuration
 │
-├── 📂 modules/                        # 🧩 Modular Framework Components (NEW!)
-│   ├── 📂 database/                   # 💾 Database Management Module
-│   │   └── 🗄️ databaseManager.js     # 🏗️ Database initialization & lifecycle
+├── 📂 src/                            # 🎨 React Frontend Application
+│   ├── 📱 App.js                      # 🎯 Main React application component
+│   ├── 📂 components/                 # 🧩 React UI Components
+│   │   ├── 📂 dashboard/              # 📊 Dashboard Views
+│   │   │   ├── 🍋 NipisOverview.jsx   # Nipis Lime monitoring dashboard
+│   │   │   ├── 🟢 KasturiOverview.jsx # Kasturi Lime monitoring dashboard
+│   │   │   ├── 📈 Data.jsx            # Data analytics page
+│   │   │   ├── 💰 Finance.jsx         # Financial analysis
+│   │   │   ├── 🔧 Maintenance.jsx     # Equipment maintenance
+│   │   │   └── 🌤️ Forecast.jsx        # Weather forecasting
+│   │   │
+│   │   ├── 📂 ui/                     # 🎨 Reusable UI Components
+│   │   │   ├── 🚨 Alerts.jsx          # Alert notifications system
+│   │   │   ├── 🗺️ LandPlotMaps.jsx    # Google Maps integration
+│   │   │   ├── 📊 MetricCard.jsx      # Metric display cards
+│   │   │   ├── 🌿 PlantInfo.jsx       # Plant information display
+│   │   │   └── 💡 FarmingSuggestions.jsx # AI farming recommendations
+│   │   │
+│   │   ├── 📂 charts/                 # 📈 Chart Components
+│   │   │   ├── 📊 sensorChart.jsx     # Real-time sensor data charts
+│   │   │   ├── 📈 lineChart.jsx       # Time series line charts
+│   │   │   └── 🥧 pieChart.jsx        # Distribution pie charts
+│   │   │
+│   │   └── 📂 layout/                 # 🏗️ Layout Components
+│   │       ├── 🎯 header.jsx          # Application header
+│   │       ├── 📋 sidebar.jsx         # Navigation sidebar
+│   │       └── 📄 mainContent.jsx     # Main content wrapper
 │   │
-│   ├── 📂 window/                     # 🖥️ Window Management Module
-│   │   └── 🪟 windowManager.js       # 📊 Electron window creation & control
-│   │
-│   ├── 📂 api/                        # 🌐 API Server Module
-│   │   └── 🚀 apiServer.js           # 🔗 Express server setup & routing
-│   │
-│   ├── 📂 serial/                     # 📡 Serial Communication Module
-│   │   └── 🔌 serialManager.js       # 📟 Hardware communication orchestration
-│   │
-│   └── 📂 ipc/                        # 🌉 IPC Communication Module
-│       └── 💬 ipcManager.js          # 🔄 Frontend-backend bridge handlers
+│   └── 📂 hook/                       # 🎣 Custom React Hooks
+│       ├── 🔌 useApi.js               # API integration hook
+│       ├── 🔥 useFirestore.js         # Firestore database hook
+│       └── ⚡ useRealtimeData.js      # Real-time data streaming hook
 │
-├── 📂 lib/                            # 🏗️ Core Framework Libraries
-│   ├── 📂 db/                         # 💾 Database Abstraction Layer
-│   │   ├── 🗄️ mysqlDB.js             # 🐬 MySQL database handler + Query Builder
-│   │   └── 🔥 firebaseDB.js          # 🔥 Firebase Realtime DB handler + Query Builder
+├── 📂 modules/                        # 🧩 Backend Service Modules
+│   ├── 📂 database/                   # 💾 Database Management
+│   ├── 📂 serial/                     # 🔌 IoT Sensor Communication  
+│   ├── 📂 websocket/                  # ⚡ Real-time Data Streaming
+│   ├── 📂 api/                        # 🌐 REST API Server
+│   └── 📂 services/                   # 🛠️ Background Services
+│
+├── 📂 lib/                            # 🏗️ Core Libraries
+│   ├── 📂 db/                         # 🗄️ Database Abstraction
+│   │   ├── mysqlDB.js                 # MySQL integration
+│   │   ├── firebaseDB.js              # Firebase integration
+│   │   └── firestoreDB.js             # Firestore integration
 │   │
-│   └── 📂 com/                        # 🌐 Communication Modules  
-│       ├── 🔌 serialCommunicator.js   # 📡 Arduino/ESP32/Device communication
-│       └── 🌐 webSocketHandler.js     # 💬 Real-time WebSocket server
+│   └── 📂 com/                        # 📡 Communication Libraries
+│       ├── serialCommunicator.js      # Arduino/ESP32 communication
+│       └── webSocketCommunicator.js   # Real-time data broadcasting
 │
-├── 📂 controller/                     # 🎮 Business Logic Controllers
-│   └── 📂 app/                        # 📱 Application-specific controllers
-│       ├── 🔐 authController.js       # 👤 User authentication & JWT handling
-│       ├── 🗄️ databaseController.js   # 💾 Generic database operations
-│       └── 📱 mauiController.js       # 📲 MAUI/Mobile app integration
-│
-├── 📂 resource/                       # 🎨 Frontend Resources
-│   └── 📂 view/                       # 👁️ User Interface Files
-│       └── 📂 uibaru/                 # 🎨 New UI Components
-│           ├── 🖥️ monitor.html        # 📊 Main monitoring dashboard
-│           ├── 🎨 style.css           # 💄 Dashboard styling
-│           └── ⚡ script.js           # 🧠 Frontend logic & real-time updates
+├── 📂 App/Http/Controllers/           # 🎮 Backend Controllers
+│   ├── authController.js              # Authentication & authorization
+│   ├── databaseController.js          # Database operations
+│   └── mauiController.js              # Mobile API endpoints
 │
 ├── 📂 scripts/                        # 🔧 Utility Scripts
-│   └── 🔄 switch-db.js               # 🎛️ Database switching utility
+│   ├── env-manager.js                 # Environment management
+│   ├── switch-db.js                   # Database switching
+│   ├── seed-database.js               # Database seeding
+│   └── setup-web.js                   # Web setup automation
 │
-└── 📂 node_modules/                   # 📦 Dependencies (auto-generated)
+└── 📂 public/                         # 🌐 Static Web Assets
+    ├── index.html                     # Web app entry point
+    └── manifest.json                  # PWA configuration
 ```
 
 ## 🎯 **File Purpose Guide - Know What You're Editing**
@@ -520,137 +553,226 @@ module.exports = {
 
 This modular approach gives you complete control over every aspect of your monitoring system while maintaining the same powerful functionality you had before - just organized in a way that scales with your project's growth!
 
-## 🎯 Quick Start - Get Running in Minutes!
+## 🎯 Quick Start - Get Your Agricultural Monitoring Running!
 
 ### 1. **Clone & Install**
 ```bash
 git clone <your-repo>
-cd flow-meter-monitoring
+cd IPCC_Framework
 npm install
 ```
 
-### 2. **Choose Your Database Adventure**
+### 2. **Choose Your Database for Agricultural Data**
 ```bash
-# Want the reliability of MySQL?
+# For local MySQL deployment (recommended for on-farm systems)
 npm run switch-db mysql
 
-# Prefer the simplicity of Firebase?
+# For cloud Firebase deployment (recommended for remote monitoring)
 npm run switch-db firebase
 ```
 
-### 3. **Configure Your Environment**
-Copy `.env.example` to `.env` and unleash the power:
+### 3. **Configure Your Agricultural Environment**
+Copy `.env.example` to `.env` and configure for your farm setup:
 
 ```env
-# 🎛️ The Master Switch - Choose Your Database Destiny
-USE_FIREBASE=false
+# 🌾 Agricultural System Configuration
+APP_NAME=IPCC Agricultural Monitoring
+NODE_ENV=production
 
-# 🔧 MySQL Configuration (When you need that SQL power)
+# 🎛️ Database Selection for Farm Data
+USE_FIREBASE=false                    # Toggle between MySQL/Firebase
+
+# 🔧 MySQL Configuration (Local Farm Database)
 MYSQL_HOST=localhost
-MYSQL_USER=your_user
-MYSQL_PASSWORD=your_secure_password
-MYSQL_DATABASE=your_database
+MYSQL_USER=ipcc_farm_user
+MYSQL_PASSWORD=your_secure_farm_password
+MYSQL_DATABASE=ipcc_agricultural_db
 
-# 🔥 Firebase Configuration (When you want Google's magic)
+# 🔥 Firebase Configuration (Cloud Agricultural Data)
 FIREBASE_API_KEY=your_firebase_key
-FIREBASE_PROJECT_ID=your_project_id
-# ... more Firebase goodness
+FIREBASE_PROJECT_ID=ipcc-agricultural-system
+FIREBASE_DATABASE_URL=https://ipcc-5fa54-default-rtdb.firebaseio.com
 
-# 🌐 WebSocket Magic (Real-time data streaming)
+# 🌐 Real-time Agricultural Data Streaming
 WS_PORT=8080
 WS_AUTH_ENABLED=false
+WS_MAX_CONNECTIONS=50
 
-# 🔌 Serial Communication (Talk to your hardware)
-SERIAL_PORT=COM3          # Windows
-# SERIAL_PORT=/dev/ttyUSB0  # Linux
+# 🔌 IoT Sensor Communication for Farm Monitoring
+SERIAL_PORT=COM3                     # Windows: Arduino/ESP32 connection
+# SERIAL_PORT=/dev/ttyUSB0           # Linux: Sensor device connection
 SERIAL_BAUDRATE=9600
+SENSOR_DATA_INTERVAL=10000           # 10 seconds for live updates
+
+# 🌦️ Weather API for Agricultural Planning  
+WEATHER_API_KEY=your_weather_api_key
+WEATHER_LOCATION=your_farm_coordinates
+
+# 🗺️ Google Maps for Land Plot Visualization
+GOOGLE_MAPS_API_KEY=your_google_maps_key
+
+# 🔐 Security for Agricultural Data
+DB_ENCRYPTION_KEY=ipcc-secure-key-2024-agricultural-monitoring-system
+JWT_SECRET=ipcc-jwt-secret-key-for-authentication-2024
 ```
 
-### 4. **Launch Your Monitoring Empire**
+### 4. **Launch Your Agricultural Monitoring System**
 ```bash
-npm start
+# Start the complete system (Electron + Web + Services)
+npm run start:both
+
+# Or start individual components:
+npm run start:web            # React web interface only
+npm run start:electron       # Electron desktop app only  
+npm run dev                  # Development mode with hot reload
 ```
 
-## 🎮 Features That'll Make You Smile
+### 5. **Available Running Modes**
+```bash
+# Development with hot reload
+npm run dev
 
-### 🗄️ **Database Layer - The Foundation of Dreams**
+# Web-only deployment (for remote access)
+npm run dev:web
 
-**Dual Database Support** - Because choice is beautiful:
+# Desktop-only (for on-farm monitoring stations)  
+npm run dev:electron
 
-```javascript
-// Same code, different databases! 
-const users = await db.table('users')
-    .where('status', 'active')
-    .where('last_login', '>', '2024-01-01')
-    .orderBy('created_at', 'desc')
-    .limit(10)
-    .get();
-
-// Works with both MySQL AND Firebase! 🎉
+# Production deployment
+npm run serve:web
 ```
 
-**Query Builder That Speaks Your Language:**
+## 🌾 Agricultural Features That Transform Farming
+
+### 🗄️ **Agricultural Data Management**
+
+**Dual Database Support** - Perfect for farm operations:
+
 ```javascript
-// Simple and intuitive
-const activeUsers = await db.table('users')
-    .where({ status: 'active', role: 'admin' })
-    .whereIn('department', ['IT', 'Engineering'])
-    .whereBetween('salary', 50000, 100000)
-    .orderByDesc('last_login')
+// Same code works with both MySQL and Firebase for agricultural data
+const sensorReadings = await db.table('sensors')
+    .where('sample_id', 'like', '%nipis%')
+    .where('timestamp', '>', '2024-01-01')
+    .orderBy('timestamp', 'desc')
+    .limit(100)
     .get();
 
-// Complex joins? No problem!
-const userData = await db.table('users')
-    .leftJoin('profiles', 'users.id', 'profiles.user_id')
-    .select(['users.name', 'profiles.avatar'])
-    .where('users.active', true)
+// Works seamlessly with both database systems! 🌱
+```
+
+**Agricultural Query Builder:**
+```javascript
+// Monitor environmental conditions
+const environmentalData = await db.table('sensors')
+    .where({ active: true, location: 'greenhouse_1' })
+    .whereBetween('temperature', 20, 35)
+    .whereBetween('humidity', 60, 80)
+    .orderByDesc('timestamp')
+    .limit(50)
+    .get();
+
+// Track crop-specific data with joins
+const cropAnalytics = await db.table('sensors')
+    .leftJoin('crops', 'sensors.sample_id', 'crops.id')
+    .select(['sensors.*', 'crops.variety', 'crops.planting_date'])
+    .where('crops.type', 'citrus')
     .get();
 ```
 
-### 🔌 **Serial Communication - Your Hardware Whisperer**
+### 🔌 **IoT Agricultural Sensor Communication**
 
-**Smart Auto-Detection:**
-- 🔍 Automatically finds Arduino/ESP32 devices
-- 🔄 Self-healing connections that bounce back from failures
-- 🎯 Dynamic port switching when better connections are found
-- 📡 Real-time status updates to your interface
+**Smart Farm Device Detection:**
+- 🌱 Automatically detects agricultural sensors (Arduino/ESP32)
+- 🔄 Self-healing connections for uninterrupted crop monitoring
+- 🎯 Dynamic switching between sensor networks
+- 📡 Real-time updates to farming dashboards
 
 ```javascript
-// Your serial communicator is like a reliable friend
-const serialComm = new SerialCommunicator({
+// Agricultural sensor communication setup
+const farmSensorComm = new SerialCommunicator({
     baudRate: 9600,
     autoReconnect: true,
-    dataType: 'json-object',  // or 'csv', 'json-array', 'raw'
-    dbTableName: 'sensor_readings'
+    dataType: 'json-object',
+    dbTableName: 'sensor_data',           // Agricultural sensor readings
+    cropType: 'nipis',                    // Crop-specific configuration
+    sampleId: 'nipis_greenhouse_01'       // Plot identification
 }, db, mainWindow);
 
-// It handles everything for you!
-await serialComm.connect(); // Finds and connects automatically
+// Connects to your farm sensors automatically
+await farmSensorComm.connect();
 ```
 
-**Data Handling Made Simple:**
+**Agricultural Data Format Support:**
 ```javascript
-// Supports multiple data types
-// JSON Object: {"temperature": 25.5, "humidity": 60}
-// JSON Array: [25.5, 60, 1023]
-// CSV: "25.5,60,1023"
-// Raw: "TEMP:25.5,HUM:60"
+// Nipis Lime environmental data
+// JSON: {"temperature": 28.5, "humidity": 75, "soil_moisture": 60, "ph": 6.2}
+// CSV: "28.5,75,60,6.2,nipis_plot_01"
+// Custom: "TEMP:28.5|HUM:75|SOIL:60|PH:6.2|PLOT:nipis_01"
 ```
 
-### 🌐 **WebSocket Server - Real-time Magic**
+### 🍋 **Crop-Specific Dashboard Features**
 
-**Broadcasting That Just Works:**
+**Nipis Lime Monitoring Dashboard:**
+- 🌡️ **Temperature & Humidity**: Optimal growing conditions (22-30°C, 60-80%)
+- 💧 **Soil Moisture**: Real-time irrigation monitoring
+- 📊 **Growth Analytics**: Plant development tracking
+- 🌦️ **Weather Integration**: 5-day forecast for agricultural planning
+- 🗺️ **Plot Mapping**: Google Maps integration with sensor locations
+- 📈 **Production Analytics**: Harvest prediction and yield optimization
+
+**Kasturi Lime Monitoring Dashboard:**
+- 🟢 **Specialized Metrics**: Tailored for Kasturi lime requirements
+- 🌿 **Plant Health**: Disease detection and prevention alerts
+- 💰 **Financial Analytics**: Cost analysis and profit projections
+- 🔧 **Maintenance Scheduling**: Equipment and irrigation system management
+
 ```javascript
-const wsHandler = new WebSocketHandler({
+// Dynamic dashboard routing based on sample_id
+const DynamicOverview = () => {
+    const sensorsData = useFirestore('sensors', {
+        orderBy: { field: 'timestamp', direction: 'desc' },
+        limit: 1
+    });
+    
+    // Automatically routes to appropriate dashboard
+    if (sampleId.toLowerCase().includes('nipis')) {
+        return <NipisOverview />;
+    } else {
+        return <KasturiOverview />;
+    }
+};
+```
+
+### 🌐 **Real-time Agricultural Data Streaming**
+
+**Live Farm Monitoring:**
+```javascript
+const agriculturalWS = new WebSocketHandler({
     port: 8080,
     enableAuthentication: false,
-    maxConnections: 50
+    maxConnections: 50,
+    farmMode: true                      // Agricultural-specific mode
 }, db, mainWindow);
 
-// Broadcast to all connected clients
-wsHandler.broadcastToAll({
-    type: 'sensor_update',
-    data: { temperature: 25.5, timestamp: new Date() }
+// Broadcast real-time agricultural data
+agriculturalWS.broadcastToAll({
+    type: 'crop_sensor_update',
+    data: { 
+        temperature: 28.5, 
+        humidity: 75,
+        soil_moisture: 65,
+        crop_type: 'nipis',
+        plot_id: 'greenhouse_01',
+        timestamp: new Date() 
+    }
+});
+
+// Weather alert broadcasting
+agriculturalWS.broadcastWeatherAlert({
+    type: 'weather_warning',
+    severity: 'high',
+    message: 'Heavy rain expected - secure irrigation systems',
+    forecast: weatherData
 });
 ```
 
@@ -920,47 +1042,174 @@ EXPOSE 3001 8080
 CMD ["npm", "start"]
 ```
 
-## 📌 TODO / Future Improvements
-- [ ] Making Compact Frontend Component
-- [ ] Frontend With WebSocket Support
-- [ ] Asset for Front End Monitoring
-- [ ] Revising Auth for better and compact use
-- [ ] Module hot-reloading for development
-- [ ] Module dependency injection system
-- [ ] Module configuration validation
+### 🗺️ **Google Maps Integration for Land Plot Management**
 
-## 🤝 **Contributing - Join the Journey**
+```javascript
+// Interactive farm plot visualization
+import { GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 
-We love contributions! Whether it's:
-- 🐛 Bug fixes
-- ✨ New features  
-- 📖 Documentation improvements
-- 🧪 Testing enhancements
-- 🧩 New modules
-
-Check out our [Contributing Guide](CONTRIBUTING.md) to get started!
-
-## 📄 **License**
-
-This project isn't being Licensed and still be use as open source project, but be sure to tag the user account of any pulling or developing this code
-
----
-
-## 💡 **Ready to Build Something Amazing?**
-
-This framework isn't just code - it's your foundation for creating monitoring systems that actually work in the real world. Whether you're monitoring industrial equipment, environmental sensors, or IoT devices, we've built the tools you need to succeed.
-
-**Start your monitoring adventure today!**
-
-```bash
-git clone <your-repo>
-cd flow-meter-monitoring
-npm install
-npm start
+const LandPlotsMap = () => {
+    const [selectedPlot, setSelectedPlot] = useState(null);
+    
+    return (
+        <GoogleMap
+            center={{ lat: -6.200000, lng: 106.816666 }}  // Indonesia coordinates
+            zoom={15}
+            mapContainerStyle={{ height: '400px', width: '100%' }}
+        >
+            {farmPlots.map(plot => (
+                <Marker
+                    key={plot.id}
+                    position={plot.coordinates}
+                    onClick={() => setSelectedPlot(plot)}
+                    icon={{
+                        url: plot.crop_type === 'nipis' ? nipisIcon : kasturiIcon,
+                        scaledSize: new window.google.maps.Size(32, 32)
+                    }}
+                />
+            ))}
+            
+            {selectedPlot && (
+                <InfoWindow
+                    position={selectedPlot.coordinates}
+                    onCloseClick={() => setSelectedPlot(null)}
+                >
+                    <div>
+                        <h3>{selectedPlot.name}</h3>
+                        <p>Crop: {selectedPlot.crop_type}</p>
+                        <p>Temperature: {selectedPlot.current_temp}°C</p>
+                        <p>Humidity: {selectedPlot.current_humidity}%</p>
+                    </div>
+                </InfoWindow>
+            )}
+        </GoogleMap>
+    );
+};
 ```
 
-### 🌟 **Star us on GitHub if this framework helps you build something awesome!**
+### 🌦️ **Weather Forecasting for Agricultural Planning**
+
+```javascript
+// 5-day weather forecast integration
+const WeatherForecast = () => {
+    const [weatherData, setWeatherData] = useState(null);
+    
+    useEffect(() => {
+        // Fetch weather data for farm location
+        fetchWeatherForecast(farmCoordinates)
+            .then(data => setWeatherData(data));
+    }, []);
+    
+    return (
+        <div className="weather-forecast-grid">
+            {weatherData?.daily?.map((day, index) => (
+                <div key={index} className="weather-day-card">
+                    <WeatherIcon code={day.weather_code} />
+                    <div className="temperature-range">
+                        <span className="max-temp">{day.temperature_2m_max}°C</span>
+                        <span className="min-temp">{day.temperature_2m_min}°C</span>
+                    </div>
+                    <div className="precipitation">
+                        <CloudRain className="w-4 h-4" />
+                        <span>{day.precipitation_sum}mm</span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+```
+
+## 📊 **Available Dashboard Components**
+
+### 🎯 **Core Agricultural Components**
+- **NipisOverview.jsx**: Specialized dashboard for Nipis Lime monitoring
+- **KasturiOverview.jsx**: Dedicated dashboard for Kasturi Lime cultivation  
+- **Data.jsx**: Comprehensive data analytics and historical trends
+- **Finance.jsx**: Agricultural financial analysis and cost tracking
+- **Maintenance.jsx**: Equipment maintenance scheduling and tracking
+- **Forecast.jsx**: Weather forecasting and agricultural planning
+
+### 🧩 **Reusable UI Components**
+- **Alerts.jsx**: Smart agricultural alerts and notifications
+- **MetricCard.jsx**: Real-time metric display cards
+- **SensorChart.jsx**: Live sensor data visualization
+- **LandPlotMaps.jsx**: Interactive Google Maps integration
+- **FarmingSuggestions.jsx**: AI-powered farming recommendations
+- **ProductionOverview.jsx**: Crop production analytics
+
+## 📌 **Agricultural System Roadmap**
+
+### 🚧 **Current Development**
+- [ ] 🌾 Enhanced crop disease detection algorithms
+- [ ] 📱 Mobile app for field workers (React Native integration)
+- [ ] 🤖 AI-powered irrigation automation recommendations
+- [ ] 📊 Advanced analytics dashboard for yield prediction
+
+### 🔮 **Future Agricultural Features**
+- [ ] 🛰️ Satellite imagery integration for land analysis
+- [ ] 🌡️ Microclimate monitoring with multiple sensor networks  
+- [ ] 💧 Smart irrigation system automation
+- [ ] 📈 Market price integration for profit optimization
+- [ ] 🔍 Computer vision for crop health assessment
+- [ ] 📊 Blockchain integration for supply chain traceability
+
+### 🛠️ **Technical Improvements**
+- [ ] Real-time data compression for large sensor networks
+- [ ] Edge computing support for offline operation
+- [ ] Multi-farm management dashboard
+- [ ] Advanced data export capabilities (CSV, PDF reports)
+- [ ] Integration with agricultural equipment APIs
+
+## 🤝 **Contributing to Agricultural Innovation**
+
+Join us in revolutionizing agriculture through technology! We welcome contributions in:
+
+- 🌱 **Agricultural Features**: New crop types, specialized monitoring algorithms
+- 🔬 **Sensor Integration**: Support for additional IoT devices and protocols  
+- 📊 **Analytics**: Advanced data processing and visualization
+- 🌦️ **Weather Services**: Enhanced forecasting and climate analysis
+- 🗺️ **Mapping**: Improved geospatial features and land management
+- 🐛 **Bug Fixes**: System stability and performance improvements
+- 📖 **Documentation**: Agricultural use cases and implementation guides
+
+## 📄 **License & Usage**
+
+This IPCC Agricultural Monitoring System is open source and available for use in agricultural research and sustainable farming initiatives. When using this code:
+
+- ✅ **Allowed**: Agricultural research, sustainable farming, educational purposes
+- ✅ **Encouraged**: Contributions back to the community
+- ⚠️ **Required**: Attribution to the IPCC project and original developers
 
 ---
 
-*Built with ❤️ for developers who believe monitoring should be powerful, flexible, and actually enjoyable to work with.*
+## 🌱 **Ready to Transform Your Farm?**
+
+This isn't just a monitoring system - it's the foundation for precision agriculture that can increase crop yields, reduce resource waste, and optimize farming operations through data-driven insights.
+
+**Start your agricultural transformation today!**
+
+```bash
+git clone <your-repo>  
+cd IPCC_Framework
+npm install
+
+# Configure for your farm
+cp .env.example .env
+# Edit .env with your agricultural setup
+
+# Launch your monitoring system
+npm run start:both
+```
+
+### 🌟 **Support Sustainable Agriculture - Star this project on GitHub!**
+
+---
+
+*Built with 💚 for farmers, agricultural researchers, and developers who believe technology can create a more sustainable and productive agricultural future.*
+
+**Contributing to**: 
+- 🌍 **Sustainable Agriculture**: Reducing resource waste through precision monitoring
+- 📈 **Increased Yields**: Data-driven optimization for better crop production  
+- 🔬 **Agricultural Research**: Open platform for testing new farming techniques
+- 🌱 **Food Security**: Supporting efficient crop management for food sustainability

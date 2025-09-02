@@ -288,12 +288,6 @@ const SDGCard = ({ sdg }) => {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                    {metrics.map((metric, index) => (
-                        <div key={index} className="text-center">
-                            <p className="text-2xl font-bold text-slate-800">{metric.value}</p>
-                            <p className="text-xs text-slate-500">{metric.label}</p>
-                        </div>
-                    ))}
                 </div>
                 
                 {/* Sources and Disclaimer */}

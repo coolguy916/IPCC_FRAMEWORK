@@ -494,7 +494,12 @@ export const useSerialConnection = () => {
                 setStatus(serialStatus);
                 return serialStatus;
             } catch (error) {
-                console.error('Error fetching serial status:', error);
+                // Only log error if it's not the expected "service not available" error
+                if (!error.message?.includes('Serial service not available')) {
+                    console.error('Error fetching serial status:', error);
+                }
+                // Set status to indicate service is disabled
+                setStatus({ connected: false, available: false, disabled: true });
             }
         }
     }, [getSerialStatus, isConnected]);
